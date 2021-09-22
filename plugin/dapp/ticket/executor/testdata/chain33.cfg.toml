@@ -1,0 +1,258 @@
+Title="bityuan"
+TestNet=true
+FixTime=false
+
+[crypto]
+[log]
+#  debug(dbug)/info/warn/error(eror)/crit
+loglevel = "debug"
+logConsoleLevel = "info"
+#   
+logFile = "logs/chain33.log"
+#   ）
+maxFileSize = 300
+# 
+maxBackups = 100
+#   ）
+maxAge = 28
+#  UT ）
+localTime = true
+#  gz）
+compress = true
+# 
+callerFile = false
+# 
+callerFunction = false
+
+[blockchain]
+defCacheSize=128
+maxFetchBlockNum=128
+timeoutSeconds=5
+batchBlockNum=128
+driver="memdb"
+dbPath="datadir"
+dbCache=64
+isStrongConsistency=false
+singleMode=true
+batchsync=false
+isRecordBlockSequence=true
+isParaChain=false
+enableTxQuickIndex=false
+
+[p2p]
+types=["dht"]
+msgCacheSize=10240
+driver="memdb"
+dbPath="datadir/addrbook"
+dbCache=4
+grpcLogFile="grpc33.log"
+
+
+[rpc]
+jrpcBindAddr="localhost:0"
+grpcBindAddr="localhost:0"
+whitelist=["127.0.0.1"]
+jrpcFuncWhitelist=["*"]
+grpcFuncWhitelist=["*"]
+
+[mempool]
+name="timeline"
+poolCacheSize=10240
+minTxFeeRate=100000
+maxTxNumPerAccount=10000
+
+[consensus]
+name="ticket"
+minerstart=true
+genesisBlockTime=1514533394
+genesis="14KEKbYtKKQm4wMthSK9J4La4nAiidGozt"
+minerExecs=["ticket", "autonomy"]
+
+[mver.consensus]
+fundKeyAddr = "1BQXS6TxaYYG5mADaWij4AxhZZUTpw95a5"
+powLimitBits = "0x1f00ffff"
+maxTxNumber = 1600
+
+
+[mver.consensus.ForkChainParamV1]
+maxTxNumber = 10000
+
+
+[mver.consensus.ForkChainParamV2]
+maxTxNumber = 1500
+powLimitBits = "0x1f2fffff"
+
+[mver.consensus.ticket]
+coinReward = 18
+coinDevFund = 12
+ticketPrice = 10000
+retargetAdjustmentFactor = 4
+futureBlockTime = 16
+ticketFrozenTime = 5
+ticketWithdrawTime = 10
+ticketMinerWaitTime = 2
+targetTimespan = 2304
+targetTimePerBlock = 16
+
+[mver.consensus.ticket.ForkChainParamV1]
+targetTimespan = 288 #only for test
+targetTimePerBlock = 2
+
+[mver.consensus.ticket.ForkChainParamV2]
+coinReward = 5
+coinDevFund = 3
+ticketPrice = 3000
+targetTimespan = 720
+targetTimePerBlock = 1
+
+
+[mver.consensus.ForkTicketFundAddrV1]
+fundKeyAddr = "1Ji3W12KGScCM7C2p8bg635sNkayDM8MGY"
+
+[consensus.sub.solo]
+genesis="14KEKbYtKKQm4wMthSK9J4La4nAiidGozt"
+genesisBlockTime=1514533394
+waitTxMs=10
+
+[consensus.sub.ticket]
+genesisBlockTime=1514533394
+[[consensus.sub.ticket.genesis]]
+minerAddr="12qyocayNF7Lv6C9qW4avxs2E7U41fKSfv"
+returnAddr="14KEKbYtKKQm4wMthSK9J4La4nAiidGozt"
+count=10000
+
+[[consensus.sub.ticket.genesis]]
+minerAddr="1PUiGcbsccfxW3zuvHXZBJfznziph5miAo"
+returnAddr="1EbDHAXpoiewjPLX9uqoz38HsKqMXayZrF"
+count=100
+
+[[consensus.sub.ticket.genesis]]
+minerAddr="1EDnnePAZN48aC2hiTDzhkczfF39g1pZZX"
+returnAddr="1KcCVZLSQYRUwE5EXTsAoQs9LuJW6xwfQa"
+count=100
+
+[store]
+name="mavl"
+driver="memdb"
+dbPath="datadir/mavltree"
+dbCache=128
+
+[store.sub.mavl]
+enableMavlPrefix=false
+enableMVCC=false
+
+[wallet]
+minFee=100000
+driver="memdb"
+dbPath="wallet"
+dbCache=16
+signType="secp256k1"
+
+[wallet.sub.ticket]
+minerdisable=false
+minerwhitelist=["*"]
+minerWaitTime="1s"
+
+[exec]
+enableStat=false
+enableMVCC=false
+alias=["token1:token","token2:token","token3:token"]
+
+[exec.sub.token]
+saveTokenTxList=true
+tokenApprs = [
+	"1Bsg9j6gW83sShoee1fZAt9TkUjcrCgA9S",
+	"1Q8hGLfoGe63efeWa8fJ4Pnukhkngt6poK",
+	"1LY8GFia5EiyoTodMLfkB5PHNNpXRqxhyB",
+	"1GCzJDS6HbgTQ2emade7mEJGGWFfA15pS9",
+	"1JYB8sxi4He5pZWHCd3Zi2nypQ4JMB6AxN",
+	"12qyocayNF7Lv6C9qW4avxs2E7U41fKSfv",
+]
+
+[exec.sub.relay]
+genesis="14KEKbYtKKQm4wMthSK9J4La4nAiidGozt"
+
+[exec.sub.cert]
+# 
+enable=false
+# 
+cryptoPath="authdir/crypto"
+#  "auth_ecdsa", "auth_sm2"
+signType="auth_ecdsa"
+
+[exec.sub.manage]
+superManager=[
+    "1Bsg9j6gW83sShoee1fZAt9TkUjcrCgA9S",
+    "12qyocayNF7Lv6C9qW4avxs2E7U41fKSfv",
+    "1Q8hGLfoGe63efeWa8fJ4Pnukhkngt6poK"
+]
+
+[exec.sub.autonomy]
+total="16htvcBNSEA7fZhAdLJphDwQRQJaHpyHTp"
+useBalance=false
+
+ fork chain3 
+ 
+[fork.system]
+ForkChainParamV1= 0
+ForkCheckTxDup=0
+ForkBlockHash= 1
+ForkMinerTime= 0
+ForkTransferExec= 100000
+ForkExecKey= 200000
+ForkTxGroup= 200000
+ForkResetTx0= 200000
+ForkWithdraw= 200000
+ForkExecRollback= 450000
+ForkCheckBlockTime=-1 #fork 6.2
+ForkTxHeight= -1
+ForkTxGroupPara= -1
+ForkChainParamV2= 1
+ForkMultiSignAddress=-1 #fork 6.2
+ForkStateDBSet=-1 #fork 6.2
+ForkLocalDBAccess=-1 #fork 6.2
+ForkBlockCheck=-1 #fork 6.2
+ForkBase58AddressCheck=-1 #fork6.2
+ForkEnableParaRegExec=0
+ForkCacheDriver=0
+ForkTicketFundAddrV1=-1 #fork6.3
+ForkRootHash =1
+[fork.sub.coins]
+Enable=0
+
+[fork.sub.ticket]
+Enable=0
+ForkTicketId = 1600000
+ForkTicketVrf = 2070000
+
+[fork.sub.token]
+Enable=0
+ForkTokenBlackList= 0
+ForkBadTokenSymbol= 0
+ForkTokenPrice=0
+ForkTokenSymbolWithNumber=0
+ForkTokenCheck= 0
+
+[fork.sub.manage]
+Enable=0
+ForkManageExec=0
+
+[fork.sub.valnode]
+Enable=0
+
+[fork.sub.dpos]
+Enable=0
+
+[fork.sub.paracross]
+Enable=0
+ForkParacrossWithdrawFromParachain=0
+ForkParacrossCommitTx=0
+ForkLoopCheckCommitTxDone=0
+   0 720000   selfConsensEnablePreContrac 
+ForkParaSelfConsStages=0
+ForkParaAssetTransferRbk=0
+        
+ForkParaFullMinerHeight=0
+
+[fork.sub.qbftNode]
+Enable=0

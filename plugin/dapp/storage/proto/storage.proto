@@ -1,0 +1,114 @@
+syntax = "proto3";
+package types;
+option go_package = "../types";
+/ 
+message Storage {
+    oneof value {
+        ContentOnlyNotaryStorage  contentStorage      = 1;
+        HashOnlyNotaryStorage     hashStorage         = 2;
+        LinkNotaryStorage         linkStorage         = 3;
+        EncryptNotaryStorage      encryptStorage      = 4;
+        EncryptShareNotaryStorage encryptShareStorage = 5;
+        EncryptNotaryAdd          encryptAdd          = 6;
+    }
+    int32 ty = 7;
+}
+
+message StorageAction {
+    oneof value {
+        ContentOnlyNotaryStorage  contentStorage      = 1;
+        HashOnlyNotaryStorage     hashStorage         = 2;
+        LinkNotaryStorage         linkStorage         = 3;
+        EncryptNotaryStorage      encryptStorage      = 4;
+        EncryptShareNotaryStorage encryptShareStorage = 5;
+        EncryptNotaryAdd          encryptAdd          = 6;
+    }
+    int32 ty = 7;
+}
+// 
+message ContentOnlyNotaryStorage {
+    / 512k
+    bytes content = 1;
+    /    txhas key
+    string key = 2;
+    // Op    add
+    int32  op = 3;
+    / 
+    string value = 4;
+}
+
+/  sha25  25 
+message HashOnlyNotaryStorage {
+
+    / 3 
+    bytes hash = 1;
+    /    txhas key
+    string key = 2;
+    / 
+    string value = 3;
+}
+
+// 
+message LinkNotaryStorage {
+    /  URL .
+    bytes link = 1;
+    / has  sha25  25 
+    bytes hash = 2;
+    /    txhas key
+    string key = 3;
+    / 
+    string value = 4;
+}
+
+//    
+message EncryptNotaryStorage {
+    / has  sha25  25 
+    bytes contentHash = 1;
+    /  ke nonc 。
+    bytes encryptContent = 2;
+    / iv AE iv 
+    bytes nonce = 3;
+    /    txhas key
+    string key = 4;
+    / 
+    string value = 5;
+}
+
+//  sd 
+message EncryptShareNotaryStorage {
+    / has  sha25  25 
+    bytes contentHash = 1;
+    / 。 
+    bytes encryptContent = 2;
+    / 
+    bytes pubKey = 3;
+    /    txhas key
+    string key = 4;
+    / 
+    string value = 5;
+}
+
+// 
+message EncryptNotaryAdd {
+    / 
+    string key = 1;
+    / 
+    bytes encryptAdd = 2;
+}
+
+service storage {}
+/ txhas 
+message QueryStorage {
+    string txHash = 1;
+}
+/ 
+message BatchQueryStorage {
+    repeated string txHashs = 1;
+}
+
+message BatchReplyStorage {
+    repeated Storage storages = 1;
+}
+
+message ReceiptStorage {
+}

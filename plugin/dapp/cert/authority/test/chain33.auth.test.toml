@@ -1,0 +1,86 @@
+Title="chain33"
+
+[crypto]
+[log]
+# Log level, support debug(dbug)/info/warn/error(eror)/crit
+loglevel = "debug"
+logConsoleLevel = "info"
+# Log file name, with a directory, all generated log files are placed in this directory
+logFile = "logs/chain33.log"
+# The maximum value of a single log file (unit: megabytes)
+maxFileSize = 20
+# Maximum number of saved historical log files
+maxBackups = 20
+# The most saved historical log messages (unit: day)
+maxAge = 28
+# Whether the log file name uses local events (otherwise UTC time is used)
+localTime = true
+# Whether the history log file is compressed (compression format is gz)
+compress = false
+# Whether to print the calling source file and line number
+callerFile = true
+# Whether to print the calling method
+callerFunction = true
+
+[blockchain]
+defCacheSize=512
+maxFetchBlockNum=128
+timeoutSeconds=5
+batchBlockNum=128
+driver="memdb"
+dbPath="datadir"
+dbCache=64
+isStrongConsistency=false
+singleMode=true
+batchsync=false
+isRecordBlockSequence=true
+
+[p2p]
+types=["dht"]
+enable=true
+msgCacheSize=10240
+driver="memdb"
+dbPath="datadir/addrbook"
+dbCache=4
+grpcLogFile="grpc33.log"
+
+
+[rpc]
+jrpcBindAddr="localhost:8801"
+grpcBindAddr="localhost:8802"
+whitelist=["127.0.0.1"]
+jrpcFuncWhitelist=["*"]
+grpcFuncWhitelist=["*"]
+
+[mempool]
+poolCacheSize=10240
+minTxFeeRate=0
+
+[consensus]
+name="solo"
+minerstart=true
+genesis="14KEKbYtKKQm4wMthSK9J4La4nAiidGozt"
+genesisBlockTime=1514533394
+hotkeyAddr="12qyocayNF7Lv6C9qW4avxs2E7U41fKSfv"
+
+[store]
+name="mavl"
+driver="memdb"
+dbPath="datadir/mavltree"
+dbCache=128
+
+[wallet]
+minFee=1000000
+driver="memdb"
+dbPath="datadir/wallet"
+dbCache=16
+signType="secp256k1"
+minerwhitelist=["*"]
+
+[exec]
+enableStat=false
+
+[exec.sub.cert]
+enable=true
+cryptoPath="./test/authdir/crypto"
+signType="sm2"

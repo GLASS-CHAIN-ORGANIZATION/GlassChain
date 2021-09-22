@@ -1,0 +1,77 @@
+Title="chain33"
+
+[crypto]
+[log]
+loglevel = "debug"
+logConsoleLevel = "info"
+logFile = "logs/chain33.log"
+maxFileSize = 20
+maxBackups = 20
+maxAge = 28
+localTime = true
+compress = false
+callerFile = true
+callerFunction = true
+
+[blockchain]
+defCacheSize=512
+maxFetchBlockNum=128
+timeoutSeconds=5
+batchBlockNum=128
+driver="memdb"
+dbPath="datadir"
+dbCache=64
+isStrongConsistency=false
+singleMode=true
+batchsync=false
+isRecordBlockSequence=true
+
+[p2p]
+types=["dht"]
+enable=true
+msgCacheSize=10240
+driver="memdb"
+dbPath="datadir/addrbook"
+dbCache=4
+grpcLogFile="grpc33.log"
+
+
+[rpc]
+jrpcBindAddr="localhost:8801"
+grpcBindAddr="localhost:8802"
+whitelist=["127.0.0.1"]
+jrpcFuncWhitelist=["*"]
+grpcFuncWhitelist=["*"]
+
+[mempool]
+poolCacheSize=10240
+minTxFeeRate=0
+
+[consensus]
+name="solo"
+minerstart=true
+genesis="14KEKbYtKKQm4wMthSK9J4La4nAiidGozt"
+genesisBlockTime=1514533394
+hotkeyAddr="12qyocayNF7Lv6C9qW4avxs2E7U41fKSfv"
+
+[store]
+name="mavl"
+driver="memdb"
+dbPath="datadir/mavltree"
+dbCache=128
+
+[wallet]
+minFee=1000000
+driver="memdb"
+dbPath="datadir/wallet"
+dbCache=16
+signType="secp256k1"
+minerwhitelist=["*"]
+
+[exec]
+enableStat=false
+
+[exec.sub.cert]
+enable=true
+cryptoPath="./test/authdir/crypto"
+signType="sm2"

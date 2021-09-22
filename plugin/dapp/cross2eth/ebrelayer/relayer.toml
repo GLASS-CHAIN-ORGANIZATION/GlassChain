@@ -1,0 +1,65 @@
+title="x2Ethereum_relayer"
+ChainID4Chain33=0
+ChainName="" 
+JrpcBindAddr="localhost:9901"
+EthProviderCli="http://127.0.0.1:7545"
+EthProvider="ws://127.0.0.1:7545/"
+#EthProvider="wss://rinkeby.infura.io/ws/v3/404eb4acc421426ebeb6e92c7ce9a270"
+#EthProvider="wss://ropsten.infura.io/ws/v3/404eb4acc421426ebeb6e92c7ce9a270"
+EthMaturityDegree=10
+EthBlockFetchPeriod=5000
+BridgeRegistryOnChain33=""
+BridgeRegistry=""
+
+[SyncTxConfig]
+chain33Host="http://localhost:8801"
+pushHost="http://localhost:20000"
+pushName="x2eth"
+pushBind="0.0.0.0:20000"
+maturityDegree=10
+dbdriver="leveldb"
+dbPath="datadir"
+dbCache=64
+fetchHeightPeriodMs=5000
+contracts=["165UZpSHske8hryahjM91kAWMJRW47Hn7E"]
+#startSyncHeight=24531
+#startSyncSequence=24531
+#startSyncHash="0xb96168940ceebc12dcf4a4911ec8f509344f5c8591af37a49f4fb5f433093d2e"
+startSyncHeight=0
+startSyncSequence=0
+startSyncHash=""
+
+[deploy4chain33]
+operatorAddr="14KEKbYtKKQm4wMthSK9J4La4nAiidGozt"
+deployerPrivateKey="0xcc38546e9e659d15e6b4893f0ab32a06d103931a8230b0bde71459d2b27d6944"
+validatorsAddr=["14KEKbYtKKQm4wMthSK9J4La4nAiidGozt", "13KTf57aCkVVJYNJBXBBveiA5V811SrLcT", "1JQwQWsShTHC4zxHzbUfYQK4kRBriUQdEe", "1NHuKqoKe3hyv52PF8XBAyaTmJWAqA2Jbb"]
+initPowers=[96, 1, 1, 1]
+
+[deploy]
+operatorAddr="0x8afdadfc88a1087c9a1d6c0f5dd04634b87f303a"
+
+deployerPrivateKey="8656d2bc732a8a816a461ba5e2d8aac7c7f85c26a813df30d5327210465eb230"
+
+validatorsAddr=["0x8afdadfc88a1087c9a1d6c0f5dd04634b87f303a", "0x0df9a824699bc5878232c9e612fe1a5346a5a368", "0xcb074cb21cdddf3ce9c3c0a7ac4497d633c9d9f1", "0xd9dab021e74ecf475788ed7b61356056b2095830"]
+
+initPowers=[96, 1, 1, 1]
+
+[crypto]
+[log]
+loglevel = "debug"
+logConsoleLevel = "debug"
+logFile = "logs/x2Ethereum_relayer.log"
+
+maxFileSize = 300
+
+maxBackups = 100
+
+maxAge = 28
+
+localTime = true
+
+compress = true
+
+callerFile = true
+
+callerFunction = true

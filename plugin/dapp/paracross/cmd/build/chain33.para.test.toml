@@ -1,0 +1,165 @@
+Title="user.p.para."
+CoinSymbol="paracoin"
+
+[crypto]
+[log]
+#  debug(dbug)/info/warn/error(eror)/crit
+loglevel = "debug"
+logConsoleLevel = "info"
+#   
+logFile = "logs/chain33.para.log"
+#   ）
+maxFileSize = 300
+# 
+maxBackups = 100
+#   ）
+maxAge = 28
+#  UT ）
+localTime = true
+#  gz）
+compress = false
+# 
+callerFile = false
+# 
+callerFunction = false
+
+
+[blockchain]
+defCacheSize=128
+maxFetchBlockNum=128
+timeoutSeconds=5
+batchBlockNum=128
+driver="memdb"
+dbPath="paradatadir"
+dbCache=64
+isStrongConsistency=true
+singleMode=true
+batchsync=false
+isRecordBlockSequence=false
+isParaChain = true
+enableTxQuickIndex=false
+
+[p2p]
+seeds=[]
+enable=false
+isSeed=false
+serverStart=true
+innerSeedEnable=true
+useGithub=true
+innerBounds=300
+msgCacheSize=10240
+driver="memdb"
+dbPath="paradatadir/addrbook"
+dbCache=4
+grpcLogFile="grpc33.log"
+
+
+[rpc]
+# 
+jrpcBindAddr="0.0.0.0:8901"
+grpcBindAddr="0.0.0.0:8902"
+whitelist=["localhost","127.0.0.1","0.0.0.0"]
+jrpcFuncWhitelist=["*"]
+grpcFuncWhitelist=["*"]
+mainnetJrpcAddr= "http://localhost:8801"
+
+[mempool]
+name="para"
+poolCacheSize=10240
+minTxFeeRate=100000
+maxTxNumPerAccount=10000
+
+[consensus]
+name="para"
+genesisBlockTime=1514533394
+genesis="14KEKbYtKKQm4wMthSK9J4La4nAiidGozt"
+minerExecs=["paracross"]     
+
+[mver.consensus]
+fundKeyAddr = "1BQXS6TxaYYG5mADaWij4AxhZZUTpw95a5"
+powLimitBits = "0x1f00ffff"
+maxTxNumber = 1600      #160
+
+
+[mver.consensus.paracross]
+coinReward = 18
+coinDevFund = 12
+
+
+[consensus.sub.para]
+ParaRemoteGrpcClient = "localhost:8802"
+ 
+startHeight=20
+  
+writeBlockSeconds=2
+
+mainBlockHashForkHeight=1
+mainForkParacrossCommitTx=5
+mainParaSelfConsensusForkHeight=300
+    
+authAccount="1KSBd17H7ZK8iT37aJztFB22XGwsPTdwE4"
+   2
+waitBlocks4CommitMsg=2
+ 
+genesisAmount=100000000
+selfConsensEnablePreContract=["0-1000"]
+  
+emptyBlockInterval=["0:4"]
+
+
+
+[store]
+name="mavl"
+driver="memdb"
+dbPath="datadir/mavltree"
+dbCache=128
+
+[store.sub.mavl]
+enableMavlPrefix=false
+enableMVCC=false
+enableMavlPrune=false
+pruneHeight=10000
+
+[wallet]
+minFee=1000000
+driver="memdb"
+dbPath="datadir/wallet"
+dbCache=16
+signType="secp256k1"
+
+[wallet.sub.ticket]
+minerwhitelist=["*"]
+
+[exec]
+enableStat=false
+enableMVCC=false
+
+[exec.sub.relay]
+genesis="14KEKbYtKKQm4wMthSK9J4La4nAiidGozt"
+
+[exec.sub.manage]
+superManager=[
+    "1Bsg9j6gW83sShoee1fZAt9TkUjcrCgA9S",
+    "12qyocayNF7Lv6C9qW4avxs2E7U41fKSfv",
+    "1Q8hGLfoGe63efeWa8fJ4Pnukhkngt6poK"
+]
+
+[exec.sub.token]
+saveTokenTxList=true
+tokenApprs = [
+	"1Bsg9j6gW83sShoee1fZAt9TkUjcrCgA9S",
+	"1Q8hGLfoGe63efeWa8fJ4Pnukhkngt6poK",
+	"1LY8GFia5EiyoTodMLfkB5PHNNpXRqxhyB",
+	"1GCzJDS6HbgTQ2emade7mEJGGWFfA15pS9",
+	"1JYB8sxi4He5pZWHCd3Zi2nypQ4JMB6AxN",
+	"12qyocayNF7Lv6C9qW4avxs2E7U41fKSfv",
+]
+
+
+[exec.sub.cert]
+# 
+enable=false
+# 
+cryptoPath="authdir/crypto"
+#  "auth_ecdsa", "auth_sm2"
+signType="auth_ecdsa"

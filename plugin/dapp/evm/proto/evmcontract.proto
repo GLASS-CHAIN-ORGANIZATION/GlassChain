@@ -1,0 +1,202 @@
+syntax = "proto3";
+
+package types;
+option go_package = "../types";
+
+message EVMContractObject {
+    string           addr  = 1;
+    EVMContractData  data  = 2;
+    EVMContractState state = 3;
+}
+
+message EVMContractData {
+    string creator  = 1;
+    string name     = 2;
+    string alias    = 3;
+    string addr     = 4;
+    bytes  code     = 5;
+    bytes  codeHash = 6;
+    string abi = 7;
+}
+
+message EVMContractState {
+    uint64             nonce       = 1;
+    bool               suicided    = 2;
+    bytes              storageHash = 3;
+    map<string, bytes> storage     = 4;
+}
+
+message EVMContractAction {
+
+    uint64 amount = 1;
+
+    uint64 gasLimit = 2;
+
+    uint32 gasPrice = 3;
+
+    bytes code = 4;
+
+    bytes para = 5;
+
+    string alias = 6;
+
+    string note = 7;
+
+    string contractAddr = 8;
+}
+
+message ReceiptEVMContract {
+    string caller       = 1;
+    string contractName = 2;
+    string contractAddr = 3;
+    uint64 usedGas      = 4;
+
+    bytes ret = 5;
+
+    string jsonRet = 6;
+}
+
+message EVMStateChangeItem {
+    string key          = 1;
+    bytes  preValue     = 2;
+    bytes  currentValue = 3;
+}
+
+message EVMContractDataCmd {
+    string creator  = 1;
+    string name     = 2;
+    string alias    = 3;
+    string addr     = 4;
+    string code     = 5;
+    string codeHash = 6;
+}
+
+message EVMContractStateCmd {
+    uint64              nonce       = 1;
+    bool                suicided    = 2;
+    string              storageHash = 3;
+    map<string, string> storage     = 4;
+}
+
+message ReceiptEVMContractCmd {
+    string caller = 1;
+
+    string contractName = 2;
+    string contractAddr = 3;
+    uint64 usedGas      = 4;
+
+    string ret = 5;
+}
+
+message CheckEVMAddrReq {
+    string addr = 1;
+}
+message CheckEVMAddrResp {
+    bool   contract     = 1;
+    string contractAddr = 2;
+    string contractName = 3;
+    string aliasName    = 4;
+}
+
+message EstimateEVMGasReq {
+    string tx     = 1;
+    string from   = 2;
+}
+message EstimateEVMGasResp {
+    uint64 gas = 1;
+}
+
+message EvmDebugReq {
+    // 0 query, 1 set, -1 clear
+    int32 optype = 1;
+}
+
+message EvmDebugResp {
+    string debugStatus = 1;
+}
+
+message EvmQueryAbiReq {
+    string address = 1;
+}
+
+message EvmQueryAbiResp {
+    string address = 1;
+    string abi     = 2;
+}
+
+message EvmQueryReq {
+    string address = 1;
+    string input   = 2;
+    string caller  = 3;
+}
+
+message EvmQueryResp {
+    string address  = 1;
+    string input    = 2;
+    string caller   = 3;
+    string rawData  = 4;
+    string jsonData = 5;
+}
+
+message EvmContractCreateReq {
+    string code     = 1;
+    string abi      = 2;
+    int64  fee      = 3;
+    string note     = 4;
+    string alias    = 5;
+    string parameter= 6;
+    string expire   = 7;
+    string paraName = 8;
+    int64 amount    = 9;
+}
+
+message EvmContractCallReq {
+    int64 amount        = 1;
+    int64  fee          = 2;
+    string note          = 3;
+    string parameter     = 4;
+    string contractAddr  = 5;
+    string expire        = 6;
+    string paraName      = 7;
+    string abi           = 8;
+}
+
+message EvmTransferOnlyReq {
+    string to         = 1;
+    int64  amount     = 2;
+    string paraName   = 3;
+    string note       = 4;
+}
+
+message EvmGetNonceReq {
+    string address     = 1;
+}
+
+message EvmGetNonceRespose {
+    int64 nonce     = 1;
+}
+
+message EvmCalcNewContractAddrReq {
+    string caller     = 1;
+    string txhash     = 2;
+}
+
+message EvmGetPackDataReq {
+    string abi          = 1;
+    string parameter    = 2;
+}
+
+message EvmGetPackDataRespose {
+    string packData     = 1;
+}
+
+message EvmGetUnpackDataReq {
+    string abi          = 1;
+    string parameter    = 2;
+    string data         = 3;
+}
+
+message EvmGetUnpackDataRespose {
+    repeated string unpackData     = 1;
+}
+

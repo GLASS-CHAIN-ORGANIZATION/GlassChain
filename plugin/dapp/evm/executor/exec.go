@@ -1,0 +1,285 @@
+// Copyright Fuzamei Corp. 2018 All Rights Reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+package executor
+
+import (
+	"encoding/hex"
+	"errors"
+	"fmt"
+	"strings"
+	"sync/atomic"
+
+	"github.com/33cn/chain33/account"
+
+	log "github.com/33cn/chain33/common/log/log15"
+	"github.com/33cn/chain33/types"
+	"github.com/33cn/plugin/plugin/dapp/evm/executor/vm/common"
+	"github.com/33cn/plugin/plugin/dapp/evm/executor/vm/model"
+	"github.com/33cn/plugin/plugin/dapp/evm/executor/vm/runtime"
+	"github.com/33cn/plugin/plugin/dapp/evm/executor/vm/state"
+	evmtypes "github.com/33cn/plugin/plugin/dapp/evm/types"
+)
+
+func (evm *EVMExecutor) Exec(tx *types.Transaction, index int) (*types.Receipt, error) {
+	evm.CheckInit()
+
+	msg, err := evm.GetMessage(tx, index, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	cfg := evm.GetAPI().GetConfig()
+	if !evmDebugInited {
+		conf := types.ConfSub(cfg, evmtypes.ExecutorName)
+		atomic.StoreInt32(&evm.vmCfg.Debug, int32(conf.GInt("evmDebugEnable")))
+		evmDebugInited = true
+	}
+
+	return evm.innerExec(msg, tx.Hash(), index, msg.GasLimit(), false)
+}
+
+func (evm *EVMExecutor) innerExec(msg *common.Message, txHash []byte, index int, txFee uint64, readOnly bool) (receipt *types.Receipt, err error) {
+
+	context := evm.NewEVMContext(msg, txHash)
+	cfg := evm.GetAPI().GetConfig()
+
+	env := runtime.NewEVM(context, evm.mStateDB, *evm.vmCfg, cfg)
+	isCreate := strings.Compare(msg.To().String(), EvmAddress) == 0 && len(msg.Data()) > 0
+	isTransferOnly := strings.Compare(msg.To().String(), EvmAddress) == 0 && 0 == len(msg.Data())
+	var (
+		ret             []byte
+		vmerr           error
+		leftOverGas     uint64
+		contractAddr    common.Address
+		snapshot        int
+		execName        string
+		contractAddrStr string
+	)
+
+	if isTransferOnly {
+		caller := msg.From()
+		receiver := common.BytesToAddress(msg.Para())
+
+		if !evm.mStateDB.CanTransfer(caller.String(), msg.Value()) {
+			log.Error("innerExec", "Not enough balance to be transferred from", caller.String(), "amout", msg.Value())
+			return nil, types.ErrNoBalance
+		}
+		env.StateDB.Snapshot()
+		env.Transfer(env.StateDB, caller, receiver, msg.Value())
+		curVer := evm.mStateDB.GetLastSnapshot()
+		kvSet, logs := evm.mStateDB.GetChangedData(curVer.GetID())
+		receipt = &types.Receipt{Ty: types.ExecOk, KV: kvSet, Logs: logs}
+		return receipt, nil
+	} else if isCreate {
+		contractAddr = evm.createContractAddress(msg.From(), txHash)
+		contractAddrStr = contractAddr.String()
+		if !env.StateDB.Empty(contractAddrStr) {
+			return receipt, model.ErrContractAddressCollision
+		}
+		execName = fmt.Sprintf("%s%s", cfg.ExecName(evmtypes.EvmPrefix), common.BytesToHash(txHash).Hex())
+	} else {
+		contractAddr = *msg.To()
+		contractAddrStr = contractAddr.String()
+		if !env.StateDB.Exist(contractAddrStr) {
+			log.Error("innerExec", "Contract not exist for address", contractAddrStr)
+			return receipt, model.ErrContractNotExist
+		}
+		log.Info("innerExec", "Contract exist for address", contractAddrStr)
+	}
+
+	evm.mStateDB.Prepare(common.BytesToHash(txHash), index)
+
+	if isCreate {
+		ret, snapshot, leftOverGas, vmerr = env.Create(runtime.AccountRef(msg.From()), contractAddr, msg.Data(), context.GasLimit, execName, msg.Alias(), msg.Value())
+	} else {
+		callPara := msg.Para()
+		log.Debug("call contract ", "callPara", common.Bytes2Hex(callPara))
+		ret, snapshot, leftOverGas, vmerr = env.Call(runtime.AccountRef(msg.From()), *msg.To(), callPara, context.GasLimit, msg.Value())
+	}
+	evm.mStateDB.PrintLogs()
+
+	usedGas := msg.GasLimit() - leftOverGas
+	logMsg := "call contract details:"
+	if isCreate {
+		logMsg = "create contract details:"
+	}
+	log.Debug(logMsg, "caller address", msg.From().String(), "contract address", contractAddrStr, "exec name", execName, "alias name", msg.Alias(), "usedGas", usedGas, "return data", common.Bytes2Hex(ret))
+	curVer := evm.mStateDB.GetLastSnapshot()
+	if vmerr != nil {
+		log.Error("evm contract exec error", "error info", vmerr, "ret", string(ret))
+		vmerr = errors.New(fmt.Sprintf("%s,detail: %s", vmerr.Error(), string(ret)))
+		return receipt, vmerr
+	}
+
+	usedFee, overflow := common.SafeMul(usedGas, uint64(msg.GasPrice()))
+
+	if overflow || usedFee > txFee {
+
+		if curVer != nil && snapshot >= curVer.GetID() && curVer.GetID() > -1 {
+			evm.mStateDB.RevertToSnapshot(snapshot)
+		}
+		return receipt, model.ErrOutOfGas
+	}
+
+
+	if curVer == nil {
+		return receipt, nil
+	}
+
+	kvSet, logs := evm.mStateDB.GetChangedData(curVer.GetID())
+	contractReceipt := &evmtypes.ReceiptEVMContract{Caller: msg.From().String(), ContractName: execName, ContractAddr: contractAddrStr, UsedGas: usedGas, Ret: ret}
+
+	//if len(methodName) > 0 && len(msg.Para()) > 0 && cfg.IsDappFork(evm.GetHeight(), "evm", evmtypes.ForkEVMABI) {
+	//	jsonRet, err := abi.Unpack(ret, methodName, evm.mStateDB.GetAbi(msg.To().String()))
+	//	if err != nil {
+	//		log.Error("unpack evm return error", "error", err)
+	//	}
+	//	contractReceipt.JsonRet = jsonRet
+	//}
+	logs = append(logs, &types.ReceiptLog{Ty: evmtypes.TyLogCallContract, Log: types.Encode(contractReceipt)})
+	logs = append(logs, evm.mStateDB.GetReceiptLogs(contractAddrStr)...)
+
+	if cfg.IsDappFork(evm.GetHeight(), "evm", evmtypes.ForkEVMKVHash) {
+		hashKV := evm.calcKVHash(contractAddr, logs)
+		if hashKV != nil {
+			kvSet = append(kvSet, hashKV)
+		}
+	}
+
+	receipt = &types.Receipt{Ty: types.ExecOk, KV: kvSet, Logs: logs}
+	if evm.mStateDB != nil {
+		evm.mStateDB.WritePreimages(evm.GetHeight())
+	}
+
+
+	state.ProcessFork(cfg, evm.GetHeight(), txHash, receipt)
+
+	evm.collectEvmTxLog(txHash, contractReceipt, receipt)
+
+	if isCreate {
+		log.Info("innerExec", "Succeed to created new contract with name", msg.Alias(),
+			"created contract address", contractAddrStr)
+	}
+
+	return receipt, nil
+}
+
+func (evm *EVMExecutor) CheckInit() {
+	cfg := evm.GetAPI().GetConfig()
+	if !cfg.IsPara() {
+
+		evm.mStateDB = state.NewMemoryStateDB(evm.GetStateDB(), evm.GetLocalDB(), evm.GetCoinsAccount(), evm.GetHeight(), evm.GetAPI())
+		return
+	}
+
+	conf := types.ConfSub(cfg, evmtypes.ExecutorName)
+	ethMapFromExecutor := conf.GStr("ethMapFromExecutor")
+	ethMapFromSymbol := conf.GStr("ethMapFromSymbol")
+	if "" == ethMapFromExecutor || "" == ethMapFromSymbol {
+		panic("Both ethMapFromExecutor and ethMapFromSymbol should be configured, " + "ethMapFromExecutor=" + ethMapFromExecutor + ", ethMapFromSymbol=" + ethMapFromSymbol)
+	}
+	accountDB, _ := account.NewAccountDB(evm.GetAPI().GetConfig(), ethMapFromExecutor, ethMapFromSymbol, evm.GetStateDB())
+	evm.mStateDB = state.NewMemoryStateDB(evm.GetStateDB(), evm.GetLocalDB(), accountDB, evm.GetHeight(), evm.GetAPI())
+}
+
+func (evm *EVMExecutor) GetMessage(tx *types.Transaction, index int, fromPtr *common.Address) (msg *common.Message, err error) {
+	var action evmtypes.EVMContractAction
+	err = types.Decode(tx.Payload, &action)
+	if err != nil {
+		return msg, err
+	}
+	var from common.Address
+	if fromPtr == nil {
+		from = getCaller(tx)
+	} else {
+		from = *fromPtr
+	}
+
+	to := getReceiver(&action)
+	if to == nil {
+		return msg, types.ErrInvalidAddress
+	}
+
+	gasPrice := action.GasPrice
+	gasLimit := uint64(evm.GetTxFee(tx, index))
+	if 0 == gasLimit {
+		cfg := evm.GetAPI().GetConfig()
+		conf := types.ConfSub(cfg, evmtypes.ExecutorName)
+		gasLimit = uint64(conf.GInt("evmGasLimit"))
+		if 0 == gasLimit {
+			return nil, model.ErrNoGasConfigured
+		}
+		log.Info("GetMessage", "gasLimit is set to for permission blockchain", gasLimit)
+	}
+
+	if gasPrice == 0 {
+		gasPrice = uint32(1)
+	}
+
+	msg = common.NewMessage(from, to, tx.Nonce, action.Amount, gasLimit, gasPrice, action.Code, action.Para, action.GetAlias())
+	return msg, err
+}
+
+func (evm *EVMExecutor) collectEvmTxLog(txHash []byte, cr *evmtypes.ReceiptEVMContract, receipt *types.Receipt) {
+	log.Debug("evm collect begin")
+	log.Debug("Tx info", "txHash", common.Bytes2Hex(txHash), "height", evm.GetHeight())
+	log.Debug("ReceiptEVMContract", "data", fmt.Sprintf("caller=%v, name=%v, addr=%v, usedGas=%v, ret=%v", cr.Caller, cr.ContractName, cr.ContractAddr, cr.UsedGas, common.Bytes2Hex(cr.Ret)))
+	log.Debug("receipt data", "type", receipt.Ty)
+	for _, kv := range receipt.KV {
+		log.Debug("KeyValue", "key", common.Bytes2Hex(kv.Key), "value", common.Bytes2Hex(kv.Value))
+	}
+	for _, kv := range receipt.Logs {
+		log.Debug("ReceiptLog", "Type", kv.Ty, "log", common.Bytes2Hex(kv.Log))
+	}
+	log.Debug("evm collect end")
+}
+
+func (evm *EVMExecutor) calcKVHash(addr common.Address, logs []*types.ReceiptLog) (kv *types.KeyValue) {
+	hashes := []byte{}
+
+	for _, logItem := range logs {
+		if evmtypes.TyLogEVMStateChangeItem == logItem.Ty {
+			data := logItem.Log
+			hashes = append(hashes, common.ToHash(data).Bytes()...)
+		}
+	}
+
+	if len(hashes) > 0 {
+		hash := common.ToHash(hashes)
+		return &types.KeyValue{Key: getDataHashKey(addr), Value: hash.Bytes()}
+	}
+	return nil
+}
+
+func (evm *EVMExecutor) GetTxFee(tx *types.Transaction, index int) int64 {
+	fee := tx.Fee
+	cfg := evm.GetAPI().GetConfig()
+	if fee == 0 && cfg.IsDappFork(evm.GetHeight(), "evm", evmtypes.ForkEVMTxGroup) {
+		if tx.GroupCount >= 2 {
+			txs, err := evm.GetTxGroup(index)
+			if err != nil {
+				log.Error("evm GetTxFee", "get tx group fail", err, "hash", hex.EncodeToString(tx.Hash()))
+				return 0
+			}
+			fee = txs[0].Fee
+		}
+	}
+	return fee
+}
+
+func getDataHashKey(addr common.Address) []byte {
+	return []byte(fmt.Sprintf("mavl-%v-data-hash:%v", evmtypes.ExecutorName, addr))
+}
+
+func getCaller(tx *types.Transaction) common.Address {
+	return *common.StringToAddress(tx.From())
+}
+
+func getReceiver(action *evmtypes.EVMContractAction) *common.Address {
+	if action.ContractAddr == "" {
+		return nil
+	}
+	return common.StringToAddress(action.ContractAddr)
+}

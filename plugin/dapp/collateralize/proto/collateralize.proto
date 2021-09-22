@@ -1,0 +1,197 @@
+syntax = "proto3";
+
+package types;
+option go_package = "../types";
+
+message Collateralize {
+    string   collateralizeId                     = 1;  
+    int64    totalBalance                        = 2;  
+    int64    debtCeiling                         = 3;  
+    int64    liquidationRatio                    = 4;  
+    int64    stabilityFeeRatio                   = 5;  
+    string   createAddr                          = 6;  
+    int64    balance                             = 7;  
+    repeated BorrowRecord borrowRecords          = 8;  
+    repeated BorrowRecord InvalidRecords         = 9;  
+    int32                 status                 = 10; 
+    int64                 latestLiquidationPrice = 11; 
+    int64                 period                 = 12; 
+    int64                 latestExpireTime       = 13; 
+    int64                 collBalance            = 14; 
+    int32                 preStatus              = 15; 
+}
+
+message BorrowRecord {
+    string accountAddr      = 1;  
+    int64  startTime        = 2;  
+    int64  collateralValue  = 3;  
+    int64  collateralPrice  = 4;  
+    int64  debtValue        = 5;  
+    int64  liquidationPrice = 6;  
+    int32  status           = 7;  
+    int64  liquidateTime    = 8;  
+    int64  expireTime       = 9;  
+    int32  preStatus        = 10; 
+    string recordId         = 11; 
+    string collateralizeId  = 12; 
+}
+
+message AssetPriceRecord {
+    int64 recordTime = 1; 
+    int64 btyPrice   = 2; 
+    int64 btcPrice   = 3; 
+    int64 ethPrice   = 4; 
+}
+
+// action
+message CollateralizeAction {
+    oneof value {
+        CollateralizeCreate   create   = 1; 
+        CollateralizeBorrow   borrow   = 2; 
+        CollateralizeRepay    repay    = 3;
+        CollateralizeAppend   append   = 4; 
+        CollateralizeFeed     feed     = 5; 
+        CollateralizeRetrieve retrieve = 6; 
+        CollateralizeManage   manage   = 7; 
+    }
+    int32 ty = 10;
+}
+
+message CollateralizeManage {
+    int64 debtCeiling       = 1; 
+    int64 liquidationRatio  = 2; 
+    int64 stabilityFeeRatio = 3; 
+    int64 period            = 4; 
+    int64 totalBalance      = 5; 
+    int64 currentTime       = 6; 
+}
+
+message CollateralizeAddr {
+    repeated string superAddrs = 1; 
+}
+message CollateralizeCreate {
+    int64 totalBalance = 1;
+}
+
+message CollateralizeBorrow {
+    string collateralizeId = 1; 
+    int64  value           = 2; 
+}
+
+message CollateralizeRepay {
+    string collateralizeId = 1; 
+    string recordId        = 2; 
+}
+
+message CollateralizeAppend {
+    string collateralizeId = 1; 
+    string recordId        = 2; 
+    int64  collateralValue = 3; 
+}
+
+message CollateralizeFeed {
+    int32    collType     = 1; 
+    repeated int64 price  = 2; 
+    repeated int64 volume = 3; 
+}
+
+message CollateralizeRetrieve {
+    string collateralizeId = 1; 
+    int64  balance         = 2; 
+}
+
+message ReceiptCollateralize {
+    string collateralizeId = 1;
+    string accountAddr     = 3;
+    string recordId        = 4;
+    int32  status          = 5;
+}
+
+message CollateralizeRecords {
+    repeated ReceiptCollateralize records = 1;
+}
+
+message ReqCollateralizeInfo {
+    string collateralizeId = 1;
+}
+
+message RepCollateralizeCurrentInfo {
+    int32    status                     = 1;  
+    int64    totalBalance               = 2;  
+    int64    debtCeiling                = 3;  
+    int64    liquidationRatio           = 4;  
+    int64    stabilityFeeRatio          = 5;  
+    string   createAddr                 = 6;  
+    int64    balance                    = 7;  
+    int64    period                     = 8;  
+    string   collateralizeId            = 9;  
+    int64    collBalance                = 10; 
+    repeated BorrowRecord borrowRecords = 11; 
+}
+
+message ReqCollateralizeInfos {
+    repeated string collateralizeIds = 1;
+}
+
+message RepCollateralizeCurrentInfos {
+    repeated RepCollateralizeCurrentInfo infos = 1;
+}
+
+message ReqCollateralizeByStatus {
+    int32  status = 1;
+    string collID = 2;
+}
+
+message ReqCollateralizeByAddr {
+    string addr   = 1;
+    int32  status = 2;
+    string collID = 3;
+}
+
+message RepCollateralizeIDs {
+    repeated string IDs = 1;
+}
+
+message ReqCollateralizeRecordByAddr {
+    string collateralizeId = 1;
+    string addr            = 2;
+    int32  status          = 3;
+    string recordId        = 4;
+}
+
+message ReqCollateralizeRecordByStatus {
+    string collateralizeId = 1;
+    int32  status          = 2;
+    string recordId        = 3;
+}
+
+message RepCollateralizeRecords {
+    repeated BorrowRecord records = 1;
+}
+
+message ReqCollateralizeRecord {
+    string collateralizeId = 1;
+    string recordId        = 2;
+}
+
+message RepCollateralizeRecord {
+    BorrowRecord record = 1;
+}
+
+message RepCollateralizeConfig {
+    int64 debtCeiling       = 1; 
+    int64 liquidationRatio  = 2; 
+    int64 stabilityFeeRatio = 3; 
+    int64 period            = 4; 
+    int64 totalBalance      = 5; 
+    int64 balance           = 6; 
+    int64 currentTime       = 7; 
+}
+
+message RepCollateralizePrice {
+    int64 price = 1; 
+}
+
+message RepCollateralizeUserBalance {
+    int64 balance = 1; 
+}
