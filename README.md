@@ -1,15 +1,7 @@
-[![API Reference](
-https://camo.githubusercontent.com/915b7be44ada53c290eb157634330494ebe3e30a/68747470733a2f2f676f646f632e6f72672f6769746875622e636f6d2f676f6c616e672f6764646f3f7374617475732e737667
-)](https://godoc.org/github.com/33cn/plugin)
-[![pipeline status](https://api.travis-ci.org/33cn/plugin.svg?branch=master)](https://travis-ci.org/33cn/plugin/)
-[![Go Report Card](https://goreportcard.com/badge/github.com/33cn/plugin?branch=master)](https://goreportcard.com/report/github.com/33cn/plugin)
-[![Windows Build Status](https://ci.appveyor.com/api/projects/status/github/33cn/plugin?svg=true&branch=master&passingText=Windows%20-%20OK&failingText=Windows%20-%20failed&pendingText=Windows%20-%20pending)](https://ci.appveyor.com/project/33cn/plugin)
-[![codecov](https://codecov.io/gh/33cn/plugin/branch/master/graph/badge.svg)](https://codecov.io/gh/33cn/plugin)
+# chain199 Official Plugin System（v6.4.0）
 
-# chain33 Official Plugin System（v6.4.0）
-
-* chain33 address: https://github.com/33cn/chain33
-* chain33 Official Web: https://chain.33.cn
+* chain199 address: https://github.com/33cn/chain199
+* chain199 Official Web: https://chain.33.cn
 
 ### Environmental Science
 
@@ -38,9 +30,9 @@ Note: domestic users need to import a proxy before they can get dependent packag
 ## Run
 
 ```
-./chain33 -f chain33.toml
+./chain199 -f chain199.toml
 ```
-Note that the default configuration will connect to the chain33 test network
+Note that the default configuration will connect to the chain199 test network
 
 ## Note:
 
@@ -51,13 +43,13 @@ To solve the problem of package dependency wall-flipping download, we provide Al
 
 ## Contribution code:
 
-Detailed steps are available https://github.com/33cn/chain33
+Detailed steps are available https://github.com/33cn/chain199
 
 Here are just the simple steps:
 
 #### Preparations:
 
-*First click on the fork icon in the upper right corner and put chain33 fork into your own branch like mine is vipwzw/plugin
+*First click on the fork icon in the upper right corner and put chain199 fork into your own branch like mine is vipwzw/plugin
 
 * `git clonehttps://github.com/vipwzw/plugin.git $GOPATH/src/github.com/33cn/plugin`
 ```
