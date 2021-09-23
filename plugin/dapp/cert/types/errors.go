@@ -7,14 +7,14 @@ package types
 import "errors"
 
 var (
-
+	// ErrValidateCertFailed cert    
 	ErrValidateCertFailed = errors.New("ErrValidateCertFailed")
-
+	// ErrGetHistoryCertData       
 	ErrGetHistoryCertData = errors.New("ErrGetHistoryCertData")
-
+	// ErrUnknowAuthSignType       
 	ErrUnknowAuthSignType = errors.New("ErrUnknowAuthSignType")
-
+	// ErrInitializeAuthority         
 	ErrInitializeAuthority = errors.New("ErrInitializeAuthority")
-
+	// ErrPermissionDeny       
 	ErrPermissionDeny = errors.New("ErrPermissionDeny")
 )

@@ -18,6 +18,7 @@ const (
 )
 
 func init() {
+	//    VRF，    SECP256K1      
 	cr, err := crypto.New(types.GetSignName("", types.SECP256K1))
 	if err != nil {
 		panic("init ConsensusCrypto failed.")

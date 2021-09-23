@@ -1,7 +1,7 @@
 package rpc
 
 /*
- * json rp grpc servic 
- * json rp Jrp 
- * grp channelClien 
+ *   json rpc grpc service  
+ * json rpc Jrpc        
+ * grpc  channelClient        
  */

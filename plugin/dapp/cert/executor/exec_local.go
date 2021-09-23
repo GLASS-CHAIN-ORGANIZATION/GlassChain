@@ -16,6 +16,7 @@ func calcCertHeightKey(height int64) []byte {
 	return []byte(fmt.Sprintf("LODB-cert-%d", height))
 }
 
+// ExecLocal_New         
 func (c *Cert) ExecLocal_New(payload *ct.CertNew, tx *types.Transaction, receiptData *types.ReceiptData, index int) (*types.LocalDBSet, error) {
 	if !authority.IsAuthEnable {
 		clog.Error("Authority is not available. Please check the authority config or authority initialize error logs.")
@@ -32,6 +33,7 @@ func (c *Cert) ExecLocal_New(payload *ct.CertNew, tx *types.Transaction, receipt
 		Value: types.Encode(historityCertdata),
 	})
 
+	//          
 	noneCertdata := &types.HistoryCertStore{}
 	noneCertdata.NxtHeight = historityCertdata.CurHeigth
 	noneCertdata.CurHeigth = 0
@@ -43,6 +45,7 @@ func (c *Cert) ExecLocal_New(payload *ct.CertNew, tx *types.Transaction, receipt
 	return &set, nil
 }
 
+// ExecLocal_Update         
 func (c *Cert) ExecLocal_Update(payload *ct.CertUpdate, tx *types.Transaction, receiptData *types.ReceiptData, index int) (*types.LocalDBSet, error) {
 	if !authority.IsAuthEnable {
 		clog.Error("Authority is not available. Please check the authority config or authority initialize error logs.")
@@ -50,6 +53,7 @@ func (c *Cert) ExecLocal_Update(payload *ct.CertUpdate, tx *types.Transaction, r
 	}
 	var set types.LocalDBSet
 
+	//        next-height
 	key := calcCertHeightKey(authority.Author.HistoryCertCache.CurHeight)
 	historityCertdata := &types.HistoryCertStore{}
 	authority.Author.HistoryCertCache.NxtHeight = c.GetHeight()
@@ -59,6 +63,7 @@ func (c *Cert) ExecLocal_Update(payload *ct.CertUpdate, tx *types.Transaction, r
 		Value: types.Encode(historityCertdata),
 	})
 
+	//     
 	historityCertdata = &types.HistoryCertStore{}
 	err := authority.Author.ReloadCertByHeght(c.GetHeight())
 	if err != nil {
@@ -74,6 +79,7 @@ func (c *Cert) ExecLocal_Update(payload *ct.CertUpdate, tx *types.Transaction, r
 	return &set, nil
 }
 
+// ExecLocal_Normal          
 func (c *Cert) ExecLocal_Normal(payload *ct.CertNormal, tx *types.Transaction, receiptData *types.ReceiptData, index int) (*types.LocalDBSet, error) {
 	if !authority.IsAuthEnable {
 		clog.Error("Authority is not available. Please check the authority config or authority initialize error logs.")

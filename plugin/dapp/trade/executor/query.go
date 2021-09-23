@@ -9,16 +9,16 @@ import (
 	pty "github.com/33cn/plugin/plugin/dapp/trade/types"
 )
 
-// trade query， 
-// 1. token 
-//     toke   )： OnBuy/OnSale
-//    token   ）: SoldOut/BoughtOut--> TODO  ）
-// 2.  addr 。 
-//      ）
-//     （addr ）
+//     trade  query，          
+// 1.  token  
+//         token      (     )： OnBuy/OnSale
+//    token       （     ）: SoldOut/BoughtOut--> TODO        （         ）
+// 2.   addr  。          
+//             （      ）
+//            （addr      ）
 //
-//  orderI ， txhash key
-// key  orderID， txhash (0xAAAAAAAAAAAAAAA)
+//      /    orderID ，  txhash     key
+// key     orderID， txhash (0xAAAAAAAAAAAAAAA)
 
 // 1.15 both buy/sell order
 func (t *trade) Query_GetOnesOrderWithStatus(req *pty.ReqAddrAssets) (types.Message, error) {
@@ -70,7 +70,7 @@ func (t *trade) GetOnesOrderWithStatus(req *pty.ReqAddrAssets) (types.Message, e
 		return nil, types.ErrInvalidParam
 	}
 
-	//  owner isFinished 
+	//    owner isFinished   
 	var order pty.LocalOrder
 	if orderStatus == orderStatusOn {
 		order.IsFinished = false
@@ -93,7 +93,7 @@ func fmtReply(cfg *types.Chain33Config, order *pty.LocalOrder) *pty.ReplyTradeOr
 	priceExec := order.PriceExec
 	priceSymbol := order.PriceSymbol
 	if priceExec == "" {
-		priceExec = cfg.GetCoinExec()
+		priceExec = defaultPriceExec
 		priceSymbol = cfg.GetCoinSymbol()
 	}
 

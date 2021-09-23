@@ -31,7 +31,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
-// Config toke cm 
+// Config token  cmd  
 type Config struct {
 	Whitelist    []string `protobuf:"bytes,1,rep,name=whitelist" json:"whitelist,omitempty"`
 	JrpcBindAddr string   `protobuf:"bytes,2,opt,name=jrpcBindAddr" json:"jrpcBindAddr,omitempty"`

@@ -19,10 +19,10 @@ const (
 var (
 	title                     string
 	titleHeight               string
-	managerConfigNodes        string //manager nodes
-	paraConfigNodes           string / nodes manage 
-	paraConfigNodeAddr        string / 
-	paraNodeGroupStatusAddrs  string / addrs
+	managerConfigNodes        string //manager      nodes
+	paraConfigNodes           string //         nodes，    manager    
+	paraConfigNodeAddr        string //         
+	paraNodeGroupStatusAddrs  string //     addrs
 	paraNodeIDPrefix          string
 	paraNodeGroupIDPrefix     string
 	localTx                   string
@@ -124,7 +124,7 @@ func getParaNodeIDSuffix(id string) string {
 		return txID
 	}
 
-	/ nodegroup "mavl-paracross-title-nodegroupid-user.p.para.-0xb6cd0274587...a61e444e9f848a4c02d7b-1 
+	//  nodegroup    "mavl-paracross-title-nodegroupid-user.p.para.-0xb6cd0274587...a61e444e9f848a4c02d7b-1"    
 	if len(ids) > 1 {
 		txID = ids[len(ids)-2] + "-" + txID
 		if strings.HasPrefix(txID, "0x") {

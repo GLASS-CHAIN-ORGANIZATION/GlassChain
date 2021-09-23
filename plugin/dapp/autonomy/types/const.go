@@ -89,21 +89,36 @@ const (
 )
 
 const (
+	// GetProposalBoard    cmd          
 	GetProposalBoard = "GetProposalBoard"
+	// ListProposalBoard     
 	ListProposalBoard = "ListProposalBoard"
+	// GetActiveBoard      
 	GetActiveBoard = "GetActiveBoard"
+	// GetProposalProject    cmd          
 	GetProposalProject = "GetProposalProject"
+	// ListProposalProject     
 	ListProposalProject = "ListProposalProject"
+	// GetProposalRule    cmd          
 	GetProposalRule = "GetProposalRule"
+	// ListProposalRule     
 	ListProposalRule = "ListProposalRule"
+	// GetActiveRule      
 	GetActiveRule = "GetActiveRule"
+	// ListProposalComment     
 	ListProposalComment = "ListProposalComment"
+	// GetProposalChange    cmd          
 	GetProposalChange = "GetProposalChange"
+	// ListProposalChange     
 	ListProposalChange = "ListProposalChange"
 )
 
+//               
+//   github     ，        ,            
+//      ，              
 var (
 	AutonomyX      = "autonomy"
 	ExecerAutonomy = []byte(AutonomyX)
+	// TicketX        ticket        
 	TicketX = "ticket"
 )

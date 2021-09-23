@@ -4,7 +4,7 @@ import (
 	"errors"
 )
 
-// relaye 
+// relayer       
 var (
 	ErrInvalidEthContractAddress = errors.New("ErrInvalidEthContractAddress")
 	ErrUnpack                    = errors.New("ErrUnpack")

@@ -27,7 +27,7 @@ import (
 )
 
 const (
-	// HashLength has 3 
+	// HashLength hash  32  
 	HashLength = 32
 )
 

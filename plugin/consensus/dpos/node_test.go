@@ -43,17 +43,25 @@ var (
 	localPriv    = `{"address":"2FA286246F0222C4FF93210E91AECE0C66723F15","pub_key":{"type":"secp256k1","data":"03EF0E1D3112CF571743A3318125EDE2E52A4EB904BCBAA4B1F75020C2846A7EB4"},"last_height":1679,"last_round":0,"last_step":3,"last_signature":{"type":"secp256k1","data":"37892A916D6E487ADF90F9E88FE37024597677B6C6FED47444AD582F74144B3D6E4B364EAF16AF03A4E42827B6D3C86415D734A5A6CCA92E114B23EB9265AF09"},"last_signbytes":"7B22636861696E5F6964223A22636861696E33332D5A326367466A222C22766F7465223A7B22626C6F636B5F6964223A7B2268617368223A224F6A657975396B2B4149426A6E4859456739584765356A7A462B673D222C227061727473223A7B2268617368223A6E756C6C2C22746F74616C223A307D7D2C22686569676874223A313637392C22726F756E64223A302C2274696D657374616D70223A22323031382D30382D33315430373A35313A34332E3935395A222C2274797065223A327D7D","priv_key":{"type":"secp256k1","data":"5A6A14DA6F5A42835E529D75D87CC8904544F59EEE5387A37D87EEAD194D7EB2"}}`
 
 	config1 = `Title="local"
-[crypto]
 [log]
+#     ，  debug(dbug)/info/warn/error(eror)/crit
 loglevel = "debug"
 logConsoleLevel = "info"
+#      ，    ，                
 logFile = "logs/chain33.log"
+#           （  ： ）
 maxFileSize = 300
+#              
 maxBackups = 100
+#            （  ： ）
 maxAge = 28
+#              （    UTC  ）
 localTime = true
+#           （     gz）
 compress = true
+#             
 callerFile = false
+#         
 callerFunction = false
 
 [blockchain]
@@ -132,7 +140,9 @@ blockInterval=2
 continueBlockNum=12
 isValidator=true
 port="36656"
+#shuffleType 1          ， 2    vrf          
 shuffleType=1
+#    topN，   true，             topN  ;   false，            ，       
 whetherUpdateTopN=false
 blockNumToUpdateDelegate=20000
 registTopNHeightLimit=100
@@ -166,23 +176,35 @@ alias=["token1:token","token2:token","token3:token"]
 saveTokenTxList=false
 
 [exec.sub.cert]
+#            
 enable=false
+#       
 cryptoPath="authdir/crypto"
+#        ，  "auth_ecdsa", "auth_sm2"
 signType="auth_ecdsa"
 `
 	///////////////////////////////////////////////////////////////////////////
 	config2 = `Title="local"
-[crypto]
+
 [log]
+#     ，  debug(dbug)/info/warn/error(eror)/crit
 loglevel = "debug"
 logConsoleLevel = "info"
+#      ，    ，                
 logFile = "logs/chain33.log"
+#           （  ： ）
 maxFileSize = 300
+#              
 maxBackups = 100
+#            （  ： ）
 maxAge = 28
+#              （    UTC  ）
 localTime = true
+#           （     gz）
 compress = true
+#             
 callerFile = false
+#         
 callerFunction = false
 
 [blockchain]
@@ -262,7 +284,9 @@ blockInterval=2
 continueBlockNum=12
 isValidator=true
 port="36657"
+#shuffleType 1          ， 2    vrf          
 shuffleType=1
+#    topN，   true，             topN  ;   false，            ，       
 whetherUpdateTopN=false
 blockNumToUpdateDelegate=20000
 registTopNHeightLimit=100
@@ -279,8 +303,11 @@ enableMavlPrefix=false
 enableMVCC=false
 enableMavlPrune=false
 pruneHeight=10000
+#     mavl      
 enableMemTree=true
+#     mavl          
 enableMemVal=true
+#   close ticket  ，           ，     1500000
 tkCloseCacheLen=100000
 
 [store.sub.kvmvccmavl]
@@ -289,8 +316,11 @@ enableMavlPrefix=false
 enableMVCC=false
 enableMavlPrune=false
 pruneHeight=10000
+#     mavl      
 enableMemTree=true
+#     mavl          
 enableMemVal=true
+#   close ticket  ，           ，     1500000
 tkCloseCacheLen=100000
 
 [wallet]
@@ -311,8 +341,11 @@ alias=["token1:token","token2:token","token3:token"]
 saveTokenTxList=false
 
 [exec.sub.cert]
+#            
 enable=false
+#       
 cryptoPath="authdir/crypto"
+#        ，  "auth_ecdsa", "auth_sm2"
 signType="auth_ecdsa"
 `
 )
@@ -456,6 +489,7 @@ func TestNode(t *testing.T) {
 	fmt.Println(cs1.(*Client).GetConsensusState() != nil)
 	fmt.Println(cs1.(*Client).GetConsensusState().String())
 	fmt.Println(len(cs1.(*Client).GetConsensusState().GetValidators()) == 1)
+	// fix dpos testcase err ---          ，       datarace
 	//cs1.(*Client).GetConsensusState().SetPrivValidator(cs1.(*Client).GetConsensusState().GetPrivValidator(), cs1.(*Client).GetConsensusState().privValidatorIndex)
 	fmt.Println(cs1.(*Client).GetConsensusState().GetValidatorMgr().ChainID)
 	fmt.Println(cs1.(*Client).GetConsensusState().GetPrivValidator().GetAddress() != nil)
@@ -524,7 +558,6 @@ func initEnvDpos1(configName string) (queue.Queue, *blockchain.BlockChain, queue
 	var q = queue.New("channel")
 	q.SetConfig(chain33Cfg)
 	cfg := chain33Cfg.GetModuleConfig()
-	cfg.Log.LogFile = ""
 	sub := chain33Cfg.GetSubConfig()
 	rpc.InitCfg(cfg.RPC)
 

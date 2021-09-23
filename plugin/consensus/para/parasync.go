@@ -16,35 +16,54 @@ import (
 )
 
 const (
+	//defaultMaxCacheCount   local     
 	defaultMaxCacheCount = int64(1000)
+	//defaultMaxSyncErrCount           
 	defaultMaxSyncErrCount = int32(100)
 )
 
+//blockSyncClient            
 type blockSyncClient struct {
 	paraClient *client
+	//notifyChan       
 	notifyChan chan bool
+	//quitChan         
 	quitChan chan struct{}
+	//syncState     
 	syncState int32
+	//syncErrMaxCount         
 	maxSyncErrCount int32
+	//maxCacheCount           
 	maxCacheCount int64
+	//isSyncCaughtUp      
 	isSyncCaughtUpAtom int32
+	//isDownloadCaughtUpAtom           
 	isDownloadCaughtUpAtom int32
+	//isSyncFirstCaughtUp      download   sync           ，                ，    
 	isSyncFirstCaughtUp bool
 }
 
+//nextActionType           
 type nextActionType int8
 
 const (
+	//nextActionKeep   
 	nextActionKeep nextActionType = iota
+	//nextActionRollback        
 	nextActionRollback
+	//nextActionAdd         
 	nextActionAdd
 )
 
+//blockSyncState           
 type blockSyncState int32
 
 const (
+	//blockSyncStateNone      
 	blockSyncStateNone blockSyncState = iota
+	//blockSyncStateSyncing      
 	blockSyncStateSyncing
+	//blockSyncStateFinished     
 	blockSyncStateFinished
 )
 
@@ -65,10 +84,12 @@ func newBlockSyncCli(para *client, cfg *subConfig) *blockSyncClient {
 	return cli
 }
 
+//syncHasCaughtUp           ，      
 func (client *blockSyncClient) syncHasCaughtUp() bool {
 	return atomic.LoadInt32(&client.isSyncCaughtUpAtom) == 1
 }
 
+//handleLocalChangedMsg         ，      
 func (client *blockSyncClient) handleLocalChangedMsg() {
 	client.printDebugInfo("Para sync - notify change")
 	if client.getBlockSyncState() == blockSyncStateSyncing || client.paraClient.isCancel() {
@@ -78,6 +99,7 @@ func (client *blockSyncClient) handleLocalChangedMsg() {
 	client.notifyChan <- true
 }
 
+//handleLocalCaughtUpMsg           ，      
 func (client *blockSyncClient) handleLocalCaughtUpMsg() {
 	client.printDebugInfo("Para sync -notify download has caughtUp")
 	if !client.downloadHasCaughtUp() {
@@ -85,14 +107,19 @@ func (client *blockSyncClient) handleLocalCaughtUpMsg() {
 	}
 }
 
+//createGenesisBlock       
 func (client *blockSyncClient) createGenesisBlock(newblock *types.Block) error {
 	return client.writeBlock(zeroHash[:], newblock)
 }
 
+//syncBlocks       
+//    
 func (client *blockSyncClient) syncBlocks() {
 
 	client.syncInit()
+	//    ，      
 	client.batchSyncBlocks()
+	//      ,          
 out:
 	for {
 		select {
@@ -109,6 +136,7 @@ out:
 	client.paraClient.wg.Done()
 }
 
+//        
 func (client *blockSyncClient) batchSyncBlocks() {
 	client.setBlockSyncState(blockSyncStateSyncing)
 	client.printDebugInfo("Para sync - syncing")
@@ -118,20 +146,24 @@ func (client *blockSyncClient) batchSyncBlocks() {
 		if client.paraClient.isCancel() {
 			return
 		}
+		//      ,             
 		curSyncCaughtState, err := client.syncBlocksIfNeed()
 
+		//        
 		if err != nil {
 			errCount++
 			client.printError(err)
 		} else {
 			errCount = int32(0)
 		}
+		//          ,    ，       
 		if errCount > client.maxSyncErrCount {
 			client.printError(errors.New(
 				"para sync - sync has some errors,please check"))
 			client.setBlockSyncState(blockSyncStateNone)
 			return
 		}
+		//        ,        localCacheCount   
 		if err == nil && curSyncCaughtState {
 			err := client.clearLocalOldBlocks()
 			if err != nil {
@@ -146,46 +178,60 @@ func (client *blockSyncClient) batchSyncBlocks() {
 
 }
 
+//          
 func (client *blockSyncClient) getNextAction() (nextActionType, *types.Block, *pt.ParaLocalDbBlock, int64, error) {
 	lastBlock, err := client.paraClient.getLastBlockInfo()
 	if err != nil {
+		//            ，      
 		return nextActionKeep, nil, nil, -1, err
 	}
 
 	lastLocalHeight, err := client.paraClient.getLastLocalHeight()
 	if err != nil {
+		// db           ，      
 		return nextActionKeep, nil, nil, lastLocalHeight, err
 	}
 
 	if lastLocalHeight <= 0 {
+		//db      0,      （    ）
 		return nextActionKeep, nil, nil, lastLocalHeight, nil
 	}
 
 	switch {
 	case lastLocalHeight < lastBlock.Height:
+		//db                  ,  
 		return nextActionRollback, lastBlock, nil, lastLocalHeight, nil
 	case lastLocalHeight == lastBlock.Height:
 		localBlock, err := client.paraClient.getLocalBlockByHeight(lastBlock.Height)
 		if err != nil {
+			// db           ，      
 			return nextActionKeep, nil, nil, lastLocalHeight, err
 		}
 		if common.ToHex(localBlock.MainHash) == common.ToHex(lastBlock.MainHash) {
+			//db                    hash  ,      (       )
 			return nextActionKeep, nil, nil, lastLocalHeight, nil
 		}
+		//db                    hash  ,  
 		return nextActionRollback, lastBlock, nil, lastLocalHeight, nil
 	default:
 		// lastLocalHeight > lastBlock.Height
 		localBlock, err := client.paraClient.getLocalBlockByHeight(lastBlock.Height + 1)
 		if err != nil {
+			// db           ，      
 			return nextActionKeep, nil, nil, lastLocalHeight, err
 		}
 		if common.ToHex(localBlock.ParentMainHash) != common.ToHex(lastBlock.MainHash) {
+			//db         hash           hash,  
 			return nextActionRollback, lastBlock, nil, lastLocalHeight, nil
 		}
+		//db         hash          hash,      
 		return nextActionAdd, lastBlock, localBlock, lastLocalHeight, nil
 	}
 }
 
+//               
+//    
+//bool        
 func (client *blockSyncClient) syncBlocksIfNeed() (bool, error) {
 	nextAction, lastBlock, localBlock, lastLocalHeight, err := client.getNextAction()
 	if err != nil {
@@ -194,11 +240,13 @@ func (client *blockSyncClient) syncBlocksIfNeed() (bool, error) {
 
 	switch nextAction {
 	case nextActionAdd:
+		//1 db         hash          hash
 		plog.Info("Para sync -    add block",
 			"lastBlock.Height", lastBlock.Height, "lastLocalHeight", lastLocalHeight)
 
 		err := client.addBlock(lastBlock, localBlock)
 
+		//     
 		if err == nil {
 			isSyncCaughtUp := lastBlock.Height+1 == lastLocalHeight
 			client.setSyncCaughtUp(isSyncCaughtUp)
@@ -210,11 +258,15 @@ func (client *blockSyncClient) syncBlocksIfNeed() (bool, error) {
 
 		return false, err
 	case nextActionRollback:
+		//1 db                  
+		//2 db                    hash  
+		//3 db         hash           hash
 		plog.Info("Para sync -    rollback block",
 			"lastBlock.Height", lastBlock.Height, "lastLocalHeight", lastLocalHeight)
 
 		err := client.rollbackBlock(lastBlock)
 
+		//     
 		if err == nil {
 			client.setSyncCaughtUp(false)
 			if client.paraClient.commitMsgClient.authAccount != "" {
@@ -225,11 +277,13 @@ func (client *blockSyncClient) syncBlocksIfNeed() (bool, error) {
 
 		return false, err
 	default: //nextActionKeep
+		//1      ，        
 		return true, nil
 	}
 
 }
 
+//           
 func (client *blockSyncClient) delLocalBlocks(startHeight int64, endHeight int64) error {
 	if startHeight > endHeight {
 		return errors.New("para sync - startHeight > endHeight,can't clear local blocks")
@@ -259,6 +313,7 @@ func (client *blockSyncClient) delLocalBlocks(startHeight int64, endHeight int64
 	return client.paraClient.setLocalDb(set)
 }
 
+//                   
 func (client *blockSyncClient) initFirstLocalHeightIfNeed() error {
 	height, err := client.getFirstLocalHeight()
 	cfg := client.paraClient.GetAPI().GetConfig()
@@ -274,6 +329,7 @@ func (client *blockSyncClient) initFirstLocalHeightIfNeed() error {
 	return err
 }
 
+//                
 func (client *blockSyncClient) getFirstLocalHeight() (int64, error) {
 	cfg := client.paraClient.GetAPI().GetConfig()
 	key := calcTitleFirstHeightKey(cfg.GetTitle())
@@ -299,6 +355,7 @@ func (client *blockSyncClient) getFirstLocalHeight() (int64, error) {
 	return height.Data, nil
 }
 
+//      (localCacheCount)     
 func (client *blockSyncClient) clearLocalOldBlocks() error {
 	lastLocalHeight, err := client.paraClient.getLastLocalHeight()
 	if err != nil {
@@ -342,6 +399,7 @@ func (client *blockSyncClient) addMinerTx(preStateHash []byte, block *types.Bloc
 		status.PreStateHash = preStateHash
 	}
 
+	//selfConsensEnablePreContract  ForkParaSelfConsStages            ，fork        ，        
 	tx, err := pt.CreateRawMinerTx(cfg, &pt.ParacrossMinerAction{
 		Status:          status,
 		IsSelfConsensus: client.paraClient.commitMsgClient.isSelfConsEnable(status.Height),
@@ -356,6 +414,7 @@ func (client *blockSyncClient) addMinerTx(preStateHash []byte, block *types.Bloc
 	return nil
 }
 
+//      
 func (client *blockSyncClient) addBlock(lastBlock *types.Block, localBlock *pt.ParaLocalDbBlock) error {
 	cfg := client.paraClient.GetAPI().GetConfig()
 	var newBlock types.Block
@@ -366,8 +425,10 @@ func (client *blockSyncClient) addBlock(lastBlock *types.Block, localBlock *pt.P
 	if err != nil {
 		return err
 	}
+	//      
 	newBlock.Difficulty = cfg.GetP(0).PowLimitBits
 
+	//                TxHash
 	if cfg.IsFork(newBlock.GetMainHeight(), "ForkRootHash") {
 		newBlock.Txs = types.TransactionSort(newBlock.Txs)
 	}
@@ -388,6 +449,7 @@ func (client *blockSyncClient) addBlock(lastBlock *types.Block, localBlock *pt.P
 	return err
 }
 
+//  blockchain   
 func (client *blockSyncClient) rollbackBlock(block *types.Block) error {
 	start := block.Height
 	if start <= 0 {
@@ -431,8 +493,11 @@ func (client *blockSyncClient) rollbackBlock(block *types.Block) error {
 	return nil
 }
 
+//  blockchain   
 func (client *blockSyncClient) writeBlock(prev []byte, paraBlock *types.Block) error {
+	//       block，   blockchain    block       ，      blockdetail
 	blockDetail := &types.BlockDetail{Block: paraBlock}
+	//database    ，     ，      ，     download   sync             ，               ，     ，         
 	if !client.isSyncFirstCaughtUp && client.downloadHasCaughtUp() && client.syncHasCaughtUp() {
 		client.isSyncFirstCaughtUp = true
 		plog.Info("Para sync - SyncFirstCaughtUp", "Height", paraBlock.Height)
@@ -460,14 +525,17 @@ func (client *blockSyncClient) writeBlock(prev []byte, paraBlock *types.Block) e
 	return nil
 }
 
+//      
 func (client *blockSyncClient) getBlockSyncState() blockSyncState {
 	return blockSyncState(atomic.LoadInt32(&client.syncState))
 }
 
+//      
 func (client *blockSyncClient) setBlockSyncState(state blockSyncState) {
 	atomic.StoreInt32(&client.syncState, int32(state))
 }
 
+//       
 func (client *blockSyncClient) setSyncCaughtUp(isCaughtUp bool) {
 	if isCaughtUp {
 		atomic.StoreInt32(&client.isSyncCaughtUpAtom, 1)
@@ -476,10 +544,12 @@ func (client *blockSyncClient) setSyncCaughtUp(isCaughtUp bool) {
 	}
 }
 
+//         
 func (client *blockSyncClient) downloadHasCaughtUp() bool {
 	return atomic.LoadInt32(&client.isDownloadCaughtUpAtom) == 1
 }
 
+//          
 func (client *blockSyncClient) setDownloadHasCaughtUp(isCaughtUp bool) {
 	if isCaughtUp {
 		atomic.CompareAndSwapInt32(&client.isDownloadCaughtUpAtom, 0, 1)
@@ -488,14 +558,17 @@ func (client *blockSyncClient) setDownloadHasCaughtUp(isCaughtUp bool) {
 	}
 }
 
+//      
 func (client *blockSyncClient) printError(err error) {
 	plog.Error(fmt.Sprintf("Para sync - sync block error:%v", err.Error()))
 }
 
+//      
 func (client *blockSyncClient) printDebugInfo(msg string, ctx ...interface{}) {
 	plog.Debug(msg, ctx...)
 }
 
+//   
 func (client *blockSyncClient) syncInit() {
 	client.printDebugInfo("Para sync - init")
 	client.setBlockSyncState(blockSyncStateNone)
@@ -506,8 +579,10 @@ func (client *blockSyncClient) syncInit() {
 		client.printError(err)
 	}
 
+	//    chainHeight,      ，                
 	lastBlock, err := client.paraClient.getLastBlockInfo()
 	if err != nil {
+		//            ，      
 		plog.Info("Para sync init", "err", err)
 	} else {
 		client.paraClient.commitMsgClient.setInitChainHeight(lastBlock.Height)

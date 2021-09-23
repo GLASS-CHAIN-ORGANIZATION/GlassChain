@@ -52,7 +52,7 @@ func testTicket(t *testing.T) {
 	assert.Nil(t, err)
 	//assert.Equal(t, accounts[0].Balance, int64(1000000000000))
 	//send to address
-	tx := util.CreateCoinsTx(cfg, mock33.GetHotKey(), mock33.GetGenesisAddress(), types.DefaultCoinPrecision/100)
+	tx := util.CreateCoinsTx(cfg, mock33.GetHotKey(), mock33.GetGenesisAddress(), types.Coin/100)
 	mock33.SendTx(tx)
 	mock33.Wait()
 	//bind miner
@@ -82,6 +82,7 @@ func testTicket(t *testing.T) {
 		height += 20
 		err = mock33.WaitHeight(height)
 		assert.Nil(t, err)
+		//       close，        
 		req := &types.ReqWalletTransactionList{Count: 1000}
 		resp, err := mock33.GetAPI().ExecWalletFunc("wallet", "WalletTransactionList", req)
 		list := resp.(*types.WalletTxDetails)
@@ -100,12 +101,12 @@ func testTicket(t *testing.T) {
 	}
 	assert.Equal(t, true, hastclose)
 	assert.Equal(t, true, hastopen)
-
+	//        
 	accounts, err = acc.GetBalance(mock33.GetAPI(), &types.ReqBalance{Execer: "ticket", Addresses: []string{addr}})
 	assert.Nil(t, err)
 	fmt.Println(accounts[0])
 
-
+	//         ,    
 	lastBlock := mock33.GetLastBlock()
 	temblock := types.Clone(lastBlock)
 	newblock := temblock.(*types.Block)
@@ -136,6 +137,7 @@ func TestTicketMap(t *testing.T) {
 		{TicketId: "4444"},
 	}
 	privmap := make(map[string]crypto.PrivKey)
+	//  privkey    pubkey        addr
 	cr, _ := crypto.New("secp256k1")
 	priv, _ := cr.PrivKeyFromBytes([]byte("2116459C0EC8ED01AA0EEAE35CAC5C96F94473F7816F114873291217303F6989"))
 	privmap["1111"] = priv

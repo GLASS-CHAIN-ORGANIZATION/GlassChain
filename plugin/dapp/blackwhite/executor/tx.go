@@ -4,6 +4,7 @@
 
 package executor
 
+// BlackwhiteCreateTxReq        
 type BlackwhiteCreateTxReq struct {
 	PlayAmount  int64  `json:"amount"`
 	PlayerCount int32  `json:"playerCount"`
@@ -12,6 +13,7 @@ type BlackwhiteCreateTxReq struct {
 	Fee         int64  `json:"fee"`
 }
 
+// BlackwhitePlayTx        
 type BlackwhitePlayTx struct {
 	GameID     string   `json:"gameID"`
 	Amount     int64    `json:"amount"`
@@ -19,12 +21,14 @@ type BlackwhitePlayTx struct {
 	Fee        int64    `json:"fee"`
 }
 
+// BlackwhiteShowTx        
 type BlackwhiteShowTx struct {
 	GameID string `json:"gameID"`
 	Secret string `json:"secret"`
 	Fee    int64  `json:"fee"`
 }
 
+// BlackwhiteTimeoutDoneTx        
 type BlackwhiteTimeoutDoneTx struct {
 	GameID string `json:"GameID"`
 	Fee    int64  `json:"fee"`

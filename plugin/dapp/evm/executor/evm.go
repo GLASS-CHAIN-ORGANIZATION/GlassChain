@@ -7,6 +7,7 @@ package executor
 import (
 	"bytes"
 	"math/big"
+
 	"os"
 
 	"reflect"
@@ -21,16 +22,20 @@ import (
 )
 
 var (
-	evmDebugInited = false
+	evmDebug = false
+
+	// EvmAddress      
 	EvmAddress = ""
-	driverName = evmtypes.ExecutorName
 )
 
+var driverName = evmtypes.ExecutorName
+
+// Init         
 func Init(name string, cfg *types.Chain33Config, sub []byte) {
 	driverName = name
 	drivers.Register(cfg, driverName, newEVMDriver, cfg.GetDappFork(driverName, evmtypes.EVMEnable))
 	EvmAddress = address.ExecAddress(cfg.ExecName(name))
-
+	//         
 	state.InitForkData()
 	InitExecType()
 }
@@ -41,52 +46,47 @@ func InitExecType() {
 	ety.InitFuncList(types.ListMethod(&EVMExecutor{}))
 }
 
+// GetName        
 func GetName() string {
 	return newEVMDriver().GetName()
 }
 
 func newEVMDriver() drivers.Driver {
 	evm := NewEVMExecutor()
+	evm.vmCfg.Debug = evmDebug
 	return evm
 }
 
+// EVMExecutor EVM     
 type EVMExecutor struct {
 	drivers.DriverBase
 	vmCfg    *runtime.Config
 	mStateDB *state.MemoryStateDB
 }
 
+// NewEVMExecutor         
 func NewEVMExecutor() *EVMExecutor {
 	exec := &EVMExecutor{}
 
 	exec.vmCfg = &runtime.Config{}
-	//exec.vmCfg.Tracer = runtime.NewJSONLogger(os.Stdout)
-	exec.vmCfg.Tracer = runtime.NewMarkdownLogger(
-		&runtime.LogConfig{
-			DisableMemory:     false,
-			DisableStack:      false,
-			DisableStorage:    false,
-			DisableReturnData: false,
-			Debug:             true,
-			Limit:             0,
-		},
-		os.Stdout,
-	)
+	exec.vmCfg.Tracer = runtime.NewJSONLogger(os.Stdout)
 
 	exec.SetChild(exec)
-	exec.SetExecutorType(types.LoadExecutorType(driverName))
 	return exec
 }
 
+// GetFuncMap       
 func (evm *EVMExecutor) GetFuncMap() map[string]reflect.Method {
 	ety := types.LoadExecutorType(driverName)
 	return ety.GetExecFuncMap()
 }
 
+// GetDriverName          
 func (evm *EVMExecutor) GetDriverName() string {
 	return evmtypes.ExecutorName
 }
 
+// ExecutorOrder   localdb EnableRead
 func (evm *EVMExecutor) ExecutorOrder() int64 {
 	cfg := evm.GetAPI().GetConfig()
 	if cfg.IsFork(evm.GetHeight(), "ForkLocalDBAccess") {
@@ -95,12 +95,15 @@ func (evm *EVMExecutor) ExecutorOrder() int64 {
 	return evm.DriverBase.ExecutorOrder()
 }
 
+// Allow               
 func (evm *EVMExecutor) Allow(tx *types.Transaction, index int) error {
 	err := evm.DriverBase.Allow(tx, index)
 	if err == nil {
 		return nil
 	}
-
+	//      :
+	//  : user.evm.xxx     evm   
+	//   : user.p.guodun.user.evm.xxx    evm   
 	cfg := evm.GetAPI().GetConfig()
 	exec := cfg.GetParaExec(tx.Execer)
 	if evm.AllowIsUserDot2(exec) {
@@ -109,6 +112,7 @@ func (evm *EVMExecutor) Allow(tx *types.Transaction, index int) error {
 	return types.ErrNotAllow
 }
 
+// IsFriend        KEY
 func (evm *EVMExecutor) IsFriend(myexec, writekey []byte, othertx *types.Transaction) bool {
 	if othertx == nil {
 		return false
@@ -131,21 +135,18 @@ func (evm *EVMExecutor) CheckReceiptExecOk() bool {
 	return true
 }
 
+//             
 func (evm *EVMExecutor) getNewAddr(txHash []byte) common.Address {
 	cfg := evm.GetAPI().GetConfig()
 	return common.NewAddress(cfg, txHash)
 }
 
-// createContractAddress creates an ethereum address given the bytes and the nonce
-func (evm *EVMExecutor) createContractAddress(b common.Address, txHash []byte) common.Address {
-	return common.NewContractAddress(b, txHash)
-}
-
-
+// CheckTx     
 func (evm *EVMExecutor) CheckTx(tx *types.Transaction, index int) error {
 	return nil
 }
 
+// GetActionName        
 func (evm *EVMExecutor) GetActionName(tx *types.Transaction) string {
 	cfg := evm.GetAPI().GetConfig()
 	if bytes.Equal(tx.Execer, []byte(cfg.ExecName(evmtypes.ExecutorName))) {
@@ -154,15 +155,18 @@ func (evm *EVMExecutor) GetActionName(tx *types.Transaction) string {
 	return tx.ActionName()
 }
 
+// GetMStateDB          
 func (evm *EVMExecutor) GetMStateDB() *state.MemoryStateDB {
 	return evm.mStateDB
 }
 
+// GetVMConfig   VM  
 func (evm *EVMExecutor) GetVMConfig() *runtime.Config {
 	return evm.vmCfg
 }
 
-func (evm *EVMExecutor) NewEVMContext(msg *common.Message, txHash []byte) runtime.Context {
+// NewEVMContext       EVM     
+func (evm *EVMExecutor) NewEVMContext(msg *common.Message) runtime.Context {
 	return runtime.Context{
 		CanTransfer: CanTransfer,
 		Transfer:    Transfer,
@@ -174,6 +178,5 @@ func (evm *EVMExecutor) NewEVMContext(msg *common.Message, txHash []byte) runtim
 		Difficulty:  new(big.Int).SetUint64(evm.GetDifficulty()),
 		GasLimit:    msg.GasLimit(),
 		GasPrice:    msg.GasPrice(),
-		TxHash:      txHash,
 	}
 }

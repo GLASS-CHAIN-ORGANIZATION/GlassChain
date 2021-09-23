@@ -2,9 +2,9 @@ syntax = "proto3";
 
 package types;
 
-/ 
-// 	 privkey : 
-//	 addr  
+//       
+// 	 privkey :          
+//	 addr :    
 message Account4Relayer {
     bytes privkey    = 1;
     string addr      = 2;
@@ -92,7 +92,7 @@ message LockEthErc20 {
     string ownerKey        = 1;
     string tokenAddr       = 2;
     string amount           = 3;
-    / loc chain3 
+    // lock         chain33      
     string chain33Receiver = 4;
 }
 

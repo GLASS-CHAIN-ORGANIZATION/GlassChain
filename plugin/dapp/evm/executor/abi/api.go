@@ -1,26 +1,32 @@
 package abi
 
 import (
-	"errors"
+	"encoding/json"
 	"fmt"
 	"math/big"
-	"os"
 	"reflect"
 	"strconv"
 	"strings"
 
-	log "github.com/33cn/chain33/common/log/log15"
+	"errors"
+
 	"github.com/33cn/plugin/plugin/dapp/evm/executor/vm/common"
 	"github.com/golang-collections/collections/stack"
 )
 
+// Pack   ABI     ，        EVM           
+// abiData    ABI  
+// param        
+// readOnly     ，           ，   
+//     ： foo(param1,param2)
 func Pack(param, abiData string, readOnly bool) (methodName string, packData []byte, err error) {
+	//          ，             
 	methodName, params, err := procFuncCall(param)
-
 	if err != nil {
 		return methodName, packData, err
 	}
 
+	//   ABI    ，           
 	abi, err := JSON(strings.NewReader(abiData))
 	if err != nil {
 		return methodName, packData, err
@@ -40,8 +46,10 @@ func Pack(param, abiData string, readOnly bool) (methodName string, packData []b
 		err = fmt.Errorf("function params error:%v", params)
 		return methodName, packData, err
 	}
+	//         ，       ，     Go  
 	paramVals := []interface{}{}
 	if len(params) != 0 {
+		//          ABI        
 		if method.Inputs.LengthNonIndexed() != len(params) {
 			err = fmt.Errorf("function Params count error: %v", param)
 			return methodName, packData, err
@@ -56,52 +64,19 @@ func Pack(param, abiData string, readOnly bool) (methodName string, packData []b
 		}
 	}
 
+	//   Abi            
 	packData, err = abi.Pack(methodName, paramVals...)
 	return methodName, packData, err
 }
 
-func PackContructorPara(param, abiStr string) (packData []byte, err error) {
-	_, params, err := procFuncCall(param)
-	if err != nil {
-		return nil, err
-	}
-
-	parsedAbi, err := JSON(strings.NewReader(abiStr))
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "parse evm code error", err)
-		return
-	}
-
-	method := parsedAbi.Constructor
-
-	paramVals := []interface{}{}
-	if len(params) != 0 {
-		if method.Inputs.LengthNonIndexed() != len(params) {
-			err = fmt.Errorf("function Params count error: %v", param)
-			return nil, err
-		}
-
-		for i, v := range method.Inputs.NonIndexed() {
-			paramVal, err := str2GoValue(v.Type, params[i])
-			if err != nil {
-				return nil, err
-			}
-			paramVals = append(paramVals, paramVal)
-		}
-	}
-	packData, err = parsedAbi.Constructor.Inputs.Pack(paramVals...)
-	if err != nil {
-		return nil, err
-	}
-	return packData, nil
-
-}
-
-func Unpack(data []byte, methodName, abiData string) (output []*Param, err error) {
+// Unpack          ABI       json
+// data        
+// abiData    ABI  
+func Unpack(data []byte, methodName, abiData string) (output string, err error) {
 	if len(data) == 0 {
-		log.Info("Unpack", "Data len", 0, "methodName", methodName)
 		return output, err
 	}
+	//   ABI    ，           
 	abi, err := JSON(strings.NewReader(abiData))
 	if err != nil {
 		return output, err
@@ -122,27 +97,28 @@ func Unpack(data []byte, methodName, abiData string) (output []*Param, err error
 		return output, err
 	}
 
-	output = []*Param{}
+	outputs := []*Param{}
 
 	for i, v := range values {
 		arg := method.Outputs[i]
 		pval := &Param{Name: arg.Name, Type: arg.Type.String(), Value: v}
-		if arg.Type.String() == "address" {
-			pval.Value = v.(common.Hash160Address).ToAddress().String()
-			log.Info("Unpack address", "address", pval.Value)
-		}
-
-		output = append(output, pval)
+		outputs = append(outputs, pval)
 	}
 
-	return
+	jsondata, err := json.Marshal(outputs)
+	if err != nil {
+		return output, err
+	}
+	return string(jsondata), err
 }
 
+// Param          
 type Param struct {
+	// Name     
 	Name string `json:"name"`
-
+	// Type     
 	Type string `json:"type"`
-
+	// Value     
 	Value interface{} `json:"value"`
 }
 
@@ -178,6 +154,7 @@ func convertInt(val int64, kind reflect.Kind) interface{} {
 	return val
 }
 
+//              （  ），  Go   
 func str2GoValue(typ Type, val string) (res interface{}, err error) {
 	switch typ.T {
 	case IntTy:
@@ -219,37 +196,7 @@ func str2GoValue(typ Type, val string) (res interface{}, err error) {
 		for idx, sub := range subs {
 			subVal, er := str2GoValue(*typ.Elem, sub)
 			if er != nil {
-				//return res, er
-				subparams, err := procArrayItem(sub) 
-				if err != nil {
-					return res, er
-				}
-				fmt.Println("subparams len", len(subparams), "subparams", subparams)
-
-				abityps := strings.Split(typ.Elem.stringKind[1:len(typ.Elem.stringKind)-1], ",") 
-				fmt.Println("abityps", abityps)
-
-
-				for i := 0; i < len(subparams); i++ {
-					tp, err := NewType(abityps[i], "", nil)
-					if err != nil {
-						fmt.Println("NewType", err.Error())
-						continue
-					}
-					fmt.Println("tp", tp.stringKind, "types", tp.T)
-					subVal, err = str2GoValue(tp, subparams[i]) 
-					if err != nil {
-						fmt.Println("str2GoValue err ", err.Error())
-						continue
-					}
-
-					fmt.Println("subVal", subVal)
-					rval.Index(idx).Field(i).Set(reflect.ValueOf(subVal))
-
-				}
-
-				return rval.Interface(), nil
-
+				return res, er
 			}
 			rval.Index(idx).Set(reflect.ValueOf(subVal))
 		}
@@ -275,6 +222,7 @@ func str2GoValue(typ Type, val string) (res interface{}, err error) {
 		}
 		return addr.ToHash160(), nil
 	case FixedBytesTy:
+		//        ，            ，  0xabcd00ff
 		x, err := common.HexToBytes(val)
 		if err != nil {
 			return res, err
@@ -285,12 +233,14 @@ func str2GoValue(typ Type, val string) (res interface{}, err error) {
 		}
 		return rval.Interface(), nil
 	case BytesTy:
+		//     ，            ，  0xab
 		x, err := common.HexToBytes(val)
 		if err != nil {
 			return res, err
 		}
 		return x, nil
 	case HashTy:
+		//     ，          ， ：0xabcdef
 		x, err := common.HexToBytes(val)
 		if err != nil {
 			return res, err
@@ -301,19 +251,26 @@ func str2GoValue(typ Type, val string) (res interface{}, err error) {
 	}
 }
 
-
+//                 ，     ，          ；
+//        ，       
+//   ："[a,b,c]" -> "a","b","c"
+//   ："[[a,b],[c,d]]" -> "[a,b]", "[c,d]"
+//         ，          ，           
 func procArrayItem(val string) (res []string, err error) {
 	ss := stack.New()
 	data := []rune{}
 	for _, b := range val {
 		switch b {
 		case ' ':
+			//                  
 			if ss.Len() > 0 && peekRune(ss) == '"' {
 				data = append(data, b)
 			}
 		case ',':
+			//                 ，             ，
+			//   ，              '['，           
 			if ss.Len() == 1 && peekRune(ss) == '[' {
-
+				//       
 				res = append(res, string(data))
 				data = []rune{}
 
@@ -321,6 +278,7 @@ func procArrayItem(val string) (res []string, err error) {
 				data = append(data, b)
 			}
 		case '"':
+			//             ，                   
 			if ss.Peek() == b {
 				ss.Pop()
 			} else {
@@ -328,6 +286,7 @@ func procArrayItem(val string) (res []string, err error) {
 			}
 			//data = append(data, b)
 		case '[':
+			//        ，'['         ，          
 			if ss.Len() == 0 {
 				data = []rune{}
 			} else {
@@ -335,14 +294,16 @@ func procArrayItem(val string) (res []string, err error) {
 			}
 			ss.Push(b)
 		case ']':
+			//          ']' ，         ，           
 			if ss.Len() == 1 && peekRune(ss) == '[' {
-
+				//       
 				res = append(res, string(data))
 			} else {
 				data = append(data, b)
 			}
 			ss.Pop()
 		default:
+			//             
 			data = append(data, b)
 		}
 	}
@@ -357,7 +318,8 @@ func peekRune(ss *stack.Stack) rune {
 	return ss.Peek().(rune)
 }
 
-
+//          ，           
+//   ：foo(param1,param2) -> [foo,param1,param2]
 func procFuncCall(param string) (funcName string, res []string, err error) {
 	lidx := strings.Index(param, "(")
 	ridx := strings.LastIndex(param, ")")
@@ -369,6 +331,7 @@ func procFuncCall(param string) (funcName string, res []string, err error) {
 	funcName = strings.TrimSpace(param[:lidx])
 	params := strings.TrimSpace(param[lidx+1 : ridx])
 
+	//             ，          ，         
 	if len(params) > 0 {
 		res, err = procArrayItem(fmt.Sprintf("[%v]", params))
 	}

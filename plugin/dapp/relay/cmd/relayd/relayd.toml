@@ -41,25 +41,24 @@ HTTPPostMode = false
 enableBCInfoHacks = false
 reconnectAttempts = 10
 
-[crypto]
 [log]
-#  debug(dbug)/info/warn/error(eror)/crit
+#     ，  debug(dbug)/info/warn/error(eror)/crit
 loglevel = "debug"
 logConsoleLevel = "debug"
-#   
+#      ，    ，                
 logFile = "logs/relayd.log"
-#   ）
+#           （  ： ）
 maxFileSize = 100
-# 
+#              
 maxBackups = 50
-#   ）
+#            （  ： ）
 maxAge = 28
-#  UT ）
+#              （    UTC  ）
 localTime = true
-#  gz）
+#           （     gz）
 compress = true
-# 
+#             
 callerFile = false
-# 
+#         
 callerFunction = false
 

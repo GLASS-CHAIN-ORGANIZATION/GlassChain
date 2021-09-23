@@ -5,13 +5,8 @@
 package commands
 
 import (
-	"fmt"
-	"os"
 	"strconv"
 	"strings"
-
-	cmdtypes "github.com/33cn/chain33/system/dapp/commands/types"
-	"github.com/pkg/errors"
 
 	"github.com/33cn/chain33/common"
 	jsonrpc "github.com/33cn/chain33/rpc/jsonclient"
@@ -21,6 +16,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// BlackwhiteCmd         
 func BlackwhiteCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "blackwhite",
@@ -39,6 +35,7 @@ func BlackwhiteCmd() *cobra.Command {
 	return cmd
 }
 
+// BlackwhiteCreateRawTxCmd            
 func BlackwhiteCreateRawTxCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "create",
@@ -69,20 +66,15 @@ func blackwhiteCreate(cmd *cobra.Command, args []string) {
 	fee, _ := cmd.Flags().GetFloat64("fee")
 
 	feeInt64 := int64(fee * 1e4)
+	amountInt64 := int64(amount)
 
 	if timeout == 0 {
 		timeout = 10
 	}
 	timeout = 60 * timeout
 
-	cfg, err := cmdtypes.GetChainConfig(rpcLaddr)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, errors.Wrapf(err, "GetChainConfig"))
-		return
-	}
-
 	params := &gt.BlackwhiteCreateTxReq{
-		PlayAmount:  int64(amount) * cfg.CoinPrecision,
+		PlayAmount:  amountInt64 * types.Coin,
 		PlayerCount: int32(playerCount),
 		Timeout:     timeout,
 		GameName:    gameName,
@@ -94,6 +86,7 @@ func blackwhiteCreate(cmd *cobra.Command, args []string) {
 	ctx.RunWithoutMarshal()
 }
 
+// BlackwhitePlayRawTxCmd         
 func BlackwhitePlayRawTxCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "play",
@@ -128,11 +121,6 @@ func blackwhitePlay(cmd *cobra.Command, args []string) {
 	secret, _ := cmd.Flags().GetString("secret")
 	fee, _ := cmd.Flags().GetFloat64("fee")
 
-	cfg, err := cmdtypes.GetChainConfig(rpcLaddr)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, errors.Wrapf(err, "GetChainConfig"))
-		return
-	}
 	blacks := strings.Split(isBlackStr, "-")
 
 	var hashValues [][]byte
@@ -146,10 +134,10 @@ func blackwhitePlay(cmd *cobra.Command, args []string) {
 	}
 
 	feeInt64 := int64(fee * 1e4)
-
+	amountInt64 := int64(amount)
 	params := &gt.BlackwhitePlayTxReq{
 		GameID:     gameID,
-		Amount:     int64(amount) * cfg.CoinPrecision,
+		Amount:     amountInt64 * types.Coin,
 		HashValues: hashValues,
 		Fee:        feeInt64,
 	}
@@ -158,6 +146,7 @@ func blackwhitePlay(cmd *cobra.Command, args []string) {
 	ctx.RunWithoutMarshal()
 }
 
+// BlackwhiteShowRawTxCmd     
 func BlackwhiteShowRawTxCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "show",
@@ -196,6 +185,7 @@ func blackwhiteShow(cmd *cobra.Command, args []string) {
 	ctx.RunWithoutMarshal()
 }
 
+// BlackwhiteTimeoutDoneTxCmd       ，     
 func BlackwhiteTimeoutDoneTxCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "timeoutDone",
@@ -228,6 +218,7 @@ func blackwhiteTimeoutDone(cmd *cobra.Command, args []string) {
 	ctx.RunWithoutMarshal()
 }
 
+// ShowBlackwhiteInfoCmd            
 func ShowBlackwhiteInfoCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "showInfo",

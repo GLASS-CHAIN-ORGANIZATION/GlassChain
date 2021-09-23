@@ -9,17 +9,24 @@ import (
 	"github.com/33cn/plugin/plugin/dapp/evm/executor/vm/common"
 )
 
-
+// ContractLog      ，  EVM  Log  ，           
+//                     ，      
 type ContractLog struct {
+	// Address     
 	Address common.Address
 
+	// TxHash       
 	TxHash common.Hash
 
+	// Index     
 	Index int
 
+	// Topics           
 	Topics []common.Hash
 
+	// Data     
 	Data []byte
+	//     
 	BlockNumber uint64 `json:"blockNumber"`
 	// index of the transaction in the block
 	TxIndex uint `json:"transactionIndex"`
@@ -27,6 +34,7 @@ type ContractLog struct {
 	BlockHash common.Hash `json:"blockHash"`
 }
 
+// PrintLog         
 func (log *ContractLog) PrintLog() {
 	log15.Debug("!Contract Log!", "Contract address", log.Address.String(), "TxHash", log.TxHash.Hex(), "Log Index", log.Index, "Log Topics", log.Topics, "Log Data", common.Bytes2Hex(log.Data))
 }

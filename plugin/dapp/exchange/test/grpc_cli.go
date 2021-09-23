@@ -119,7 +119,9 @@ func (c *GRPCCli) GetExecAccount(addr string, exec string, symbol string) (*type
 	return nil, types.ErrNotFound
 }
 
-
+//            
+//       ，      
+//         ，       、  
 func (c *GRPCCli) sendAndWaitReceipt(tx *types.Transaction, hexKey string) (txHash []byte, logs []*types.ReceiptLog, err error) {
 	r, err := c.SendTx(tx, hexKey)
 	if err != nil {

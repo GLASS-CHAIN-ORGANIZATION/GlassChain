@@ -25,6 +25,7 @@ var (
 	ticketName   = auty.TicketX
 )
 
+// Init         
 func Init(name string, cfg *types.Chain33Config, sub []byte) {
 	if sub != nil {
 		types.MustDecode(sub, &subcfg)
@@ -41,6 +42,7 @@ func InitExecType() {
 	ety.InitFuncList(types.ListMethod(&Autonomy{}))
 }
 
+// Autonomy       
 type Autonomy struct {
 	drivers.DriverBase
 }
@@ -52,10 +54,12 @@ func newAutonomy() drivers.Driver {
 	return t
 }
 
+// GetName        
 func GetName() string {
 	return newAutonomy().GetName()
 }
 
+// GetDriverName       
 func (u *Autonomy) GetDriverName() string {
 	return driverName
 }

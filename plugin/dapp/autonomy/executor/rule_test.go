@@ -162,6 +162,8 @@ func testexecDelLocalRule(t *testing.T) {
 		},
 	}
 
+	//    local      
+
 	tx, err := types.CreateFormatTx(chainTestCfg, chainTestCfg.ExecName(auty.AutonomyX), nil)
 	assert.NoError(t, err)
 	set, err := au.execAutoLocalRule(tx, receipt)
@@ -198,6 +200,8 @@ func testexecDelLocalRule(t *testing.T) {
 		Logs: []*types.ReceiptLog{
 			{Ty: auty.TyLogVotePropRule, Log: types.Encode(receiptRule2)},
 		}}
+	//    local      
+	//         ，           
 	tx, err = types.CreateFormatTx(chainTestCfg, chainTestCfg.ExecName(auty.AutonomyX), nil)
 	assert.NoError(t, err)
 	set, err = au.execAutoLocalRule(tx, receipt)
@@ -205,6 +209,7 @@ func testexecDelLocalRule(t *testing.T) {
 	assert.NotNil(t, set)
 	saveKvs(sdb, set.KV)
 
+	//       
 	tx, err = types.CreateFormatTx(chainTestCfg, chainTestCfg.ExecName(auty.AutonomyX), nil)
 	assert.NoError(t, err)
 	set, err = au.execAutoLocalRule(tx, recpt)
@@ -299,6 +304,7 @@ func TestListProposalRule(t *testing.T) {
 		Index:      2,
 	}
 
+	//       
 	var kvs []*types.KeyValue
 	table := NewRuleTable(kvdb)
 	for _, tcase := range testcase {
@@ -314,6 +320,7 @@ func TestListProposalRule(t *testing.T) {
 	}
 	saveKvs(sdb, kvs)
 
+	//     
 	req := &auty.ReqQueryProposalRule{
 		Status:    auty.AutonomyStatusProposalRule,
 		Count:     10,
@@ -330,6 +337,7 @@ func TestListProposalRule(t *testing.T) {
 		k--
 	}
 
+	//     
 	req = &auty.ReqQueryProposalRule{
 		Status:    auty.AutonomyStatusProposalRule,
 		Count:     10,
@@ -344,6 +352,7 @@ func TestListProposalRule(t *testing.T) {
 		assert.Equal(t, rsp.(*auty.ReplyQueryProposalRule).PropRules[i].Index, int32(tcase.index))
 	}
 
+	//     
 	req = &auty.ReqQueryProposalRule{
 		Status:    auty.AutonomyStatusProposalRule,
 		Count:     1,
@@ -445,6 +454,7 @@ func testexecDelLocalCommentProp(t *testing.T) {
 		},
 	}
 	var set *types.LocalDBSet
+	//    local      
 
 	tx, err := types.CreateFormatTx(chainTestCfg, chainTestCfg.ExecName(auty.AutonomyX), nil)
 	assert.NoError(t, err)
@@ -505,6 +515,7 @@ func TestListProposalComment(t *testing.T) {
 		kvdb.Set(key, value)
 	}
 
+	//     
 	req := &auty.ReqQueryProposalComment{
 		ProposalID: propID2,
 		Count:      10,
@@ -521,6 +532,7 @@ func TestListProposalComment(t *testing.T) {
 		k--
 	}
 
+	//     
 	req = &auty.ReqQueryProposalComment{
 		ProposalID: propID2,
 		Count:      10,
@@ -535,6 +547,7 @@ func TestListProposalComment(t *testing.T) {
 		assert.Equal(t, rsp.(*auty.ReplyQueryProposalComment).RltCmt[i].Index, int32(tcase.index))
 	}
 
+	//     
 	req = &auty.ReqQueryProposalComment{
 		ProposalID: propID2,
 		Count:      1,

@@ -8,7 +8,7 @@ import (
 //DES ...
 type DES struct {
 	key []byte
-	//i bloc 
+	//iv       block    
 	iv []byte
 }
 
@@ -27,13 +27,13 @@ func (d *DES) Encrypt(origData []byte) ([]byte, error) {
 	// origData = ZeroPadding(origData, block.BlockSize())
 	blockMode := cipher.NewCBCEncrypter(block, d.iv[:block.BlockSize()])
 	crypted := make([]byte, len(origData))
-	// CryptBlock  crypte 
+	//   CryptBlocks     ，       crypted   
 	// crypted := origData
 	blockMode.CryptBlocks(crypted, origData)
 	return crypted, nil
 }
 
-//Decrypt ke  
+//Decrypt   key    8  
 func (d *DES) Decrypt(crypted []byte) ([]byte, error) {
 	block, err := des.NewCipher(d.key)
 	if err != nil {
@@ -51,7 +51,7 @@ func (d *DES) Decrypt(crypted []byte) ([]byte, error) {
 //TripleDES ...
 type TripleDES struct {
 	key []byte
-	//i bloc 
+	//iv       block    
 	iv []byte
 }
 
@@ -60,7 +60,7 @@ func NewTripleDES(key, iv []byte) *TripleDES {
 	return &TripleDES{key: key, iv: iv}
 }
 
-//Encrypt 3DE  2 
+//Encrypt 3DES   24  
 func (d *TripleDES) Encrypt(origData []byte) ([]byte, error) {
 	block, err := des.NewTripleDESCipher(d.key)
 	if err != nil {
@@ -74,7 +74,7 @@ func (d *TripleDES) Encrypt(origData []byte) ([]byte, error) {
 	return crypted, nil
 }
 
-//Decrypt 3DE 
+//Decrypt 3DES  
 func (d *TripleDES) Decrypt(crypted []byte) ([]byte, error) {
 	block, err := des.NewTripleDESCipher(d.key)
 	if err != nil {

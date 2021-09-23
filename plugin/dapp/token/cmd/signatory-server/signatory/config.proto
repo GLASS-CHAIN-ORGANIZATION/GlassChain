@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package signatory;
 
-// Config toke cm 
+// Config token  cmd  
 message Config {
     repeated string whitelist    = 1;
     string          jrpcBindAddr = 2;

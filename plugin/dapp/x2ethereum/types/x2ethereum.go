@@ -9,15 +9,15 @@ import (
 )
 
 /*
- * 
- * actio lo  
- * actio lo i nam 
+ *         
+ *   action      log  ，          
+ *    action log   id   name      
  */
 
 var (
-	//X2ethereumX 
+	//X2ethereumX        
 	X2ethereumX = "x2ethereum"
-	/ actionMap
+	//  actionMap
 	actionMap = map[string]int32{
 		NameEth2Chain33Action:           TyEth2Chain33Action,
 		NameWithdrawEthAction:           TyWithdrawEthAction,
@@ -31,7 +31,7 @@ var (
 		NameTransferToExecAction:        TyTransferToExecAction,
 		NameWithdrawFromExecAction:      TyWithdrawFromExecAction,
 	}
-	/ lo i lo  lo 
+	//  log id   log     ，       log  
 	logMap = map[int64]*types.LogInfo{
 		TyEth2Chain33Log:           {Ty: reflect.TypeOf(ReceiptEth2Chain33{}), Name: "LogEth2Chain33"},
 		TyWithdrawEthLog:           {Ty: reflect.TypeOf(ReceiptEth2Chain33{}), Name: "LogWithdrawEth"},
@@ -52,7 +52,7 @@ var (
 // init defines a register function
 func init() {
 	types.AllowUserExec = append(types.AllowUserExec, []byte(X2ethereumX))
-	/ 
+	//        
 	types.RegFork(X2ethereumX, InitFork)
 	types.RegExec(X2ethereumX, InitExecutor)
 }
@@ -85,17 +85,17 @@ func (x *X2ethereumType) GetName() string {
 	return X2ethereumX
 }
 
-// GetPayload actio 
+// GetPayload     action  
 func (x *X2ethereumType) GetPayload() types.Message {
 	return &X2EthereumAction{}
 }
 
-// GetTypeMap actio i nam 
+// GetTypeMap     action id name  
 func (x *X2ethereumType) GetTypeMap() map[string]int32 {
 	return actionMap
 }
 
-// GetLogMap lo 
+// GetLogMap     log    
 func (x *X2ethereumType) GetLogMap() map[int64]*types.LogInfo {
 	return logMap
 }
@@ -139,7 +139,7 @@ func (action *X2EthereumAction) GetActionName() string {
 	return "unknown-x2ethereum"
 }
 
-// CreateTx token 
+// CreateTx token     
 func (x *X2ethereumType) CreateTx(action string, msg json.RawMessage) (*types.Transaction, error) {
 	tx, err := x.ExecTypeBase.CreateTx(action, msg)
 	if err != nil {

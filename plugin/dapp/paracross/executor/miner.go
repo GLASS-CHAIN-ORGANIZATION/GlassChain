@@ -11,12 +11,12 @@ import (
 	"github.com/pkg/errors"
 )
 
-/ miner t  t  ，preHas blockchai 
-//note: Mine Height= ， 
-/ bu  coi  coi  coin 
+//  miner tx              ，  tx       ，  ，preHash         blockchain    
+//note:     Miner Height=1  ，        
+//  bug  ，         coin      ，   coin           。         coin，           
 func (a *action) Miner(miner *pt.ParacrossMinerAction) (*types.Receipt, error) {
 	cfg := a.api.GetConfig()
-	/ coin
+	//  coin
 	if miner.AddIssueCoins > 0 {
 		return a.addIssueCoins(miner.AddIssueCoins)
 	}
@@ -41,7 +41,7 @@ func (a *action) Miner(miner *pt.ParacrossMinerAction) (*types.Receipt, error) {
 	if err != nil {
 		return nil, err
 	}
-	/ 
+	//       
 	if on {
 		r, err := a.issueCoins(miner)
 		if err != nil {
@@ -54,7 +54,7 @@ func (a *action) Miner(miner *pt.ParacrossMinerAction) (*types.Receipt, error) {
 	return minerReceipt, nil
 }
 
-// Non   manager  paracros  
+//    None   ，       ，      manager       ，        paracross   ，           
 func (a *action) addIssueCoins(amount int64) (*types.Receipt, error) {
 	cfg := a.api.GetConfig()
 	if !isSuperManager(cfg, a.fromaddr) {
@@ -72,16 +72,16 @@ func (a *action) addIssueCoins(amount int64) (*types.Receipt, error) {
 
 func (a *action) isSelfConsensOn(miner *pt.ParacrossMinerAction) (bool, error) {
 	cfg := a.api.GetConfig()
-	//ForkParaInitMinerHeigh   paracros    
+	//ForkParaInitMinerHeight   ，      ，   paracross     ，        ，        ，      
 	if cfg.IsDappFork(a.height, pt.ParaX, pt.ForkParaFullMinerHeight) {
 		return true, nil
 	}
 
 	isSelfConsensOn := miner.IsSelfConsensus
 
-	/    a.height
-	/ 100  10 80~9 2  2 10   8 100
-	/ miner.Status.Heigh   10 
+	//        ，               ，                  ，           a.height
+	//           100，          ，  100      80~99 20     ， 20    100      ，       ，        80   100
+	//      miner.Status.Height  ，               ，      100  
 
 	if cfg.IsDappFork(a.height, pt.ParaX, pt.ForkParaSelfConsStages) {
 		var err error

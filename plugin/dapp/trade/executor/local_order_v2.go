@@ -13,25 +13,25 @@ import (
 	pty "github.com/33cn/plugin/plugin/dapp/trade/types"
 )
 
-// 
-// 1. v0 
-// 2. v1 tabl  LocalOrder
-// 3. v2 tabl  LocalOrderV2 v1  v  v2  v0 v1 
-//       6.  v0 
+//       
+// 1. v0     
+// 2. v1  table   LocalOrder
+// 3. v2  table   LocalOrderV2  v1       ，  v0       ，  v2    v0 v1   
+//          6.4    v0       
 
 /*
- 
- 1.    ）
-   1.1    -> owner
-   1.2 token  -> owner_asset
-   1.3  -> owner
-   1.4 toke  -> owner_asset 
- 2. ：    ） -> owner_status
- 3. token  GetTokenBuyOrderByStatus  -> asset_inBuy_status
- 4. toke token  token   ） -> owner_asset/owner_asset_isSell 
- 5.   ）  -> owner_isSell_status
- 6. token     -> asset_isSell
- 7.  ） owner_status
+    
+ 1.            （   ）
+   1.1         -> owner
+   1.2        token  -> owner_asset
+   1.3               -> owner
+   1.4                  token     -> owner_asset      
+ 2.           ：       （   ） -> owner_status
+ 3.     token         GetTokenBuyOrderByStatus  -> asset_inBuy_status
+ 4.     token         token      token     （   ） -> owner_asset/owner_asset_isSell      
+ 5.               （   ）  -> owner_isSell_status
+ 6.     token            -> asset_isSell
+ 7.               （      ） owner_status
 */
 
 //
@@ -39,33 +39,33 @@ var optV2 = &table.Option{
 	Prefix:  "LODB-trade",
 	Name:    "order_v2",
 	Primary: "txIndex",
-	// asset  price_exec + price_symbol + asset_exec+asset_symbol
-	// status:  , ， ， 
-	//    ，  ，   ， ，  . 
+	// asset       price_exec + price_symbol + asset_exec+asset_symbol
+	// status:                ,      ，            ，      
+	//       ，    ，       ，     ，          .         
 	//      00     10     11          12         1*
-	// ： ke  ，  ， 
+	//     ：    key   ，            ，   n         ，          
 	Index: []string{
-		"key",                 // 
-		"asset",               // 
-		"asset_isSell_status", //  3
-		// "asset_status", ， 
+		"key",                 //      
+		"asset",               //        
+		"asset_isSell_status", //    3
+		// "asset_status",     ，          
 		// "asset_isSell",
-		"owner",              //  1.1， 1.3
-		"owner_asset",        //  1.2, 1.4, 4, 7
-		"owner_asset_isSell", //  4
-		"owner_asset_status", // ， 
-		"owner_isSell",       //  6
-		// "owner_isSell_statusPrefix", // , 
-		"owner_status",             //  2
-		"assset_isSell_isFinished", //  isFinish, 
+		"owner",              //    1.1， 1.3
+		"owner_asset",        //    1.2, 1.4, 4, 7
+		"owner_asset_isSell", //    4
+		"owner_asset_status", //    ，  
+		"owner_isSell",       //    6
+		// "owner_isSell_statusPrefix", //         ,       
+		"owner_status",             //    2
+		"assset_isSell_isFinished", //   isFinish,              
 		"owner_asset_isFinished",
 		"owner_isFinished",
-		// "owner_statusPrefix", //  , 
-		// key， key  
-		// https://chain.33.cn/document/105 1.8 sell & asset-price & status, order by price
-		// https://chain.33.cn/document/105 1.3 buy  & asset-price & status, order by price
+		// "owner_statusPrefix", //          ,       
+		//      key，         key    ，          
+		// https://chain.33.cn/document/105   1.8 sell & asset-price & status, order by price
+		// https://chain.33.cn/document/105   1.3 buy  & asset-price & status, order by price
 		"asset_isSell_status_price",
-		// 1.2 1.5   addr-status buy or sell
+		//   1.2   1.5         addr-status buy or sell
 		"owner_isSell_status",
 	},
 }
@@ -135,7 +135,7 @@ func (r *OrderV2Row) Get(key string) ([]byte, error) {
 	}
 }
 
-// ： Price 
+//        ： Price    
 func (r *OrderV2Row) asset() string {
 	return r.LocalOrder.PriceExec + "." + r.LocalOrder.PriceSymbol + "_" + r.LocalOrder.AssetExec + "." + r.LocalOrder.AssetSymbol
 }
@@ -155,7 +155,7 @@ func (r *OrderV2Row) isFinished() int {
 }
 
 func (r *OrderV2Row) price() string {
-	//  
+	//       ，   
 	if r.AmountPerBoardlot == 0 {
 		return ""
 	}
@@ -163,12 +163,12 @@ func (r *OrderV2Row) price() string {
 	return fmt.Sprintf("%018d", p)
 }
 
-// status:  , ， ， 
-//    ，  ，   ， ，  . 
+// status:                ,      ，            ，      
+//       ，    ，       ，     ，          .         
 //      01     10     11          12        19 -> 1*
 func (r *OrderV2Row) status() string {
 	if r.Status == pty.TradeOrderStatusOnBuy || r.Status == pty.TradeOrderStatusOnSale {
-		return "01" // 1 
+		return "01" //    1          
 	} else if r.Status == pty.TradeOrderStatusSoldOut || r.Status == pty.TradeOrderStatusBoughtOut {
 		return "12"
 	} else if r.Status == pty.TradeOrderStatusRevoked || r.Status == pty.TradeOrderStatusBuyRevoked {

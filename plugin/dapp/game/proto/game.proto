@@ -1,36 +1,38 @@
 syntax = "proto3";
 
 package types;
-option go_package = "../types";
 
 message Game {
- 
+    //           txHash  gameId
     string gameId = 1;
     // create 1 -> Match 2 -> Cancel 3 -> Close 4
     int32 status = 2;
-
+    //    
     int64 createTime = 3;
-
+    //    (      ）
     int64 matchTime = 4;
+    //  close   （  cancel）
     int64 closetime = 5;
+    //  
     int64 value = 6;
-
+    //       
     string createAddress = 7;
-
+    //       
     string matchAddress = 8;
-
+    // hash   ，    
     string hashType = 9;
-
+    //       ，            hash 
     bytes hashValue = 10;
-
+    //             
     string secret = 11;
-
+    // 1   ，2     ，3 matcher  ，4
+    //       ，matcher  ，         
     int32 result = 12;
-
+    // matcher     
     int32 matcherGuess = 13;
     // create txHash
     string createTxHash = 14;
-
+    // matche  hash
     string matchTxHash = 15;
     // close txhash
     string closeTxHash = 16;
@@ -68,28 +70,33 @@ message GameClose {
 
 message GameCreate {
     int64 value = 1;
-
+    //      
     string hashType = 2;
-
+    //     
     bytes hashValue = 3;
 }
 
-
+// queryByAddr   queryByStatus        
 message QueryGameListByStatusAndAddr {
-
+    //    status  ,status    
     int32 status = 1;
+    //    ，             game  ，    status，     ，              
     string address = 2;
-
+    //    
     int64 index = 3;
+    //         ，    20 ，      100 
     int32 count = 4;
+    // 0  ，1  ，    
     int32 direction = 5;
 }
-
+//     
 message QueryGameListCount {
+    //    status  ,status    
     int32 status = 1;
-        string address = 2;
+    //    ，             game  ，    status，     ，              
+    string address = 2;
 }
-
+//   value 
 message GameRecord {
     string gameId = 1;
     int64  index  = 2;
@@ -118,7 +125,7 @@ message ReplyGame {
 message ReceiptGame {
     string gameId = 1;
     int32  status = 2;
-
+    //       
     int32  prevStatus = 3;
     string addr       = 4;
     string createAddr = 5;

@@ -54,6 +54,7 @@ const (
 	crlsfolder        = "crls"
 )
 
+// GetAuthConfig         
 func GetAuthConfig(dir string) (*AuthConfig, error) {
 	cacertDir := filepath.Join(dir, cacerts)
 	intermediatecertsDir := filepath.Join(dir, intermediatecerts)

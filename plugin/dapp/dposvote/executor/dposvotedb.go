@@ -21,13 +21,17 @@ import (
 )
 
 const (
+	//ListDESC         
 	ListDESC = int32(0)
 
+	//ListASC         
 	ListASC = int32(1)
 
+	//DefaultCount           
 	DefaultCount = int32(10)
 )
 
+//Action       
 type Action struct {
 	coinsAccount *account.DB
 	db           dbm.KV
@@ -41,6 +45,7 @@ type Action struct {
 	mainHeight   int64
 }
 
+//NewAction   Action  
 func NewAction(dpos *DPos, tx *types.Transaction, index int) *Action {
 	hash := tx.Hash()
 	fromAddr := tx.From()
@@ -59,6 +64,7 @@ func NewAction(dpos *DPos, tx *types.Transaction, index int) *Action {
 	}
 }
 
+//CheckExecAccountBalance      Dpos          
 func (action *Action) CheckExecAccountBalance(fromAddr string, ToFrozen, ToActive int64) bool {
 	acc := action.coinsAccount.LoadExecAccount(fromAddr, action.execaddr)
 	if acc.GetBalance() >= ToFrozen && acc.GetFrozen() >= ToActive {
@@ -67,6 +73,7 @@ func (action *Action) CheckExecAccountBalance(fromAddr string, ToFrozen, ToActiv
 	return false
 }
 
+//Key State         Key     
 func Key(id string) (key []byte) {
 	//key = append(key, []byte("mavl-"+types.ExecName(pkt.GuessX)+"-")...)
 	key = append(key, []byte("mavl-"+dty.DPosX+"-")...)
@@ -74,12 +81,14 @@ func Key(id string) (key []byte) {
 	return key
 }
 
+//TopNKey State         Key     
 func TopNKey(id string) (key []byte) {
 	key = append(key, []byte("mavl-"+dty.DPosX+"-"+"topn"+"-")...)
 	key = append(key, []byte(id)...)
 	return key
 }
 
+//queryVrfByTime       ，  TopN      VRF  
 func queryVrfByTime(kvdb db.KVDB, req *dty.DposVrfQuery) (types.Message, error) {
 	if req.Ty != dty.QueryVrfByTime {
 		return nil, types.ErrInvalidParam
@@ -161,6 +170,7 @@ func getVrfInfoFromVrfM(vrfM *dty.DposVrfM) *dty.VrfInfo {
 	return vrf
 }
 
+//queryVrfByCycleAndPubkeys   Cycle、Pubkeys  ，       VRF  
 func queryVrfByCycleAndPubkeys(kvdb db.KVDB, pubkeys []string, cycle int64) []*dty.VrfInfo {
 	VrfRPTable := dty.NewDposVrfRPTable(kvdb)
 	query := VrfRPTable.GetQuery(kvdb)
@@ -201,6 +211,7 @@ func queryVrfByCycleAndPubkeys(kvdb db.KVDB, pubkeys []string, cycle int64) []*d
 	return vrfs
 }
 
+//queryVrfByCycleForPubkeys   Cycle、Pubkeys  ，       VRF  
 func queryVrfByCycleForPubkeys(kvdb db.KVDB, req *dty.DposVrfQuery) (types.Message, error) {
 	if req.Ty != dty.QueryVrfByCycleForPubkeys {
 		return nil, types.ErrInvalidParam
@@ -211,6 +222,7 @@ func queryVrfByCycleForPubkeys(kvdb db.KVDB, req *dty.DposVrfQuery) (types.Messa
 	return &dty.DposVrfReply{Vrf: getJSONVrfs(vrfs)}, nil
 }
 
+//queryVrfByCycleForTopN   Cycle  ，  TopN      VRF  
 func queryVrfByCycleForTopN(kvdb db.KVDB, req *dty.DposVrfQuery) (types.Message, error) {
 	if req.Ty != dty.QueryVrfByCycleForTopN {
 		return nil, types.ErrInvalidParam
@@ -239,6 +251,7 @@ func queryVrfByCycleForTopN(kvdb db.KVDB, req *dty.DposVrfQuery) (types.Message,
 	return &dty.DposVrfReply{Vrf: getJSONVrfs(vrfs)}, nil
 }
 
+//queryVrfByCycle   Cycle  ，         VRF  
 func queryVrfByCycle(kvdb db.KVDB, req *dty.DposVrfQuery) (types.Message, error) {
 	if req.Ty != dty.QueryVrfByCycle {
 		return nil, types.ErrInvalidParam
@@ -277,6 +290,7 @@ func queryVrfByCycle(kvdb db.KVDB, req *dty.DposVrfQuery) (types.Message, error)
 	return &dty.DposVrfReply{Vrf: getJSONVrfs(vrfs)}, nil
 }
 
+//queryCands        Pubkey        ,   、   
 func queryCands(kvdb db.KVDB, req *dty.CandidatorQuery) (types.Message, error) {
 	var cands []*dty.JSONCandidator
 	candTable := dty.NewDposCandidatorTable(kvdb)
@@ -302,6 +316,7 @@ func queryCands(kvdb db.KVDB, req *dty.CandidatorQuery) (types.Message, error) {
 	return &dty.CandidatorReply{Candidators: cands}, nil
 }
 
+//queryTopNCands      TopN       ，     ，   
 func queryTopNCands(kvdb db.KVDB, req *dty.CandidatorQuery) (types.Message, error) {
 	var cands []*dty.JSONCandidator
 	candTable := dty.NewDposCandidatorTable(kvdb)
@@ -374,6 +389,7 @@ func queryTopNCands(kvdb db.KVDB, req *dty.CandidatorQuery) (types.Message, erro
 	return &dty.CandidatorReply{Candidators: cands}, nil
 }
 
+//isValidPubkey                 
 func isValidPubkey(pubkeys []string, pubkey string) bool {
 	if len(pubkeys) == 0 || len(pubkey) == 0 {
 		return false
@@ -388,6 +404,7 @@ func isValidPubkey(pubkeys []string, pubkey string) bool {
 	return false
 }
 
+//queryVote                  
 func queryVote(kvdb db.KVDB, req *dty.DposVoteQuery) (types.Message, error) {
 	var voters []*dty.JSONDposVoter
 	voteTable := dty.NewDposVoteTable(kvdb)
@@ -410,6 +427,7 @@ func queryVote(kvdb db.KVDB, req *dty.DposVoteQuery) (types.Message, error) {
 		voters = append(voters, jsonVoter)
 	}
 
+	//     pubkeys，     ；  ，    pubkey         。
 	if len(req.Pubkeys) == 0 {
 		return &dty.DposVoteReply{Votes: voters}, nil
 	}
@@ -440,6 +458,7 @@ func (action *Action) getIndex() int64 {
 	return action.height*types.MaxTxsPerBlock + int64(action.index)
 }
 
+//getReceiptLog                    
 func (action *Action) getReceiptLog(candInfo *dty.CandidatorInfo, statusChange bool, voteType int32, vote *dty.DposVoter) *types.ReceiptLog {
 	log := &types.ReceiptLog{}
 	r := &dty.ReceiptCandicator{}
@@ -479,6 +498,7 @@ func (action *Action) getReceiptLog(candInfo *dty.CandidatorInfo, statusChange b
 	return log
 }
 
+//readCandicatorInfo                  
 func (action *Action) readCandicatorInfo(pubkey []byte) (*dty.CandidatorInfo, error) {
 	strPubkey := hex.EncodeToString(pubkey)
 	data, err := action.db.Get(Key(strPubkey))
@@ -496,6 +516,7 @@ func (action *Action) readCandicatorInfo(pubkey []byte) (*dty.CandidatorInfo, er
 	return &cand, nil
 }
 
+// newCandicatorInfo           
 func (action *Action) newCandicatorInfo(regist *dty.DposCandidatorRegist) *dty.CandidatorInfo {
 	bPubkey, _ := hex.DecodeString(regist.Pubkey)
 	candInfo := &dty.CandidatorInfo{
@@ -506,6 +527,7 @@ func (action *Action) newCandicatorInfo(regist *dty.DposCandidatorRegist) *dty.C
 	return candInfo
 }
 
+//readTopNCandicators                TOPN      
 func (action *Action) readTopNCandicators(version int64) (*dty.TopNCandidators, error) {
 	strVersion := fmt.Sprintf("%018d", version)
 	data, err := action.db.Get(TopNKey(strVersion))
@@ -534,6 +556,7 @@ func (action *Action) saveTopNCandicators(topCands *dty.TopNCandidators) (kvset 
 	return kvset
 }
 
+//queryCBInfoByCycle   cycle  stopHeight stopHash CBInfo  ，  VRF  
 func queryCBInfoByCycle(kvdb db.KVDB, req *dty.DposCBQuery) (types.Message, error) {
 	cbTable := dty.NewDposCBTable(kvdb)
 	query := cbTable.GetQuery(kvdb)
@@ -557,6 +580,7 @@ func queryCBInfoByCycle(kvdb db.KVDB, req *dty.DposCBQuery) (types.Message, erro
 	return &dty.DposCBReply{CbInfo: info}, nil
 }
 
+//queryCBInfoByHeight   stopHeight  stopHash CBInfo  ，  VRF  
 func queryCBInfoByHeight(kvdb db.KVDB, req *dty.DposCBQuery) (types.Message, error) {
 	cbTable := dty.NewDposCBTable(kvdb)
 	query := cbTable.GetQuery(kvdb)
@@ -580,6 +604,7 @@ func queryCBInfoByHeight(kvdb db.KVDB, req *dty.DposCBQuery) (types.Message, err
 	return &dty.DposCBReply{CbInfo: info}, nil
 }
 
+//queryCBInfoByHash   stopHash  CBInfo  ，  VRF  
 func queryCBInfoByHash(kvdb db.KVDB, req *dty.DposCBQuery) (types.Message, error) {
 	cbTable := dty.NewDposCBTable(kvdb)
 	query := cbTable.GetQuery(kvdb)
@@ -610,6 +635,7 @@ func queryCBInfoByHash(kvdb db.KVDB, req *dty.DposCBQuery) (types.Message, error
 	return &dty.DposCBReply{CbInfo: info}, nil
 }
 
+//queryTopNByVersion   version         TopN      
 func queryTopNByVersion(db dbm.KV, req *dty.TopNCandidatorsQuery) (types.Message, error) {
 	strVersion := fmt.Sprintf("%018d", req.Version)
 	data, err := db.Get(TopNKey(strVersion))
@@ -632,6 +658,7 @@ func queryTopNByVersion(db dbm.KV, req *dty.TopNCandidatorsQuery) (types.Message
 	return reply, nil
 }
 
+//Regist       
 func (action *Action) Regist(regist *dty.DposCandidatorRegist) (*types.Receipt, error) {
 	var logs []*types.ReceiptLog
 	var kv []*types.KeyValue
@@ -684,6 +711,7 @@ func (action *Action) Regist(regist *dty.DposCandidatorRegist) (*types.Receipt, 
 	return &types.Receipt{Ty: types.ExecOk, KV: kv, Logs: logs}, nil
 }
 
+//ReRegist              
 func (action *Action) ReRegist(regist *dty.DposCandidatorRegist) (*types.Receipt, error) {
 	var logs []*types.ReceiptLog
 	var kv []*types.KeyValue
@@ -746,6 +774,7 @@ func (action *Action) ReRegist(regist *dty.DposCandidatorRegist) (*types.Receipt
 	return &types.Receipt{Ty: types.ExecOk, KV: kv, Logs: logs}, nil
 }
 
+//CancelRegist            
 func (action *Action) CancelRegist(req *dty.DposCandidatorCancelRegist) (*types.Receipt, error) {
 	var logs []*types.ReceiptLog
 	var kv []*types.KeyValue
@@ -817,6 +846,7 @@ func (action *Action) CancelRegist(req *dty.DposCandidatorCancelRegist) (*types.
 	return &types.Receipt{Ty: types.ExecOk, KV: kv, Logs: logs}, nil
 }
 
+//Vote           
 func (action *Action) Vote(vote *dty.DposVote) (*types.Receipt, error) {
 	var logs []*types.ReceiptLog
 	var kv []*types.KeyValue
@@ -883,6 +913,7 @@ func (action *Action) Vote(vote *dty.DposVote) (*types.Receipt, error) {
 	return &types.Receipt{Ty: types.ExecOk, KV: kv, Logs: logs}, nil
 }
 
+//CancelVote             
 func (action *Action) CancelVote(vote *dty.DposCancelVote) (*types.Receipt, error) {
 	var logs []*types.ReceiptLog
 	var kv []*types.KeyValue
@@ -943,6 +974,7 @@ func (action *Action) CancelVote(vote *dty.DposCancelVote) (*types.Receipt, erro
 	return &types.Receipt{Ty: types.ExecOk, KV: kv, Logs: logs}, nil
 }
 
+//RegistVrfM        Vrf M  （    ）
 func (action *Action) RegistVrfM(vrfMReg *dty.DposVrfMRegist) (*types.Receipt, error) {
 	var logs []*types.ReceiptLog
 	var kv []*types.KeyValue
@@ -992,6 +1024,7 @@ func (action *Action) RegistVrfM(vrfMReg *dty.DposVrfMRegist) (*types.Receipt, e
 	logger.Info("RegistVrfM", "addr", action.fromaddr, "execaddr", action.execaddr, "pubkey", vrfMReg.Pubkey, "cycle", vrfMReg.Cycle, "M", vrfMReg.M, "now", action.blocktime,
 		"info", fmt.Sprintf("cycle:%d,start:%d,middle:%d,stop:%d", cycleInfo.cycle, cycleInfo.cycleStart, middleTime, cycleInfo.cycleStop))
 
+	//todo            cycle      M ，      ，       
 	vrfMTable := dty.NewDposVrfMTable(action.localDB)
 	query := vrfMTable.GetQuery(action.localDB)
 	_, err = query.ListIndex("pubkey_cycle", []byte(fmt.Sprintf("%X:%018d", bPubkey, vrfMReg.Cycle)), nil, 1, 0)
@@ -1022,6 +1055,7 @@ func (action *Action) RegistVrfM(vrfMReg *dty.DposVrfMRegist) (*types.Receipt, e
 	return &types.Receipt{Ty: types.ExecOk, KV: kv, Logs: logs}, nil
 }
 
+//RegistVrfRP        Vrf R/P  
 func (action *Action) RegistVrfRP(vrfRPReg *dty.DposVrfRPRegist) (*types.Receipt, error) {
 	var logs []*types.ReceiptLog
 	var kv []*types.KeyValue
@@ -1049,7 +1083,7 @@ func (action *Action) RegistVrfRP(vrfRPReg *dty.DposVrfRPRegist) (*types.Receipt
 
 	cycleInfo := calcCycleByTime(action.blocktime)
 	middleTime := cycleInfo.cycleStart + (cycleInfo.cycleStop-cycleInfo.cycleStart)/2
-
+	//  cycle      ，      
 	if vrfRPReg.Cycle != cycleInfo.cycle {
 		logger.Error("RegistVrfRP failed", "addr", action.fromaddr, "execaddr", action.execaddr, "cycle is not the same with current blocktime",
 			vrfRPReg.String())
@@ -1063,6 +1097,7 @@ func (action *Action) RegistVrfRP(vrfRPReg *dty.DposVrfRPRegist) (*types.Receipt
 	logger.Info("RegistVrfRP", "addr", action.fromaddr, "execaddr", action.execaddr, "pubkey", vrfRPReg.Pubkey, "cycle", vrfRPReg.Cycle, "R", vrfRPReg.R, "P", vrfRPReg.P,
 		"now", action.blocktime, "info", fmt.Sprintf("cycle:%d,start:%d,middle:%d,stop:%d", cycleInfo.cycle, cycleInfo.cycleStart, middleTime, cycleInfo.cycleStop))
 
+	// localdb      pubkey:cycle   ，     ，     M      ，       R,P。
 	vrfMTable := dty.NewDposVrfMTable(action.localDB)
 	query := vrfMTable.GetQuery(action.localDB)
 	rows, err := query.ListIndex("pubkey_cycle", []byte(fmt.Sprintf("%X:%018d", bPubkey, vrfRPReg.Cycle)), nil, 1, 0)
@@ -1071,7 +1106,9 @@ func (action *Action) RegistVrfRP(vrfRPReg *dty.DposVrfRPRegist) (*types.Receipt
 			vrfRPReg.String())
 		return nil, dty.ErrVrfMNotRegisted
 	}
+	//       R、P，   。
 
+	//todo            cycle      R、P ，      ，       
 	VrfRPTable := dty.NewDposVrfRPTable(action.localDB)
 	query = VrfRPTable.GetQuery(action.localDB)
 	_, err = query.ListIndex("pubkey_cycle", []byte(fmt.Sprintf("%X:%018d", bPubkey, vrfRPReg.Cycle)), nil, 1, 0)
@@ -1104,6 +1141,7 @@ func (action *Action) RegistVrfRP(vrfRPReg *dty.DposVrfRPRegist) (*types.Receipt
 	return &types.Receipt{Ty: types.ExecOk, KV: kv, Logs: logs}, nil
 }
 
+//RecordCB   cycle boundary info
 func (action *Action) RecordCB(cbInfo *dty.DposCBInfo) (*types.Receipt, error) {
 	var logs []*types.ReceiptLog
 	var kv []*types.KeyValue
@@ -1173,6 +1211,7 @@ func (action *Action) RecordCB(cbInfo *dty.DposCBInfo) (*types.Receipt, error) {
 	return &types.Receipt{Ty: types.ExecOk, KV: kv, Logs: logs}, nil
 }
 
+//RegistTopN   TopN  
 func (action *Action) RegistTopN(regist *dty.TopNCandidatorRegist) (*types.Receipt, error) {
 	var logs []*types.ReceiptLog
 	var kv []*types.KeyValue
@@ -1204,6 +1243,7 @@ func (action *Action) RegistTopN(regist *dty.TopNCandidatorRegist) (*types.Recei
 			logger.Error("read old TopN failed.", "addr", action.fromaddr, "execaddr", action.execaddr, "version", version)
 
 			if version == 0 {
+				//        ，       ，    ，          ，         。
 				break
 			} else {
 				version--

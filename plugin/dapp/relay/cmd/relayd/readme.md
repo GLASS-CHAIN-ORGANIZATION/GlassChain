@@ -1,51 +1,51 @@
-# relayd 
+# relayd     
 
-## 
+##   
 
-*   (supervisor)  。
-*   。
-* relayd chain3 GRP  btc websockets HTTPS 。
-* GRP HTT  。
-* bt  chain3  。
-*  chain3 bt TC 。
+*          ，        ，    (supervisor)，   ，   。
+*           ，      ，       。
+* relayd   chain33  GRPC  ，  btcd    websockets，  HTTPS，      。
+*       GRPC  HTTP   ，      。
+*     btc      ，      chain33     ，          。
+*     ，  chain33 btc  TCP  。
 
-## 
+##       
 
-*  blockinfo.or 。
-* SP 。
-* 。
+*       ，   blockinfo.org    。
+* SPV       。
+*          。
 
 ## SPV
-0. block heade ；
-1. has tx_hash；
-2. tx_has  block heade ；
-3. merkle tre has ；
-4. has merkle_root_hash；
-5. block heade merkle_root_has  。
-6. block heade  。
+0.                block header   ；
+1.       hash tx_hash；
+2.       tx_hash     ，  block header            ；
+3.         merkle tree   hash ；
+4.     hash   merkle_root_hash；
+5.       block header  merkle_root_hash  ，       。
+6.    block header     ，              。
 
-## 
+##     
 
-* hash 
-* has 。
-* address ） 。
-* 。
-* timestamp )  10m + hash.time <= hash.time <= hash.time + 2h 。
-*  SP 。
+*        hash，       
+*   hash       。
+*      address（  ），             。
+*       。
+*         timestamp(   )，    10m + hash.time <= hash.time <= hash.time + 2h    。
+*          。 SPV   。
 
-## relay executo 
+## relay executor      
 
-*  
-* rela  ：pending、locking、confirming、canceled、timeout、finishe 。
-* :
-    * pending: 。
-    * locking：   。
-    * confirming:  。
-    * finished:  。
-    * canceled:  timeout、pendin 。
-    * timeout: pendin  ；loc  ； conformin  。
-* unlock  lockin    pendin 。
-* :
+*     ，       
+* relay             ，        ：pending、locking、confirming、canceled、timeout、finished   。
+*     :
+    * pending:        。
+    * locking：       ，     ，        。
+    * confirming:        ，               。
+    * finished:     ，        。
+    * canceled:        ，    timeout、pending          。
+    * timeout: pending          ，    ；lock            ，    ； conforming    ，          。
+* unlock：        ，     locking   ，             ，     ，      pending  。
+*      :
 ```
 
 
@@ -59,35 +59,35 @@
                      -----------+ timeout +----------
 
 
- ：
- ：pending
- ：locking、confirming
- ：finished、cancel、timeout.
+  ：
+       ：pending
+       ：locking、confirming
+       ：finished、cancel、timeout.
 
- unloc ，unloc pending cancele 
- unloc , pending
+    unlock       ，unlock            pending，      canceled  
+     unlock  ,             pending
 
-lockin unloc 1 12* BTC block  BT 
-confirming  4*1 4*12* BTC block
+locking  unlock    12     12*6 BTC block    BTC         
+confirming   ，      4*12    4*12*6 BTC block
 
-finis BTC  ， 6 BT 
+finish     BTC n    ，n   6，    BTC     
 
-   BTC Heade  testNe genesis addr 
+  ：      ，            BTC Header  ，   testNet genesis addr,         
 
- ：
- 。
+  ：
+              。
 ```
 
-##  ）
+##    （   ）
 
-*   。
-*   ？ relay ？
+*     ，       ，    。
+*            ，                        ，        ？，    relayd   ？
 
-## 
+##   
 
-*  hash ？  hash，relay   chain3 unloc 。
-*  ？  relay  。
-*  chain3  ，chain3  executor(relay  has  ：has   。
-*    has    ？
-* ：has   ，chain3 bt   ，bt chain3 。
-    。
+*     ，     hash，      ？  ：    hash，relayd        ，    ，  chain33   unlock  。
+*        ，   ？  ：  relayd         ，      。
+*     ：  chain33        ?     ，chain33   ，  executor(relay)   ，   hash      ， ：hash  。          ，     。
+*     ：             ，            。        hash    ？    ，    ？       ？
+*     ：hash                ， ，      ，chain33         btc   ，     ，   ，btc       chain33    。
+                 。

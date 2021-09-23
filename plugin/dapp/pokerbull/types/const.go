@@ -4,6 +4,8 @@
 
 package types
 
+import "github.com/33cn/chain33/types"
+
 //game action ty
 const (
 	PBGameActionStart = iota + 1
@@ -14,9 +16,9 @@ const (
 )
 
 const (
-	// PlayStyleDefault 
+	// PlayStyleDefault       
 	PlayStyleDefault = iota + 1
-	// PlayStyleDealer 
+	// PlayStyleDealer     
 	PlayStyleDealer
 )
 
@@ -33,9 +35,9 @@ const (
 	TyLogPBGamePlay = 725
 )
 
-/ 
-/ githu  , 
-/  
+//               
+//   github     ，        ,            
+//      ，              
 var (
 	JRPCName        = "pokerbull"
 	PokerBullX      = "pokerbull"
@@ -43,47 +45,49 @@ var (
 )
 
 const (
-	// FuncNameQueryGameListByIDs i gam 
+	// FuncNameQueryGameListByIDs   id    game  
 	FuncNameQueryGameListByIDs = "QueryGameListByIDs"
-	// FuncNameQueryGameByID i game
+	// FuncNameQueryGameByID   id  game
 	FuncNameQueryGameByID = "QueryGameByID"
-	// FuncNameQueryGameByAddr game
+	// FuncNameQueryGameByAddr       game
 	FuncNameQueryGameByAddr = "QueryGameByAddr"
-	// FuncNameQueryGameByStatus statu game
+	// FuncNameQueryGameByStatus   status  game
 	FuncNameQueryGameByStatus = "QueryGameByStatus"
-	// FuncNameQueryGameByRound 
+	// FuncNameQueryGameByRound           
 	FuncNameQueryGameByRound = "QueryGameByRound"
-	// CreateStartTx 
+	// CreateStartTx       
 	CreateStartTx = "Start"
-	// CreateContinueTx 
+	// CreateContinueTx       
 	CreateContinueTx = "Continue"
-	// CreateQuitTx 
+	// CreateQuitTx       
 	CreateQuitTx = "Quit"
-	// CreatePlayTx 
+	// CreatePlayTx          
 	CreatePlayTx = "Play"
 )
 
 const (
-	// ListDESC 
+	// ListDESC   
 	ListDESC = int32(0)
-	// DefaultCount 
+	// DefaultCount           
 	DefaultCount = int32(20)
-	// MaxPlayerNum 
+	// MaxPlayerNum      
 	MaxPlayerNum = 5
-	// MinPlayerNum 
+	// MinPlayerNum      
 	MinPlayerNum = 2
-	// MinPlayValue 
-	MinPlayValue = 10
-	// DefaultStyle 
+	// MinPlayValue     
+	MinPlayValue = 10 * types.Coin
+	// DefaultStyle       
 	DefaultStyle = PlayStyleDefault
-	// PlatformAddress 
+	// PlatformAddress     
 	PlatformAddress = "1PHtChNt3UcfssR7v7trKSk3WJtAWjKjjX"
-	// PlatformFee 
-	PlatformFee = 0.005
-	// DeveloperAddress 
+	// PlatformFee     
+	PlatformFee = int64(0.005 * float64(types.Coin))
+	// DeveloperAddress      
 	DeveloperAddress = "1D6RFZNp2rh6QdbcZ1d7RWuBUz61We6SD7"
-	// DeveloperFee 
-	DeveloperFee = 0.005
-	// PlatformSignAddress 
+	// DeveloperFee      
+	DeveloperFee = int64(0.005 * float64(types.Coin))
+	// WinnerReturn      
+	WinnerReturn = types.Coin - DeveloperFee - PlatformFee
+	// PlatformSignAddress       
 	PlatformSignAddress = "1Geb4ppNiAwMKKyrJgcis3JA57FkqsXvdR"
 )

@@ -32,7 +32,7 @@ func Toeth(amount string, decimal int64) float64 {
 	return f
 }
 
-//ToWei et we 
+//ToWei  eth       wei  
 func ToWei(amount float64, decimal int64) *big.Int {
 
 	var ok bool

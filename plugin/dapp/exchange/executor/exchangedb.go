@@ -36,6 +36,7 @@ func NewAction(e *exchange, tx *types.Transaction, index int) *Action {
 
 //GetIndex get index
 func (a *Action) GetIndex() int64 {
+	//  4 0,      matchorder     
 	return (a.height*types.MaxTxsPerBlock + int64(a.index)) * 1e4
 }
 
@@ -45,6 +46,7 @@ func (a *Action) GetKVSet(order *et.Order) (kvset []*types.KeyValue) {
 	return kvset
 }
 
+//OpSwap   
 func (a *Action) OpSwap(op int32) int32 {
 	if op == et.OpBuy {
 		return et.OpSell
@@ -52,13 +54,15 @@ func (a *Action) OpSwap(op int32) int32 {
 	return et.OpBuy
 }
 
-func CalcActualCost(op int32, amount int64, price, coinPrecision int64) int64 {
+//CalcActualCost       
+func CalcActualCost(op int32, amount int64, price int64) int64 {
 	if op == et.OpBuy {
-		return SafeMul(amount, price, coinPrecision)
+		return SafeMul(amount, price)
 	}
 	return amount
 }
 
+//CheckPrice price        1<=price<=1e16   
 func CheckPrice(price int64) bool {
 	if price > 1e16 || price < 1 {
 		return false
@@ -79,8 +83,9 @@ func CheckCount(count int32) bool {
 	return count <= 20 && count >= 0
 }
 
-func CheckAmount(amount, coinPrecision int64) bool {
-	if amount < coinPrecision || amount >= types.MaxCoin*coinPrecision {
+//CheckAmount     1e8
+func CheckAmount(amount int64) bool {
+	if amount < types.Coin || amount >= types.MaxCoin {
 		return false
 	}
 	return true
@@ -102,11 +107,12 @@ func CheckStatus(status int32) bool {
 	return false
 }
 
-func CheckExchangeAsset(coinExec string, left, right *et.Asset) bool {
+//CheckExchangeAsset            
+func CheckExchangeAsset(left, right *et.Asset) bool {
 	if left.Execer == "" || left.Symbol == "" || right.Execer == "" || right.Symbol == "" {
 		return false
 	}
-	if (left.Execer == coinExec && right.Execer == coinExec) || (left.Symbol == right.Symbol) {
+	if (left.Execer == "coins" && right.Execer == "coins") || (left.Symbol == right.Symbol) {
 		return false
 	}
 	return true
@@ -116,12 +122,12 @@ func CheckExchangeAsset(coinExec string, left, right *et.Asset) bool {
 func (a *Action) LimitOrder(payload *et.LimitOrder) (*types.Receipt, error) {
 	leftAsset := payload.GetLeftAsset()
 	rightAsset := payload.GetRightAsset()
-
-	cfg := a.api.GetConfig()
-	if !CheckExchangeAsset(cfg.GetCoinExec(), leftAsset, rightAsset) {
+	//TODO      ，        ，       checkTx  
+	//coins       bty
+	if !CheckExchangeAsset(leftAsset, rightAsset) {
 		return nil, et.ErrAsset
 	}
-	if !CheckAmount(payload.GetAmount(), cfg.GetCoinPrecision()) {
+	if !CheckAmount(payload.GetAmount()) {
 		return nil, et.ErrAssetAmount
 	}
 	if !CheckPrice(payload.GetPrice()) {
@@ -130,6 +136,8 @@ func (a *Action) LimitOrder(payload *et.LimitOrder) (*types.Receipt, error) {
 	if !CheckOp(payload.GetOp()) {
 		return nil, et.ErrAssetOp
 	}
+	//TODO   symbol
+	cfg := a.api.GetConfig()
 	leftAssetDB, err := account.NewAccountDB(cfg, leftAsset.GetExecer(), leftAsset.GetSymbol(), a.statedb)
 	if err != nil {
 		return nil, err
@@ -138,8 +146,9 @@ func (a *Action) LimitOrder(payload *et.LimitOrder) (*types.Receipt, error) {
 	if err != nil {
 		return nil, err
 	}
+	//       
 	if payload.GetOp() == et.OpBuy {
-		amount := SafeMul(payload.GetAmount(), payload.GetPrice(), cfg.GetCoinPrecision())
+		amount := SafeMul(payload.GetAmount(), payload.GetPrice())
 		rightAccount := rightAssetDB.LoadExecAccount(a.fromaddr, a.execaddr)
 		if rightAccount.Balance < amount {
 			elog.Error("limit check right balance", "addr", a.fromaddr, "avail", rightAccount.Balance, "need", amount)
@@ -188,7 +197,7 @@ func (a *Action) RevokeOrder(payload *et.RevokeOrder) (*types.Receipt, error) {
 		if err != nil {
 			return nil, err
 		}
-		amount := CalcActualCost(et.OpBuy, balance, price, cfg.GetCoinPrecision())
+		amount := CalcActualCost(et.OpBuy, balance, price)
 		rightAccount := rightAssetDB.LoadExecAccount(a.fromaddr, a.execaddr)
 		if rightAccount.Frozen < amount {
 			elog.Error("revoke check right frozen", "addr", a.fromaddr, "avail", rightAccount.Frozen, "amount", amount)
@@ -207,7 +216,7 @@ func (a *Action) RevokeOrder(payload *et.RevokeOrder) (*types.Receipt, error) {
 		if err != nil {
 			return nil, err
 		}
-		amount := CalcActualCost(et.OpSell, balance, price, cfg.GetCoinPrecision())
+		amount := CalcActualCost(et.OpSell, balance, price)
 		leftAccount := leftAssetDB.LoadExecAccount(a.fromaddr, a.execaddr)
 		if leftAccount.Frozen < amount {
 			elog.Error("revoke check left frozen", "addr", a.fromaddr, "avail", leftAccount.Frozen, "amount", amount)
@@ -222,6 +231,7 @@ func (a *Action) RevokeOrder(payload *et.RevokeOrder) (*types.Receipt, error) {
 		kvs = append(kvs, receipt.KV...)
 	}
 
+	//  order  
 	order.Status = et.Revoked
 	order.UpdateTime = a.blocktime
 	kvs = append(kvs, a.GetKVSet(order)...)
@@ -236,7 +246,12 @@ func (a *Action) RevokeOrder(payload *et.RevokeOrder) (*types.Receipt, error) {
 
 }
 
-
+//        
+//   ：
+//1.       ，         。
+//2.       ，           。
+//3.                
+//4.       
 func (a *Action) matchLimitOrder(payload *et.LimitOrder, leftAccountDB, rightAccountDB *account.DB) (*types.Receipt, error) {
 	var logs []*types.ReceiptLog
 	var kvs []*types.KeyValue
@@ -244,7 +259,6 @@ func (a *Action) matchLimitOrder(payload *et.LimitOrder, leftAccountDB, rightAcc
 	var priceKey string
 	var count int
 
-	cfg := a.api.GetConfig()
 	or := &et.Order{
 		OrderID:    a.GetIndex(),
 		Value:      &et.Order_LimitOrder{LimitOrder: payload},
@@ -262,12 +276,14 @@ func (a *Action) matchLimitOrder(payload *et.LimitOrder, leftAccountDB, rightAcc
 		Index: a.GetIndex(),
 	}
 
+	//        100     ,        ，       
+	//        
 	for {
-
+		//              
 		if count >= et.MaxMatchCount {
 			break
 		}
-
+		//            
 		marketDepthList, err := QueryMarketDepth(a.localDB, payload.GetLeftAsset(), payload.GetRightAsset(), a.OpSwap(payload.Op), priceKey, et.Count)
 		if err == types.ErrNotFound {
 			break
@@ -276,17 +292,17 @@ func (a *Action) matchLimitOrder(payload *et.LimitOrder, leftAccountDB, rightAcc
 			if count >= et.MaxMatchCount {
 				break
 			}
-
+			//         
 			if payload.Op == et.OpBuy && marketDepth.Price > payload.GetPrice() {
 				continue
 			}
-
+			//         
 			if payload.Op == et.OpSell && marketDepth.Price < payload.GetPrice() {
 				continue
 			}
-
+			//        
 			for {
-
+				//                
 				if count >= et.MaxMatchCount {
 					break
 				}
@@ -296,31 +312,33 @@ func (a *Action) matchLimitOrder(payload *et.LimitOrder, leftAccountDB, rightAcc
 				}
 
 				for _, matchorder := range orderList.List {
-
+					//              
 					if count >= et.MaxMatchCount {
 						break
 					}
-
+					//       
 					if matchorder.Addr == a.fromaddr {
 						continue
 					}
-
+					//  ,    
 					log, kv, err := a.matchModel(leftAccountDB, rightAccountDB, payload, matchorder, or, re) // payload, or redundant
 					if err != nil {
 						return nil, err
 					}
 					logs = append(logs, log...)
 					kvs = append(kvs, kv...)
+					//    ,    ，      ，     ，  count  
 					if or.Status == et.Completed {
 						receiptlog := &types.ReceiptLog{Ty: et.TyLimitOrderLog, Log: types.Encode(re)}
 						logs = append(logs, receiptlog)
 						receipts := &types.Receipt{Ty: types.ExecOk, KV: kvs, Logs: logs}
 						return receipts, nil
 					}
-
+					//TODO            ?        ，   receipt      ，           ，          ，        
+					//      
 					count = count + 1
 				}
-
+				//       10      ,    
 				if orderList.PrimaryKey == "" {
 					break
 				}
@@ -328,14 +346,16 @@ func (a *Action) matchLimitOrder(payload *et.LimitOrder, leftAccountDB, rightAcc
 			}
 		}
 
+		//         primaryKey         ,    
 		if marketDepthList.PrimaryKey == "" {
 			break
 		}
 		priceKey = marketDepthList.PrimaryKey
 	}
 
+	//                  
 	if payload.Op == et.OpBuy {
-		amount := CalcActualCost(et.OpBuy, or.Balance, payload.Price, cfg.GetCoinPrecision())
+		amount := CalcActualCost(et.OpBuy, or.Balance, payload.Price)
 		receipt, err := rightAccountDB.ExecFrozen(a.fromaddr, a.execaddr, amount)
 		if err != nil {
 			elog.Error("LimitOrder.ExecFrozen", "addr", a.fromaddr, "amount", amount, "err", err.Error())
@@ -345,7 +365,7 @@ func (a *Action) matchLimitOrder(payload *et.LimitOrder, leftAccountDB, rightAcc
 		kvs = append(kvs, receipt.KV...)
 	}
 	if payload.Op == et.OpSell {
-		amount := CalcActualCost(et.OpSell, or.Balance, payload.Price, cfg.GetCoinPrecision())
+		amount := CalcActualCost(et.OpSell, or.Balance, payload.Price)
 		receipt, err := leftAccountDB.ExecFrozen(a.fromaddr, a.execaddr, amount)
 		if err != nil {
 			elog.Error("LimitOrder.ExecFrozen", "addr", a.fromaddr, "amount", amount, "err", err.Error())
@@ -354,7 +374,7 @@ func (a *Action) matchLimitOrder(payload *et.LimitOrder, leftAccountDB, rightAcc
 		logs = append(logs, receipt.Logs...)
 		kvs = append(kvs, receipt.KV...)
 	}
-
+	//  order  
 	kvs = append(kvs, a.GetKVSet(or)...)
 	re.Order = or
 	receiptlog := &types.ReceiptLog{Ty: et.TyLimitOrderLog, Log: types.Encode(re)}
@@ -363,6 +383,7 @@ func (a *Action) matchLimitOrder(payload *et.LimitOrder, leftAccountDB, rightAcc
 	return receipts, nil
 }
 
+//      
 func (a *Action) matchModel(leftAccountDB, rightAccountDB *account.DB, payload *et.LimitOrder, matchorder *et.Order, or *et.Order, re *et.ReceiptExchange) ([]*types.ReceiptLog, []*types.KeyValue, error) {
 	var logs []*types.ReceiptLog
 	var kvs []*types.KeyValue
@@ -377,10 +398,9 @@ func (a *Action) matchModel(leftAccountDB, rightAccountDB *account.DB, payload *
 	elog.Info("try match", "activeId", or.OrderID, "passiveId", matchorder.OrderID, "activeAddr", or.Addr, "passiveAddr",
 		matchorder.Addr, "amount", matched, "price", payload.Price)
 
-	cfg := a.api.GetConfig()
 	if payload.Op == et.OpSell {
-
-		amount := CalcActualCost(matchorder.GetLimitOrder().Op, matched, payload.Price, cfg.GetCoinPrecision())
+		//      
+		amount := CalcActualCost(matchorder.GetLimitOrder().Op, matched, payload.Price)
 		receipt, err := rightAccountDB.ExecTransferFrozen(matchorder.Addr, a.fromaddr, a.execaddr, amount)
 		if err != nil {
 			elog.Error("matchModel.ExecTransferFrozen", "from", matchorder.Addr, "to", a.fromaddr, "amount", amount, "err", err)
@@ -388,9 +408,9 @@ func (a *Action) matchModel(leftAccountDB, rightAccountDB *account.DB, payload *
 		}
 		logs = append(logs, receipt.Logs...)
 		kvs = append(kvs, receipt.KV...)
-
+		//      
 		if payload.Price < matchorder.GetLimitOrder().Price {
-			amount := CalcActualCost(matchorder.GetLimitOrder().Op, matched, matchorder.GetLimitOrder().Price-payload.Price, cfg.GetCoinPrecision())
+			amount := CalcActualCost(matchorder.GetLimitOrder().Op, matched, matchorder.GetLimitOrder().Price-payload.Price)
 			receipt, err := rightAccountDB.ExecActive(matchorder.Addr, a.execaddr, amount)
 			if err != nil {
 				elog.Error("matchModel.ExecActive", "addr", matchorder.Addr, "amount", amount, "err", err.Error())
@@ -399,8 +419,8 @@ func (a *Action) matchModel(leftAccountDB, rightAccountDB *account.DB, payload *
 			logs = append(logs, receipt.Logs...)
 			kvs = append(kvs, receipt.KV...)
 		}
-
-		amount = CalcActualCost(payload.Op, matched, payload.Price, cfg.GetCoinPrecision())
+		//            
+		amount = CalcActualCost(payload.Op, matched, payload.Price)
 		receipt, err = leftAccountDB.ExecTransfer(a.fromaddr, matchorder.Addr, a.execaddr, amount)
 		if err != nil {
 			elog.Error("matchModel.ExecTransfer", "from", a.fromaddr, "to", matchorder.Addr, "amount", amount, "err", err.Error())
@@ -409,13 +429,14 @@ func (a *Action) matchModel(leftAccountDB, rightAccountDB *account.DB, payload *
 		logs = append(logs, receipt.Logs...)
 		kvs = append(kvs, receipt.KV...)
 
+		//                    
 		or.AVGPrice = payload.Price
-
+		//  matchOrder      
 		matchorder.AVGPrice = caclAVGPrice(matchorder, payload.Price, matched) //TODO
 	}
 	if payload.Op == et.OpBuy {
-
-		amount := CalcActualCost(matchorder.GetLimitOrder().Op, matched, matchorder.GetLimitOrder().Price, cfg.GetCoinPrecision())
+		//      
+		amount := CalcActualCost(matchorder.GetLimitOrder().Op, matched, matchorder.GetLimitOrder().Price)
 		receipt, err := leftAccountDB.ExecTransferFrozen(matchorder.Addr, a.fromaddr, a.execaddr, amount)
 		if err != nil {
 			elog.Error("matchModel.ExecTransferFrozen2", "from", matchorder.Addr, "to", a.fromaddr, "amount", amount, "err", err.Error())
@@ -423,8 +444,8 @@ func (a *Action) matchModel(leftAccountDB, rightAccountDB *account.DB, payload *
 		}
 		logs = append(logs, receipt.Logs...)
 		kvs = append(kvs, receipt.KV...)
-
-		amount = CalcActualCost(payload.Op, matched, matchorder.GetLimitOrder().Price, cfg.GetCoinPrecision())
+		//            
+		amount = CalcActualCost(payload.Op, matched, matchorder.GetLimitOrder().Price)
 		receipt, err = rightAccountDB.ExecTransfer(a.fromaddr, matchorder.Addr, a.execaddr, amount)
 		if err != nil {
 			elog.Error("matchModel.ExecTransfer2", "from", a.fromaddr, "to", matchorder.Addr, "amount", amount, "err", err.Error())
@@ -433,8 +454,9 @@ func (a *Action) matchModel(leftAccountDB, rightAccountDB *account.DB, payload *
 		logs = append(logs, receipt.Logs...)
 		kvs = append(kvs, receipt.KV...)
 
+		//    ，         
 		or.AVGPrice = matchorder.GetLimitOrder().Price
-
+		//  matchOrder      
 		matchorder.AVGPrice = caclAVGPrice(matchorder, matchorder.GetLimitOrder().Price, matched) //TODO
 	}
 
@@ -472,6 +494,9 @@ func (a *Action) matchModel(leftAccountDB, rightAccountDB *account.DB, payload *
 	return logs, kvs, nil
 }
 
+//       ，    ，   localdb   ，              
+// 1.          orderID localdb   
+// 2.    ，     ，  orderID localdb          ，             
 func findOrderByOrderID(statedb dbm.KV, localdb dbm.KV, orderID int64) (*et.Order, error) {
 	table := NewMarketOrderTable(localdb)
 	primaryKey := []byte(fmt.Sprintf("%022d", orderID))
@@ -500,7 +525,7 @@ func findOrderIDListByPrice(localdb dbm.KV, left, right *et.Asset, price int64, 
 
 	var rows []*tab.Row
 	var err error
-	if primaryKey == "" { 
+	if primaryKey == "" { //     ,           
 		rows, err = table.ListIndex("market_order", prefix, nil, et.Count, direction)
 	} else {
 		rows, err = table.ListIndex("market_order", prefix, []byte(primaryKey), et.Count, direction)
@@ -512,17 +537,18 @@ func findOrderIDListByPrice(localdb dbm.KV, left, right *et.Asset, price int64, 
 	var orderList et.OrderList
 	for _, row := range rows {
 		order := row.Data.(*et.Order)
-
+		//        
 		order.Executed = order.GetLimitOrder().Amount - order.Balance
 		orderList.List = append(orderList.List, order)
 	}
-
+	//      
 	if len(rows) == int(et.Count) {
 		orderList.PrimaryKey = string(rows[len(rows)-1].Primary)
 	}
 	return &orderList, nil
 }
 
+//Direction           ，    
 func Direction(op int32) int32 {
 	if op == et.OpBuy {
 		return et.ListDESC
@@ -530,6 +556,7 @@ func Direction(op int32) int32 {
 	return et.ListASC
 }
 
+//QueryMarketDepth   primaryKey        ，         ,         ，           
 func QueryMarketDepth(localdb dbm.KV, left, right *et.Asset, op int32, primaryKey string, count int32) (*et.MarketDepthList, error) {
 	table := NewMarketDepthTable(localdb)
 	prefix := []byte(fmt.Sprintf("%s:%s:%d", left.GetSymbol(), right.GetSymbol(), op))
@@ -538,7 +565,7 @@ func QueryMarketDepth(localdb dbm.KV, left, right *et.Asset, op int32, primaryKe
 	}
 	var rows []*tab.Row
 	var err error
-	if primaryKey == "" { 
+	if primaryKey == "" { //     ,           
 		rows, err = table.ListIndex("price", prefix, nil, count, Direction(op))
 	} else {
 		rows, err = table.ListIndex("price", prefix, []byte(primaryKey), count, Direction(op))
@@ -552,13 +579,14 @@ func QueryMarketDepth(localdb dbm.KV, left, right *et.Asset, op int32, primaryKe
 	for _, row := range rows {
 		list.List = append(list.List, row.Data.(*et.MarketDepth))
 	}
-
+	//      
 	if len(rows) == int(count) {
 		list.PrimaryKey = string(rows[len(rows)-1].Primary)
 	}
 	return &list, nil
 }
 
+//QueryHistoryOrderList           
 func QueryHistoryOrderList(localdb dbm.KV, left, right *et.Asset, primaryKey string, count, direction int32) (types.Message, error) {
 	table := NewHistoryOrderTable(localdb)
 	prefix := []byte(fmt.Sprintf("%s:%s", left.Symbol, right.Symbol))
@@ -570,7 +598,7 @@ func QueryHistoryOrderList(localdb dbm.KV, left, right *et.Asset, primaryKey str
 	var err error
 	var orderList et.OrderList
 HERE:
-	if primaryKey == "" { 
+	if primaryKey == "" { //     ,           
 		rows, err = table.ListIndex(indexName, prefix, nil, count, direction)
 	} else {
 		rows, err = table.ListIndex(indexName, prefix, []byte(primaryKey), count, direction)
@@ -584,14 +612,15 @@ HERE:
 	}
 	for _, row := range rows {
 		order := row.Data.(*et.Order)
+		//           completed,revoked        ，      
 		if order.Status == et.Revoked {
 			continue
 		}
-
+		//        
 		order.Executed = order.GetLimitOrder().Amount - order.Balance
 		orderList.List = append(orderList.List, order)
 		if len(orderList.List) == int(count) {
-
+			//      
 			orderList.PrimaryKey = string(row.Primary)
 			return &orderList, nil
 		}
@@ -603,6 +632,7 @@ HERE:
 	return &orderList, nil
 }
 
+//QueryOrderList        
 func QueryOrderList(localdb dbm.KV, addr string, status, count, direction int32, primaryKey string) (types.Message, error) {
 	var table *tab.Table
 	if status == et.Completed || status == et.Revoked {
@@ -617,7 +647,7 @@ func QueryOrderList(localdb dbm.KV, addr string, status, count, direction int32,
 	}
 	var rows []*tab.Row
 	var err error
-	if primaryKey == "" { 
+	if primaryKey == "" { //     ,           
 		rows, err = table.ListIndex(indexName, prefix, nil, count, direction)
 	} else {
 		rows, err = table.ListIndex(indexName, prefix, []byte(primaryKey), count, direction)
@@ -629,11 +659,11 @@ func QueryOrderList(localdb dbm.KV, addr string, status, count, direction int32,
 	var orderList et.OrderList
 	for _, row := range rows {
 		order := row.Data.(*et.Order)
-
+		//        
 		order.Executed = order.GetLimitOrder().Amount - order.Balance
 		orderList.List = append(orderList.List, order)
 	}
-
+	//      
 	if len(rows) == int(count) {
 		orderList.PrimaryKey = string(rows[len(rows)-1].Primary)
 	}
@@ -650,12 +680,14 @@ func queryMarketDepth(localdb dbm.KV, left, right *et.Asset, op int32, price int
 	return row.Data.(*et.MarketDepth), nil
 }
 
-func SafeMul(x, y, coinPrecision int64) int64 {
+//SafeMul math         ，   
+func SafeMul(x, y int64) int64 {
 	res := big.NewInt(0).Mul(big.NewInt(x), big.NewInt(y))
-	res = big.NewInt(0).Div(res, big.NewInt(coinPrecision))
+	res = big.NewInt(0).Div(res, big.NewInt(types.Coin))
 	return res.Int64()
 }
 
+//        
 func caclAVGPrice(order *et.Order, price int64, amount int64) int64 {
 	x := big.NewInt(0).Mul(big.NewInt(order.AVGPrice), big.NewInt(order.GetLimitOrder().Amount-order.GetBalance()))
 	y := big.NewInt(0).Mul(big.NewInt(price), big.NewInt(amount))

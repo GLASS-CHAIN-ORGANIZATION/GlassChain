@@ -5,24 +5,26 @@
 syntax = "proto3";
 
 package types;
-option go_package = "../types";
 
 message VoteResult {
-
+    //    
     int32 totalVotes = 1;
-
+    //    
     int32 approveVotes = 2;
-
+    //    
     int32 opposeVotes = 3;
-
+    //     
     bool pass = 4;
 }
 
 message PublicVote {
-
+    //       
     bool publicity = 1;
+    //    
     int32 totalVotes = 2;
+    //         
     int32 opposeVotes = 3;
+    //     
     bool pubPass = 4;
 }
 
@@ -31,10 +33,15 @@ message VotesRecord {
 }
 
 message RuleConfig {
+    //         , %   ,       
     int32 boardApproveRatio = 1;
+    //         
     int32 pubOpposeRatio = 2;
+    //     
     int64 proposalAmount = 3;
+    //           
     int64 largeProjectAmount = 4;
+    //         （       ）
     int32 publicPeriod = 5;
 }
 

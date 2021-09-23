@@ -5,6 +5,8 @@
 //Package types ...
 package types
 
+import "github.com/33cn/chain33/types"
+
 const (
 	// InvalidAction invalid action type
 	InvalidAction = 0
@@ -39,19 +41,19 @@ const (
 	RingBaseonED25519 = 5
 	// PrivacyMaxCount max mix utxo cout
 	PrivacyMaxCount = 16
-	// PrivacyTxFee privacy tx fee, 1 coin
-	PrivacyTxFee = 1
+	// PrivacyTxFee privacy tx fee
+	PrivacyTxFee = types.Coin
 )
 
 //const ...
 const (
-	// utx 
+	// utxo    
 	UTXOCacheCount = 256
-	// UtxoMaturityDegree utxo 
+	// UtxoMaturityDegree utxo    
 	UtxoMaturityDegree = 12
-	BTYDustThreshold   = 1
+	BTYDustThreshold   = types.Coin
 	ConfirmedHeight    = 12
 	SignatureSize      = (4 + 33 + 65)
-	// Size1Kshiftlen t 1k
+	// Size1Kshiftlen tx    1k
 	Size1Kshiftlen = 10
 )

@@ -12,15 +12,18 @@ import (
 	"github.com/33cn/plugin/plugin/dapp/evm/executor/vm/state"
 )
 
-func CanTransfer(db state.EVMStateDB, sender common.Address, amount uint64) bool {
-	return db.CanTransfer(sender.String(), amount)
+// CanTransfer                         
+func CanTransfer(db state.EVMStateDB, sender, recipient common.Address, amount uint64) bool {
+	return db.CanTransfer(sender.String(), recipient.String(), amount)
 }
 
-
+// Transfer              （         ）
+//               
 func Transfer(db state.EVMStateDB, sender, recipient common.Address, amount uint64) bool {
 	return db.Transfer(sender.String(), recipient.String(), amount)
 }
 
+// GetHashFn            
 func GetHashFn(api client.QueueProtocolAPI) func(blockHeight uint64) common.Hash {
 	return func(blockHeight uint64) common.Hash {
 		if api != nil {

@@ -3,27 +3,26 @@ TestNet=true
 FixTime=false
 version="6.3.0"
 
-[crypto]
 
 [log]
-# Log level, support debug(dbug)/info/warn/error(eror)/crit
+#     ，  debug(dbug)/info/warn/error(eror)/crit
 loglevel = "debug"
 logConsoleLevel = "info"
-# Log file name, with a directory, all generated log files are placed in this directory
+#      ，    ，                
 logFile = "logs/chain33.log"
-# Maximum value of a single log file (unit: megabytes)
+#           （  ： ）
 maxFileSize = 300
-# Maximum number of saved historical log files
+#              
 maxBackups = 100
-# The most saved historical log messages (unit: day)
+#            （  ： ）
 maxAge = 28
-# Whether the log file name uses local events (otherwise UTC time is used)
+#              （    UTC  ）
 localTime = true
-# Whether the history log file is compressed (compression format is gz)
+#           （     gz）
 compress = true
-# Whether to print the calling source file and line number
+#             
 callerFile = false
-# Whether to print the calling method
+#         
 callerFunction = false
 
 [blockchain]
@@ -41,33 +40,33 @@ isRecordBlockSequence=true
 isParaChain=false
 enableTxQuickIndex=true
 enableReExecLocal=true
-# Enable streamlininglocaldb
+#     localdb
 enableReduceLocaldb=true
 enablePushSubscribe=false
 
-# Turn off shard storage, the default false is to turn on shard storage; parachain does not require sharding and needs to modify this default parameter to true
+#       ,  false       ;                  true
 disableShard=false
-# The number of blocks contained in each large block in shard storage
-chunkblockNum=100
-# Enable to get data from P2pStore
-enableFetchP2pstore=true
-# After enabling the assumption that the archived data has been deleted, get the data situation
+#                
+chunkblockNum=1000
+#    P2pStore     
+enableFetchP2pstore=false
+#              ,      
 enableIfDelLocalChunk=false
 
 [p2p]
-# p2p type
-types=["dht"]
-# Whether to start P2P service
+# p2p  
+types=["dht", "gossip"]
+#     P2P  
 enable=true
-# Type of database used
+#         
 driver="leveldb"
-# Type of database used
+#         
 dbPath="datadir/addrbook"
-# Database cache size
+#        
 dbCache=4
-# GRPC Request log file
+# GRPC      
 grpcLogFile="grpc33.log"
-#waitPid Waiting for the seed to be imported
+#waitPid   seed  
 waitPid=false
 
 
@@ -83,10 +82,15 @@ innerBounds=300
 seeds=[]
 port=13803
 maxConnectNum=100
-# Prohibit discovering nodes via LAN
+#            
 disableFindLANPeers=false
-# Configured as a full node mode, the full node saves all fragmented data
-isFullNode=false
+#         ，           
+isFullNode=true
+#          ，          ，             ，          
+#   : "/ip4/139.196.46.175/tcp/13803/p2p/16Uiu2HAkvnDRF8HQTTU5Uu5GmtbLDrgPxCwgVsn2QQ9VEU7Eiwjw"
+fullNodes=[]
+
+
 
 [rpc]
 jrpcBindAddr="localhost:8801"
@@ -100,11 +104,11 @@ grpcFuncWhitelist=["*"]
 name="price"
 poolCacheSize=10240
 maxTxNumPerAccount=100
-# The minimum transaction fee rate, this has no default value, it is required, generally it is0.001 coins
+#          ，       ，  ，   0.001 coins
 minTxFeeRate=100000
-# The largest transaction fee rate, 0.1 coins
+#          , 0.1 coins
 maxTxFeeRate=10000000
-# The largest handling fee for a single transaction, 10 coins
+#           , 10 coins
 maxTxFee=1000000000
 isLevelFee=true
 [mempool.sub.timeline]
@@ -112,9 +116,9 @@ poolCacheSize=10240
 
 [mempool.sub.score]
 poolCacheSize=10240
-timeParam=1      #Time to price ratio
-priceConstant=10  #The handling fee is a constant relative to the time. When queuing, the handling fee is 1e3 higher ~= 1h faster
-pricePower=1     #Constant ratio
+timeParam=1      #       
+priceConstant=10  #              ,       1e3   ~= 1h   
+pricePower=1     #    
 
 [mempool.sub.price]
 poolCacheSize=10240
@@ -190,7 +194,7 @@ name="kvmvccmavl"
 driver="leveldb"
 dbPath="datadir/mavltree"
 dbCache=128
-# store Database version
+# store     
 storedbVersion="2.0.0"
 
 [store.sub.mavl]
@@ -198,11 +202,11 @@ enableMavlPrefix=false
 enableMVCC=false
 enableMavlPrune=false
 pruneHeight=10000
-# Whether to enable mavl data to be loaded into memory
+#     mavl      
 enableMemTree=true
-# Whether to enable mavl leaf node data to be loaded into memory
+#     mavl          
 enableMemVal=true
-# The number of close tickets in the cache, the larger the cache, the faster the synchronization speed, the maximum is set to 1,500,000
+#   close ticket  ，           ，     1500000
 tkCloseCacheLen=100000
 
 [store.sub.kvmvccmavl]
@@ -213,13 +217,13 @@ enableMavlPrune=false
 pruneMavlHeight=10000
 enableMVCCPrune=false
 pruneMVCCHeight=10000
-# Whether to enable mavl data to be loaded into memory
+#     mavl      
 enableMemTree=true
-# Whether to enable mavl leaf node data to be loaded into memory
+#     mavl          
 enableMemVal=true
-# The number of close tickets in the cache, the larger the cache, the faster the synchronization speed, the maximum is set to 1,500,000
+#   close ticket  ，           ，     1500000
 tkCloseCacheLen=100000
-# This parameter is for parachains, the main chain does not need to enable this function
+#         ，         
 enableEmptyBlockHandle=false
 
 [wallet]
@@ -253,11 +257,11 @@ tokenApprs = [
 ]
 
 [exec.sub.cert]
-# Whether to enable certificate verification and signing
+#            
 enable=false
-# Encrypted file path
+#       
 cryptoPath="authdir/crypto"
-# With certificate signature type, support "auth_ecdsa", "auth_sm2"
+#        ，  "auth_ecdsa", "auth_sm2"
 signType="auth_ecdsa"
 
 [exec.sub.relay]
@@ -271,28 +275,21 @@ superManager=[
 ]
 [exec.sub.paracross]
 nodeGroupFrozenCoins=0
-#Parallel chain consensus stops waiting for the height of the main chain
+#               
 paraConsensusStopBlocks=30000
 
 [exec.sub.autonomy]
 total="16htvcBNSEA7fZhAdLJphDwQRQJaHpyHTp"
 useBalance=false
 
-[exec.sub.evm]
-#Free transaction fee mode The maximum gas allowed by the alliance chain. This configuration is only effective for deployment methods that do not charge transaction fees. This configuration will not work under other deployment methods.
-#Currently the maximum is 2 million
-evmGasLimit=2000000
-#evmInternal debug output, instruction level, default off, 0: off; 1: on
-evmDebugEnable=0
-
 [metrics]
-#Is it possible to send metrics data
+#      metrics     
 enableMetrics=false
-#Data Save Mode
+#      
 dataEmitMode="influxdb"
 
 [metrics.sub.influxdb]
-#Send interval in nanoseconds
+#           
 duration=1000000000
 url="http://influxdb:8086"
 database="chain33metrics"

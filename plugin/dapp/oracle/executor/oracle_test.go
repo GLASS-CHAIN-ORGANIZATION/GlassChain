@@ -49,7 +49,7 @@ func init() {
 func TestOrace(t *testing.T) {
 	cfg := types.NewChain33Config(strings.Replace(types.GetDefaultCfgstring(), "Title=\"local\"", "Title=\"chain33\"", 1))
 	Init(oty.OracleX, cfg, nil)
-	total := 100 * types.DefaultCoinPrecision
+	total := 100 * types.Coin
 	accountA := types.Account{
 		Balance: total,
 		Frozen:  0,
@@ -93,7 +93,7 @@ func TestOrace(t *testing.T) {
 		1539918074,
 	}
 
-	// set config key 
+	// set config key   
 	item := &types.ConfigItem{
 		Key: "mavl-manage-oracle-publish-event",
 		Value: &types.ConfigItem_Arr{
@@ -137,7 +137,7 @@ func TestOrace(t *testing.T) {
 		kvdb.Set(kv.Key, kv.Value)
 	}
 	var eventID string
-	/ eventID
+	//  eventID
 	for _, log := range receipt.Logs {
 		if log.Ty >= oty.TyLogEventPublish && log.Ty <= oty.TyLogResultPublish {
 			status := oty.ReceiptOracle{}
@@ -147,7 +147,7 @@ func TestOrace(t *testing.T) {
 		}
 	}
 	t.Log("eventID:", eventID)
-	/ 
+	//    
 	msg, err := exec.Query(oty.FuncNameQueryOracleListByIDs, types.Encode(&oty.QueryOracleInfos{
 		EventID: []string{eventID}}))
 	if err != nil {
@@ -158,7 +158,7 @@ func TestOrace(t *testing.T) {
 	reply := msg.(*oty.ReplyOracleStatusList)
 	assert.Equal(t, int32(oty.EventPublished), reply.Status[0].Status.Status)
 
-	/ eventID
+	//      eventID
 	msg, err = exec.Query(oty.FuncNameQueryEventIDByStatus, types.Encode(&oty.QueryEventID{
 		Status: int32(oty.EventPublished)}))
 	if err != nil {
@@ -168,7 +168,7 @@ func TestOrace(t *testing.T) {
 	reply2 := msg.(*oty.ReplyEventIDs)
 	assert.Equal(t, eventID, reply2.EventID[0])
 
-	/ 
+	//         
 	msg, err = exec.Query(oty.FuncNameQueryEventIDByAddrAndStatus, types.Encode(&oty.QueryEventID{
 		Status: int32(oty.EventPublished), Addr: string(Nodes[0])}))
 	if err != nil {
@@ -178,7 +178,7 @@ func TestOrace(t *testing.T) {
 	reply3 := msg.(*oty.ReplyEventIDs)
 	assert.Equal(t, eventID, reply3.EventID[0])
 
-	/ 
+	//         
 	msg, err = exec.Query(oty.FuncNameQueryEventIDByTypeAndStatus, types.Encode(&oty.QueryEventID{
 		Status: int32(oty.EventPublished), Type: "football"}))
 	if err != nil {
@@ -289,7 +289,7 @@ func TestOrace(t *testing.T) {
 		kvdb.Set(kv.Key, kv.Value)
 	}
 	//var eventID string
-	/ eventID
+	//  eventID
 	for _, log := range receipt.Logs {
 		if log.Ty >= oty.TyLogEventPublish && log.Ty <= oty.TyLogResultPublish {
 			status := oty.ReceiptOracle{}
@@ -299,7 +299,7 @@ func TestOrace(t *testing.T) {
 		}
 	}
 	t.Log("eventID:", eventID)
-	/ 
+	//    
 	msg, err = exec.Query(oty.FuncNameQueryOracleListByIDs, types.Encode(&oty.QueryOracleInfos{
 		EventID: []string{eventID}}))
 	if err != nil {
@@ -384,7 +384,7 @@ func TestOrace(t *testing.T) {
 		kvdb.Set(kv.Key, kv.Value)
 	}
 	//var eventID string
-	/ eventID
+	//  eventID
 	for _, log := range receipt.Logs {
 		if log.Ty >= oty.TyLogEventPublish && log.Ty <= oty.TyLogResultPublish {
 			status := oty.ReceiptOracle{}
@@ -394,7 +394,7 @@ func TestOrace(t *testing.T) {
 		}
 	}
 	t.Log("eventID:", eventID)
-	/ 
+	//    
 	msg, err = exec.Query(oty.FuncNameQueryOracleListByIDs, types.Encode(&oty.QueryOracleInfos{
 		EventID: []string{eventID}}))
 	if err != nil {

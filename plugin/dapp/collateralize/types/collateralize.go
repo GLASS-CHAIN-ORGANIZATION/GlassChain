@@ -9,8 +9,6 @@ import (
 	"math"
 	"reflect"
 
-	"github.com/pkg/errors"
-
 	"github.com/33cn/chain33/common/address"
 	log "github.com/33cn/chain33/common/log/log15"
 	"github.com/33cn/chain33/types"
@@ -50,6 +48,7 @@ func NewType(cfg *types.Chain33Config) *CollateralizeType {
 	return c
 }
 
+// GetName        
 func (collateralize *CollateralizeType) GetName() string {
 	return CollateralizeX
 }
@@ -156,12 +155,9 @@ func CreateRawCollateralizeCreateTx(cfg *types.Chain33Config, parm *Collateraliz
 		llog.Error("CreateRawCollateralizeCreateTx", "parm", parm)
 		return nil, types.ErrInvalidParam
 	}
-	totalBalanceInt64, err := types.FormatFloatDisplay2Value(parm.TotalBalance, cfg.GetCoinPrecision())
-	if err != nil {
-		return nil, errors.Wrapf(types.ErrInvalidParam, "FormatFloatDisplay2Value.TotalBalance")
-	}
+
 	v := &CollateralizeCreate{
-		TotalBalance: totalBalanceInt64,
+		TotalBalance: int64(math.Trunc((parm.TotalBalance+0.0000001)*1e4)) * 1e4,
 	}
 	create := &CollateralizeAction{
 		Ty:    CollateralizeActionCreate,
@@ -174,7 +170,7 @@ func CreateRawCollateralizeCreateTx(cfg *types.Chain33Config, parm *Collateraliz
 		To:      address.ExecAddress(cfg.ExecName(CollateralizeX)),
 	}
 	name := cfg.ExecName(CollateralizeX)
-	tx, err = types.FormatTx(cfg, name, tx)
+	tx, err := types.FormatTx(cfg, name, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -187,13 +183,10 @@ func CreateRawCollateralizeBorrowTx(cfg *types.Chain33Config, parm *Collateraliz
 		llog.Error("CreateRawCollateralizeBorrowTx", "parm", parm)
 		return nil, types.ErrInvalidParam
 	}
-	valueInt64, err := types.FormatFloatDisplay2Value(parm.Value, cfg.GetCoinPrecision())
-	if err != nil {
-		return nil, errors.Wrapf(types.ErrInvalidParam, "FormatFloatDisplay2Value.Value")
-	}
+
 	v := &CollateralizeBorrow{
 		CollateralizeId: parm.CollateralizeID,
-		Value:           valueInt64,
+		Value:           int64(math.Trunc((parm.Value+0.0000001)*1e4)) * 1e4,
 	}
 	borrow := &CollateralizeAction{
 		Ty:    CollateralizeActionBorrow,
@@ -206,7 +199,7 @@ func CreateRawCollateralizeBorrowTx(cfg *types.Chain33Config, parm *Collateraliz
 		To:      address.ExecAddress(cfg.ExecName(CollateralizeX)),
 	}
 	name := cfg.ExecName(CollateralizeX)
-	tx, err = types.FormatTx(cfg, name, tx)
+	tx, err := types.FormatTx(cfg, name, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -248,14 +241,11 @@ func CreateRawCollateralizeAppendTx(cfg *types.Chain33Config, parm *Collateraliz
 		llog.Error("CreateRawCollateralizeAppendTx", "parm", parm)
 		return nil, types.ErrInvalidParam
 	}
-	valueInt64, err := types.FormatFloatDisplay2Value(parm.Value, cfg.GetCoinPrecision())
-	if err != nil {
-		return nil, errors.Wrapf(types.ErrInvalidParam, "FormatFloatDisplay2Value.Value")
-	}
+
 	v := &CollateralizeAppend{
 		CollateralizeId: parm.CollateralizeID,
 		RecordId:        parm.RecordID,
-		CollateralValue: valueInt64,
+		CollateralValue: int64(math.Trunc((parm.Value+0.0000001)*1e4)) * 1e4,
 	}
 	append := &CollateralizeAction{
 		Ty:    CollateralizeActionAppend,
@@ -268,7 +258,7 @@ func CreateRawCollateralizeAppendTx(cfg *types.Chain33Config, parm *Collateraliz
 		To:      address.ExecAddress(cfg.ExecName(CollateralizeX)),
 	}
 	name := cfg.ExecName(CollateralizeX)
-	tx, err = types.FormatTx(cfg, name, tx)
+	tx, err := types.FormatTx(cfg, name, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -314,13 +304,10 @@ func CreateRawCollateralizeRetrieveTx(cfg *types.Chain33Config, parm *Collateral
 		llog.Error("CreateRawCollateralizeCloseTx", "parm", parm)
 		return nil, types.ErrInvalidParam
 	}
-	balanceInt64, err := types.FormatFloatDisplay2Value(parm.Balance, cfg.GetCoinPrecision())
-	if err != nil {
-		return nil, errors.Wrapf(types.ErrInvalidParam, "FormatFloatDisplay2Value.Balance")
-	}
+
 	v := &CollateralizeRetrieve{
 		CollateralizeId: parm.CollateralizeID,
-		Balance:         balanceInt64,
+		Balance:         int64(math.Trunc((parm.Balance+0.0000001)*1e4)) * 1e4,
 	}
 	close := &CollateralizeAction{
 		Ty:    CollateralizeActionRetrieve,
@@ -334,7 +321,7 @@ func CreateRawCollateralizeRetrieveTx(cfg *types.Chain33Config, parm *Collateral
 	}
 
 	name := cfg.ExecName(CollateralizeX)
-	tx, err = types.FormatTx(cfg, name, tx)
+	tx, err := types.FormatTx(cfg, name, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -347,20 +334,13 @@ func CreateRawCollateralizeManageTx(cfg *types.Chain33Config, parm *Collateraliz
 		llog.Error("CreateRawCollateralizeManageTx", "parm", parm)
 		return nil, types.ErrInvalidParam
 	}
-	totalBalanceInt64, err := types.FormatFloatDisplay2Value(parm.TotalBalance, cfg.GetCoinPrecision())
-	if err != nil {
-		return nil, errors.Wrapf(types.ErrInvalidParam, "FormatFloatDisplay2Value.totalBalance")
-	}
-	debtCeilingInt64, err := types.FormatFloatDisplay2Value(parm.DebtCeiling, cfg.GetCoinPrecision())
-	if err != nil {
-		return nil, errors.Wrapf(types.ErrInvalidParam, "FormatFloatDisplay2Value.DebtCeiling")
-	}
+
 	v := &CollateralizeManage{
-		DebtCeiling:       debtCeilingInt64,
+		DebtCeiling:       int64(math.Trunc((parm.DebtCeiling+0.0000001)*1e4)) * 1e4,
 		LiquidationRatio:  int64(math.Trunc((parm.LiquidationRatio + 0.0000001) * 1e4)),
 		StabilityFeeRatio: int64(math.Trunc((parm.StabilityFeeRatio + 0.0000001) * 1e4)),
 		Period:            parm.Period,
-		TotalBalance:      totalBalanceInt64,
+		TotalBalance:      int64(math.Trunc((parm.TotalBalance+0.0000001)*1e4)) * 1e4,
 	}
 
 	manage := &CollateralizeAction{
@@ -375,7 +355,7 @@ func CreateRawCollateralizeManageTx(cfg *types.Chain33Config, parm *Collateraliz
 	}
 
 	name := cfg.ExecName(CollateralizeX)
-	tx, err = types.FormatTx(cfg, name, tx)
+	tx, err := types.FormatTx(cfg, name, tx)
 	if err != nil {
 		return nil, err
 	}

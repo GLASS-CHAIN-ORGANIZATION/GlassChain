@@ -232,7 +232,7 @@ func (t Type) GetType() reflect.Type {
 	case TupleTy:
 		return t.TupleType
 	case AddressTy:
-
+		//TODO    chain33  evm  
 		return reflect.TypeOf(common.Hash160Address{})
 	case FixedBytesTy:
 		return reflect.ArrayOf(t.Size, reflect.TypeOf(byte(0)))

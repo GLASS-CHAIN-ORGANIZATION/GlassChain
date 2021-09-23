@@ -20,8 +20,8 @@ import (
 )
 
 const (
-	testProjectAmount int64 = types.DefaultCoinPrecision * 100  
-	testFundAmount    int64 = types.DefaultCoinPrecision * 1000 
+	testProjectAmount int64 = types.Coin * 100  //       
+	testFundAmount    int64 = types.Coin * 1000 //       
 )
 
 func InitBoard(stateDB dbm.KV) {
@@ -37,8 +37,8 @@ func InitRule(stateDB dbm.KV) {
 	rule := &auty.RuleConfig{
 		BoardApproveRatio:  boardApproveRatio,
 		PubOpposeRatio:     pubOpposeRatio,
-		ProposalAmount:     proposalAmount * types.DefaultCoinPrecision,
-		LargeProjectAmount: 100 * types.DefaultCoinPrecision,
+		ProposalAmount:     proposalAmount,
+		LargeProjectAmount: types.Coin * 100,
 		PublicPeriod:       publicPeriod,
 	}
 	stateDB.Set(activeRuleID(), types.Encode(rule))
@@ -109,7 +109,7 @@ func TestPropProject(t *testing.T) {
 		if i == 4 {
 			act := &auty.ActiveBoard{
 				Boards: boards,
-				Amount: maxBoardPeriodAmount * types.DefaultCoinPrecision,
+				Amount: maxBoardPeriodAmount,
 			}
 			err := stateDB.Set(activeBoardID(), types.Encode(act))
 			assert.NoError(t, err)
@@ -151,7 +151,7 @@ func TestPubVoteProposalProject(t *testing.T) {
 	// voteProposalProject
 	voteProposalProject(t, env, exec, stateDB, kvdb, true)
 	// pubVoteProposalProject
-	pubVoteProposalProject(t, env, exec, stateDB, kvdb, true) 
+	pubVoteProposalProject(t, env, exec, stateDB, kvdb, true) //           
 	// terminate
 	// check
 	checkPubVoteProposalProjectResult(t, stateDB, env.txHash)
@@ -172,7 +172,7 @@ func TestBoardPeriodAmount(t *testing.T) {
 	InitFund(stateDB, testProjectAmount)
 	act := &auty.ActiveBoard{
 		Boards:      boards,
-		Amount:      maxBoardPeriodAmount*types.DefaultCoinPrecision - 100,
+		Amount:      maxBoardPeriodAmount - 100,
 		StartHeight: 10,
 	}
 	stateDB.Set(activeBoardID(), types.Encode(act))
@@ -245,6 +245,7 @@ func testPropProject(t *testing.T, env *ExecEnv, exec drivers.Driver, stateDB db
 		}
 	}
 
+	//   tahash
 	env.txHash = common.ToHex(pbtx.Hash())
 	env.startHeight = opt1.StartBlockHeight
 	env.endHeight = opt1.EndBlockHeight
@@ -253,7 +254,7 @@ func testPropProject(t *testing.T, env *ExecEnv, exec drivers.Driver, stateDB db
 	accCoin := account.NewCoinsAccount(chainTestCfg)
 	accCoin.SetDB(stateDB)
 	account := accCoin.LoadExecAccount(AddrA, autonomyAddr)
-	assert.Equal(t, proposalAmount*types.DefaultCoinPrecision, account.Frozen)
+	assert.Equal(t, proposalAmount, account.Frozen)
 }
 
 func propProjectTx(parm *auty.ProposalProject) (*types.Transaction, error) {
@@ -344,6 +345,7 @@ func voteProposalProject(t *testing.T, env *ExecEnv, exec drivers.Driver, stateD
 	exec.SetAPI(api)
 
 	proposalID := env.txHash
+	// 4     ，3    ，1    
 	type record struct {
 		priv string
 		appr bool
@@ -375,6 +377,7 @@ func voteProposalProject(t *testing.T, env *ExecEnv, exec drivers.Driver, stateD
 		assert.NoError(t, err)
 		tx, err = signTx(tx, record.priv)
 		assert.NoError(t, err)
+		//            
 		exec.SetEnv(env.startHeight, env.blockTime, env.difficulty)
 
 		receipt, err := exec.Exec(tx, int(1))
@@ -399,6 +402,7 @@ func voteProposalProject(t *testing.T, env *ExecEnv, exec drivers.Driver, stateD
 		assert.NoError(t, err)
 		assert.NotNil(t, set)
 
+		//         
 		acc := &types.Account{
 			Currency: 0,
 			Frozen:   total,
@@ -437,10 +441,10 @@ func checkVoteProposalProjectResult(t *testing.T, stateDB dbm.KV, proposalID str
 	account := accCoin.LoadExecAccount(AddrA, autonomyAddr)
 	assert.Equal(t, int64(0), account.Frozen)
 	account = accCoin.LoadExecAccount(autonomyAddr, autonomyAddr)
-	assert.Equal(t, proposalAmount*types.DefaultCoinPrecision, account.Balance)
+	assert.Equal(t, proposalAmount, account.Balance)
 	account = accCoin.LoadExecAccount(AddrD, autonomyAddr)
 	assert.Equal(t, testProjectAmount, account.Balance)
-
+	//           
 	value, err = stateDB.Get(activeBoardID())
 	assert.NoError(t, err)
 	aBd := &auty.ActiveBoard{}
@@ -476,6 +480,7 @@ func pubVoteProposalProject(t *testing.T, env *ExecEnv, exec drivers.Driver, sta
 	exec.SetAPI(api)
 
 	proposalID := env.txHash
+	// 3     ，2    ，1    
 	type record struct {
 		priv   string
 		appr   bool
@@ -497,6 +502,7 @@ func pubVoteProposalProject(t *testing.T, env *ExecEnv, exec drivers.Driver, sta
 		assert.NoError(t, err)
 		tx, err = signTx(tx, record.priv)
 		assert.NoError(t, err)
+		//            
 		exec.SetEnv(env.startHeight, env.blockTime, env.difficulty)
 
 		receipt, err := exec.Exec(tx, int(1))
@@ -521,6 +527,7 @@ func pubVoteProposalProject(t *testing.T, env *ExecEnv, exec drivers.Driver, sta
 		assert.NoError(t, err)
 		assert.NotNil(t, set)
 
+		//         ,                   
 		if i+1 < len(records) {
 			for j := 0; j < len(records[i+1].origin); j++ {
 				acc := &types.Account{
@@ -554,8 +561,9 @@ func checkPubVoteProposalProjectResult(t *testing.T, stateDB dbm.KV, proposalID 
 	account = accCoin.LoadExecAccount(AddrD, autonomyAddr)
 	assert.Equal(t, int64(0), account.Balance)
 	account = accCoin.LoadExecAccount(autonomyAddr, autonomyAddr)
-	assert.Equal(t, proposalAmount*types.DefaultCoinPrecision, account.Balance)
+	assert.Equal(t, proposalAmount, account.Balance)
 
+	//           
 	value, err = stateDB.Get(activeBoardID())
 	assert.NoError(t, err)
 	aBd := &auty.ActiveBoard{}

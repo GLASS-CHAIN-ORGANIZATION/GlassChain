@@ -14,7 +14,7 @@ func newStore(db db.DB) *ticketStore {
 	return &ticketStore{Store: wcom.NewStore(db)}
 }
 
-// ticketStore ticke 
+// ticketStore ticket          
 type ticketStore struct {
 	*wcom.Store
 }

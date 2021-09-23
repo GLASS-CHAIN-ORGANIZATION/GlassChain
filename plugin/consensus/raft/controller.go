@@ -73,9 +73,10 @@ func NewRaftCluster(cfg *types.Consensus, sub []byte) queue.Module {
 	}
 	if int(subcfg.NodeID) == 0 || strings.Compare(subcfg.PeersURL, "") == 0 {
 		rlog.Error("Please check whether the configuration of nodeId and peersURL is empty!")
+		//TODO          ，         nil,          
 		return nil
 	}
-
+	//   10000 Entry   snapshot
 	if subcfg.DefaultSnapCount > 0 {
 		defaultSnapCount = uint64(subcfg.DefaultSnapCount)
 		snapshotCatchUpEntriesN = uint64(subcfg.DefaultSnapCount)
@@ -95,7 +96,8 @@ func NewRaftCluster(cfg *types.Consensus, sub []byte) queue.Module {
 
 	var b *Client
 	getSnapshot := func() ([]byte, error) { return b.getSnapshot() }
-
+	// raft     ,1.      channel： propose channel      raft    , commit channel    commit  
+	// 2. raft          http  
 	peers := strings.Split(subcfg.PeersURL, ",")
 	if len(peers) == 1 && peers[0] == "" {
 		peers = []string{}
@@ -108,15 +110,15 @@ func NewRaftCluster(cfg *types.Consensus, sub []byte) queue.Module {
 	if len(addPeers) == 1 && addPeers[0] == "" {
 		addPeers = []string{}
 	}
-
+	//  context         
 	ctx, stop := context.WithCancel(context.Background())
 	// propose channel
 	proposeC := make(chan *types.Block)
 	confChangeC = make(chan raftpb.ConfChange)
 	commitC, errorC, snapshotterReady, validatorC := NewRaftNode(ctx, int(subcfg.NodeID), subcfg.IsNewJoinNode, peers, readOnlyPeers, addPeers, getSnapshot, proposeC, confChangeC)
-
+	//  raft        
 	go serveHTTPRaftAPI(ctx, int(subcfg.RaftAPIPort), confChangeC, errorC)
-
+	//   commit channel, block
 	b = NewBlockstore(ctx, cfg, <-snapshotterReady, proposeC, commitC, errorC, validatorC, stop)
 	return b
 }

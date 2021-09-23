@@ -5,7 +5,6 @@
 package executor
 
 import (
-	"strings"
 	"testing"
 
 	apimock "github.com/33cn/chain33/client/mocks"
@@ -40,9 +39,7 @@ func (s *suiteRelayLog) SetupSuite() {
 	}
 	s.db = new(mocks.KV)
 
-	cfg := types.NewChain33Config(strings.Replace(types.GetDefaultCfgstring(), "Title=\"local\"", "Title=\"chain33\"", 1))
-
-	s.log = newRelayLog(order, cfg)
+	s.log = newRelayLog(order)
 }
 
 func (s *suiteRelayLog) TestSave() {

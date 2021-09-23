@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// IssuanceCmd        
 func IssuanceCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "issuance",
@@ -31,6 +32,7 @@ func IssuanceCmd() *cobra.Command {
 	return cmd
 }
 
+// IssuanceCreateRawTxCmd          
 func IssuanceCreateRawTxCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "create",
@@ -51,7 +53,11 @@ func addIssuanceCreateFlags(cmd *cobra.Command) {
 
 //IssuanceCreate ....
 func IssuanceCreate(cmd *cobra.Command, args []string) {
-	paraName, _ := cmd.Flags().GetString("paraName")
+	title, _ := cmd.Flags().GetString("title")
+	cfg := types.GetCliSysParam(title)
+	if cfg == nil {
+		panic(fmt.Sprintln("can not find CliSysParam title", title))
+	}
 
 	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
 	balance, _ := cmd.Flags().GetFloat64("balance")
@@ -60,7 +66,7 @@ func IssuanceCreate(cmd *cobra.Command, args []string) {
 	period, _ := cmd.Flags().GetUint64("period")
 
 	params := &rpctypes.CreateTxIn{
-		Execer:     types.GetExecName(pkt.IssuanceX, paraName),
+		Execer:     cfg.ExecName(pkt.IssuanceX),
 		ActionName: "IssuanceCreate",
 		Payload: []byte(fmt.Sprintf("{\"totalBalance\":%f, \"debtCeiling\":%f, \"liquidationRatio\":%f, \"period\":%d}",
 			balance, debtCeiling, liquidationRatio, period)),
@@ -71,6 +77,7 @@ func IssuanceCreate(cmd *cobra.Command, args []string) {
 	ctx.RunWithoutMarshal()
 }
 
+// IssuanceDebtRawTxCmd          
 func IssuanceDebtRawTxCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "debt",
@@ -90,14 +97,18 @@ func addIssuanceDebtFlags(cmd *cobra.Command) {
 
 //IssuanceDebt ...
 func IssuanceDebt(cmd *cobra.Command, args []string) {
-	paraName, _ := cmd.Flags().GetString("paraName")
+	title, _ := cmd.Flags().GetString("title")
+	cfg := types.GetCliSysParam(title)
+	if cfg == nil {
+		panic(fmt.Sprintln("can not find CliSysParam title", title))
+	}
 
 	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
 	issuanceID, _ := cmd.Flags().GetString("issuanceID")
 	value, _ := cmd.Flags().GetFloat64("value")
 
 	params := &rpctypes.CreateTxIn{
-		Execer:     types.GetExecName(pkt.IssuanceX, paraName),
+		Execer:     cfg.ExecName(pkt.IssuanceX),
 		ActionName: "IssuanceDebt",
 		Payload:    []byte(fmt.Sprintf("{\"issuanceID\":\"%s\",\"value\":%f}", issuanceID, value)),
 	}
@@ -107,6 +118,7 @@ func IssuanceDebt(cmd *cobra.Command, args []string) {
 	ctx.RunWithoutMarshal()
 }
 
+// IssuanceRepayRawTxCmd          
 func IssuanceRepayRawTxCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "repay",
@@ -126,14 +138,18 @@ func addIssuanceRepayFlags(cmd *cobra.Command) {
 
 //IssuanceRepay ...
 func IssuanceRepay(cmd *cobra.Command, args []string) {
-	paraName, _ := cmd.Flags().GetString("paraName")
+	title, _ := cmd.Flags().GetString("title")
+	cfg := types.GetCliSysParam(title)
+	if cfg == nil {
+		panic(fmt.Sprintln("can not find CliSysParam title", title))
+	}
 
 	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
 	issuanceID, _ := cmd.Flags().GetString("issuanceID")
 	debtID, _ := cmd.Flags().GetString("debtID")
 
 	params := &rpctypes.CreateTxIn{
-		Execer:     types.GetExecName(pkt.IssuanceX, paraName),
+		Execer:     cfg.ExecName(pkt.IssuanceX),
 		ActionName: "IssuanceRepay",
 		Payload:    []byte(fmt.Sprintf("{\"issuanceID\":\"%s\", \"debtID\":\"%s\"}", issuanceID, debtID)),
 	}
@@ -143,6 +159,7 @@ func IssuanceRepay(cmd *cobra.Command, args []string) {
 	ctx.RunWithoutMarshal()
 }
 
+// IssuancePriceFeedRawTxCmd          
 func IssuancePriceFeedRawTxCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "feed",
@@ -162,14 +179,18 @@ func addIssuancePriceFeedFlags(cmd *cobra.Command) {
 
 //IssuancePriceFeed ...
 func IssuancePriceFeed(cmd *cobra.Command, args []string) {
-	paraName, _ := cmd.Flags().GetString("paraName")
+	title, _ := cmd.Flags().GetString("title")
+	cfg := types.GetCliSysParam(title)
+	if cfg == nil {
+		panic(fmt.Sprintln("can not find CliSysParam title", title))
+	}
 
 	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
 	price, _ := cmd.Flags().GetFloat64("price")
 	volume, _ := cmd.Flags().GetUint64("volume")
 
 	params := &rpctypes.CreateTxIn{
-		Execer:     types.GetExecName(pkt.IssuanceX, paraName),
+		Execer:     cfg.ExecName(pkt.IssuanceX),
 		ActionName: "IssuancePriceFeed",
 		Payload:    []byte(fmt.Sprintf("{\"price\":[ %f ], \"volume\":[ %d ]}", price, volume)),
 	}
@@ -179,6 +200,7 @@ func IssuancePriceFeed(cmd *cobra.Command, args []string) {
 	ctx.RunWithoutMarshal()
 }
 
+// IssuanceCloseRawTxCmd          
 func IssuanceCloseRawTxCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "close",
@@ -196,13 +218,17 @@ func addIssuanceCloseFlags(cmd *cobra.Command) {
 
 //IssuanceClose ...
 func IssuanceClose(cmd *cobra.Command, args []string) {
-	paraName, _ := cmd.Flags().GetString("paraName")
+	title, _ := cmd.Flags().GetString("title")
+	cfg := types.GetCliSysParam(title)
+	if cfg == nil {
+		panic(fmt.Sprintln("can not find CliSysParam title", title))
+	}
 
 	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
 	issuanceID, _ := cmd.Flags().GetString("issuanceID")
 
 	params := &rpctypes.CreateTxIn{
-		Execer:     types.GetExecName(pkt.IssuanceX, paraName),
+		Execer:     cfg.ExecName(pkt.IssuanceX),
 		ActionName: "IssuanceClose",
 		Payload:    []byte(fmt.Sprintf("{\"issuanceId\":\"%s\"}", issuanceID)),
 	}
@@ -212,6 +238,7 @@ func IssuanceClose(cmd *cobra.Command, args []string) {
 	ctx.RunWithoutMarshal()
 }
 
+// IssuanceManageRawTxCmd          
 func IssuanceManageRawTxCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "manage",
@@ -229,13 +256,17 @@ func addIssuanceManageFlags(cmd *cobra.Command) {
 
 //IssuanceManage ...
 func IssuanceManage(cmd *cobra.Command, args []string) {
-	paraName, _ := cmd.Flags().GetString("paraName")
+	title, _ := cmd.Flags().GetString("title")
+	cfg := types.GetCliSysParam(title)
+	if cfg == nil {
+		panic(fmt.Sprintln("can not find CliSysParam title", title))
+	}
 
 	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
 	addr, _ := cmd.Flags().GetString("addr")
 
 	params := &rpctypes.CreateTxIn{
-		Execer:     types.GetExecName(pkt.IssuanceX, paraName),
+		Execer:     cfg.ExecName(pkt.IssuanceX),
 		ActionName: "IssuanceManage",
 		Payload:    []byte(fmt.Sprintf("{\"addr\":[\"%s\"]}", addr)),
 	}
@@ -302,6 +333,7 @@ func IssuanceQueryUserBalance(cmd *cobra.Command, args []string) {
 	ctx.Run()
 }
 
+// IssuanceQueryCmd      
 func IssuanceQueryCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "query",

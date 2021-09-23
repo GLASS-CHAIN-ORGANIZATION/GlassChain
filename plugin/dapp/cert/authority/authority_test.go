@@ -79,7 +79,9 @@ func signtxs(priv crypto.PrivKey, cert []byte) {
 	signtx(tx13, priv, cert)
 }
 
-
+/**
+   Author   userloader
+*/
 func initEnv() (*types.Chain33Config, error) {
 	cfg := types.NewChain33Config(types.ReadFile("./test/chain33.auth.test.toml"))
 	sub := cfg.GetSubConfig()
@@ -112,7 +114,9 @@ func initEnv() (*types.Chain33Config, error) {
 	return cfg, nil
 }
 
-
+/**
+TestCase01         
+*/
 func TestChckSign(t *testing.T) {
 	cfg, err := initEnv()
 	if err != nil {
@@ -121,9 +125,12 @@ func TestChckSign(t *testing.T) {
 	}
 	cfg.SetMinFee(0)
 
-	assert.Equal(t, true, tx1.CheckSign(0))
+	assert.Equal(t, true, tx1.CheckSign())
 }
 
+/**
+TestCase10          
+*/
 func TestChckSigns(t *testing.T) {
 	cfg, err := initEnv()
 	if err != nil {
@@ -133,13 +140,16 @@ func TestChckSigns(t *testing.T) {
 	cfg.SetMinFee(0)
 
 	for i, tx := range txs {
-		if !tx.CheckSign(0) {
+		if !tx.CheckSign() {
 			t.Error(fmt.Sprintf("error check tx[%d]", i+1))
 			return
 		}
 	}
 }
 
+/**
+TestCase02           
+*/
 func TestChckSignsPara(t *testing.T) {
 	cfg, err := initEnv()
 	if err != nil {
@@ -156,7 +166,9 @@ func TestChckSignsPara(t *testing.T) {
 	}
 }
 
-
+/**
+TestCase03     ，        
+*/
 func TestChckSignWithNoneAuth(t *testing.T) {
 	cfg, err := initEnv()
 	if err != nil {
@@ -166,13 +178,15 @@ func TestChckSignWithNoneAuth(t *testing.T) {
 	cfg.SetMinFee(0)
 
 	tx14.Sign(types.SECP256K1, privKey)
-	if !tx14.CheckSign(0) {
+	if !tx14.CheckSign() {
 		t.Error("check signature failed")
 		return
 	}
 }
 
-
+/**
+TestCase04     ，SM2    
+*/
 func TestChckSignWithSm2(t *testing.T) {
 	sm2, err := crypto.New(types.GetSignName("cert", ct.AuthSM2))
 	assert.Nil(t, err)
@@ -189,13 +203,15 @@ func TestChckSignWithSm2(t *testing.T) {
 	cfg.SetMinFee(0)
 
 	tx15.Sign(ct.AuthSM2, privKeysm2)
-	if !tx15.CheckSign(0) {
+	if !tx15.CheckSign() {
 		t.Error("check signature failed")
 		return
 	}
 }
 
-
+/**
+TestCase05     ，secp256r1    
+*/
 func TestChckSignWithEcdsa(t *testing.T) {
 	ecdsacrypto, _ := crypto.New(types.GetSignName("cert", ct.AuthECDSA))
 	privKeyecdsa, _ := ecdsacrypto.PrivKeyFromBytes(privRaw)
@@ -211,13 +227,15 @@ func TestChckSignWithEcdsa(t *testing.T) {
 	cfg.SetMinFee(0)
 
 	tx16.Sign(ct.AuthECDSA, privKeyecdsa)
-	if !tx16.CheckSign(0) {
+	if !tx16.CheckSign() {
 		t.Error("check signature failed")
 		return
 	}
 }
 
-
+/**
+TestCase 06     
+*/
 func TestValidateCert(t *testing.T) {
 	cfg, err := initEnv()
 	if err != nil {
@@ -236,7 +254,9 @@ func TestValidateCert(t *testing.T) {
 	}
 }
 
-
+/**
+Testcase07 noneimpl     （               ）
+*/
 func TestValidateTxWithNoneAuth(t *testing.T) {
 	cfg, err := initEnv()
 	if err != nil {
@@ -256,7 +276,9 @@ func TestValidateTxWithNoneAuth(t *testing.T) {
 	}
 }
 
-
+/**
+Testcase08       
+*/
 func TestReloadCert(t *testing.T) {
 	cfg, err := initEnv()
 	if err != nil {
@@ -276,7 +298,9 @@ func TestReloadCert(t *testing.T) {
 	}
 }
 
-
+/**
+Testcase09           
+*/
 func TestReloadByHeight(t *testing.T) {
 	cfg, err := initEnv()
 	if err != nil {
@@ -291,6 +315,7 @@ func TestReloadByHeight(t *testing.T) {
 	}
 }
 
+//FIXME               ，           
 /*
 func TestValidateCerts(t *testing.T) {
 	err := initEnv()

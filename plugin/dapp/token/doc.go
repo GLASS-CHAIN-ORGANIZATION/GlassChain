@@ -3,17 +3,17 @@
 // license that can be found in the LICENSE file.
 
 //Package token
-/ 
-// 1. token 
-// 1. token 
-// 1. token 
+//         
+// 1. token    
+// 1. token    
+// 1. token      
 //
-//toke 
+//token   
 // 1. prepare create
 // 1. finish  create
 // 1. revoke  create
 //
-//toke 
+//token   
 // 1. transfer
 // 1. withdraw
 // 1. transfer to exec

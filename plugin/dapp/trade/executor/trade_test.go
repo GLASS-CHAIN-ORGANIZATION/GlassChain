@@ -67,7 +67,7 @@ var (
 	}
 )
 
-// TODO  linter , 
+// TODO        linter    ,             
 func Test_Order(t *testing.T) {
 	assert.NotNil(t, &sellorderOnsale)
 	assert.NotNil(t, &sellorderSoldOut)

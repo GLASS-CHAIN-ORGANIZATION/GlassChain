@@ -20,7 +20,7 @@ import (
 )
 
 func TestJRPCChannel(t *testing.T) {
-	// RPCmocker
+	//   RPCmocker
 	mocker := testnode.New("--notset--", nil)
 	defer func() {
 		mocker.Close()

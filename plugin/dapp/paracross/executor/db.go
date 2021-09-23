@@ -19,7 +19,7 @@ func getTitle(db dbm.KV, key []byte) (*pt.ParacrossStatus, error) {
 		if !isNotFound(err) {
 			return nil, err
 		}
-		// ，  ， titl 
+		//                ，        ，   title         
 		clog.Debug("first time load title", "key", string(key))
 		return &pt.ParacrossStatus{Height: -1}, nil
 	}
@@ -37,7 +37,7 @@ func saveTitle(db dbm.KV, key []byte, title *pt.ParacrossStatus) error {
 func getTitleHeight(db dbm.KV, key []byte) (*pt.ParacrossHeightStatus, error) {
 	val, err := db.Get(key)
 	if err != nil {
-		// commit
+		//          commit
 		if isNotFound(err) {
 			clog.Debug("paracross.Commit first commit", "key", string(key))
 		}

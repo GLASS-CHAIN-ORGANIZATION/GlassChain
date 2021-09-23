@@ -23,20 +23,20 @@ func (r *Retrieve) Query_GetRetrieveInfo(in *rt.ReqRetrieveInfo) (types.Message,
 		}
 	}
 
-	// asset ， asset 
+	//    asset     ，     asset      
 	if info.Status == retrievePerform && in.GetAssetExec() != "" {
-		// retrievePerfor  
-		// 1 , 2 fork coins 
-		// 2 fork  coins , 
+		// retrievePerform   ，        
+		// 1     , 2 fork      coins      
+		// 2 fork       coins      ,        
 		// localdb not support PrefixCount
-		// ， 
+		//              ，           
 
 		asset, _ := getRetrieveAsset(r.GetLocalDB(), in.BackupAddress, in.DefaultAddress, in.AssetExec, in.AssetSymbol)
 		if asset != nil {
 			return asset, nil
 		}
 
-		// 1 
+		// 1     
 		info.Status = retrievePrepare
 		info.RemainTime = zeroRemainTime
 		return info, nil

@@ -24,7 +24,7 @@ func (p *privacy) execLocal(receiptData *types.ReceiptData, tx *types.Transactio
 		err := types.Decode(item.Log, &receiptPrivacyOutput)
 		if err != nil {
 			privacylog.Error("PrivacyTrading ExecLocal", "txhash", txhashstr, "Decode item.Log error ", err)
-			panic(err) /  
+			panic(err) //     ，      
 		}
 
 		assetExec := receiptPrivacyOutput.GetAssetExec()
@@ -32,7 +32,7 @@ func (p *privacy) execLocal(receiptData *types.ReceiptData, tx *types.Transactio
 		txhashInByte := tx.Hash()
 		txhash := common.ToHex(txhashInByte)
 		for outputIndex, keyOutput := range receiptPrivacyOutput.Keyoutput {
-			//kv1 UTXO toke   txhas UTXO
+			//kv1，       UTXO，          token      ，     ，  txhash UTXO
 			key := CalcPrivacyUTXOkeyHeight(assetExec, assetSymbol, keyOutput.Amount, p.GetHeight(), txhash, index, outputIndex)
 			localUTXOItem := &ty.LocalUTXOItem{
 				Height:        p.GetHeight(),
@@ -45,32 +45,32 @@ func (p *privacy) execLocal(receiptData *types.ReceiptData, tx *types.Transactio
 			kv := &types.KeyValue{Key: key, Value: value}
 			dbSet.KV = append(dbSet.KV, kv)
 
-			//kv2 k  UTXO
+			//kv2，         kv  ，                        UTXO
 			var amountTypes ty.AmountsOfUTXO
 			key2 := CalcprivacyKeyTokenAmountType(assetExec, assetSymbol)
 			value2, err := localDB.Get(key2)
-			/ toke 
+			//    token           
 			if err == nil && value2 != nil {
 				err := types.Decode(value2, &amountTypes)
 				if err == nil {
-					/  
+					//              ，     
 					amount, ok := amountTypes.AmountMap[keyOutput.Amount]
 					if !ok {
 						amountTypes.AmountMap[keyOutput.Amount] = 1
 					} else {
-						//todo 
+						//todo:         
 						amountTypes.AmountMap[keyOutput.Amount] = amount + 1
 					}
 					kv := &types.KeyValue{Key: key2, Value: types.Encode(&amountTypes)}
 					dbSet.KV = append(dbSet.KV, kv)
-					/ quer  amou kv 
+					//    query       ，           amout       kv,        
 					localDB.Set(key2, types.Encode(&amountTypes))
 				} else {
 					privacylog.Error("PrivacyTrading ExecLocal", "txhash", txhashstr, "value2 Decode error ", err)
 					panic(err)
 				}
 			} else {
-				/ toke 
+				//    token         
 				amountTypes.AmountMap = make(map[int64]int64)
 				amountTypes.AmountMap[keyOutput.Amount] = 1
 				kv := &types.KeyValue{Key: key2, Value: types.Encode(&amountTypes)}
@@ -78,7 +78,7 @@ func (p *privacy) execLocal(receiptData *types.ReceiptData, tx *types.Transactio
 				localDB.Set(key2, types.Encode(&amountTypes))
 			}
 
-			//kv3 toke 
+			//kv3,        token   
 			assetKey := calcExecLocalAssetKey(assetExec, assetSymbol)
 			var tokenNames ty.TokenNamesOfUTXO
 			key3 := CalcprivacyKeyTokenTypes()

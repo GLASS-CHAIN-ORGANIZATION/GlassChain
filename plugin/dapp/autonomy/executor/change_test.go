@@ -162,6 +162,8 @@ func testexecDelLocalChange(t *testing.T) {
 		},
 	}
 
+	//    local      
+
 	tx, err := types.CreateFormatTx(chainTestCfg, chainTestCfg.ExecName(auty.AutonomyX), nil)
 	assert.NoError(t, err)
 	set, err := au.execAutoLocalChange(tx, receipt)
@@ -197,7 +199,9 @@ func testexecDelLocalChange(t *testing.T) {
 		Logs: []*types.ReceiptLog{
 			{Ty: auty.TyLogVotePropChange, Log: types.Encode(receiptChange2)},
 		}}
+	//    local      
 
+	//         ，           
 	tx, err = types.CreateFormatTx(chainTestCfg, chainTestCfg.ExecName(auty.AutonomyX), nil)
 	assert.NoError(t, err)
 	set, err = au.execAutoLocalChange(tx, receipt)
@@ -205,6 +209,7 @@ func testexecDelLocalChange(t *testing.T) {
 	assert.NotNil(t, set)
 	saveKvs(sdb, set.KV)
 
+	//       
 	tx, err = types.CreateFormatTx(chainTestCfg, chainTestCfg.ExecName(auty.AutonomyX), nil)
 	assert.NoError(t, err)
 	set, err = au.execAutoLocalChange(tx, recpt)
@@ -269,6 +274,7 @@ func TestListProposalChange(t *testing.T) {
 		Index:      2,
 	}
 
+	//       
 	var kvs []*types.KeyValue
 	table := NewChangeTable(kvdb)
 	for _, tcase := range testcase {
@@ -284,7 +290,7 @@ func TestListProposalChange(t *testing.T) {
 	}
 
 	saveKvs(sdb, kvs)
-
+	//     
 	req := &auty.ReqQueryProposalChange{
 		Status:    auty.AutonomyStatusProposalChange,
 		Count:     10,
@@ -301,6 +307,7 @@ func TestListProposalChange(t *testing.T) {
 		k--
 	}
 
+	//     
 	req = &auty.ReqQueryProposalChange{
 		Status:    auty.AutonomyStatusProposalChange,
 		Count:     10,
@@ -315,6 +322,7 @@ func TestListProposalChange(t *testing.T) {
 		assert.Equal(t, rsp.(*auty.ReplyQueryProposalChange).PropChanges[i].Index, int32(tcase.index))
 	}
 
+	//     
 	req = &auty.ReqQueryProposalChange{
 		Status:    auty.AutonomyStatusProposalChange,
 		Count:     1,

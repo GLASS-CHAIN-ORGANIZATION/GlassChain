@@ -115,7 +115,7 @@ func (t *TradeType) ActionName(tx *types.Transaction) string {
 
 //Amount ...
 func (t *TradeType) Amount(tx *types.Transaction) (int64, error) {
-	//TODO: toke trad amoun , added by hzj
+	//TODO:      token trade   amount   , added by hzj
 	var trade Trade
 	err := types.Decode(tx.GetPayload(), &trade)
 	if err != nil {
@@ -189,7 +189,7 @@ func (t *TradeType) CreateTx(action string, message json.RawMessage) (*types.Tra
 	return nil, types.ErrNotSupport
 }
 
-//CreateRawTradeSellTx : 
+//CreateRawTradeSellTx :       
 func CreateRawTradeSellTx(cfg *types.Chain33Config, parm *TradeSellTx) (*types.Transaction, error) {
 	if parm == nil {
 		return nil, types.ErrInvalidParam
@@ -214,7 +214,7 @@ func CreateRawTradeSellTx(cfg *types.Chain33Config, parm *TradeSellTx) (*types.T
 	return types.CreateFormatTx(cfg, cfg.ExecName(TradeX), types.Encode(sell))
 }
 
-//CreateRawTradeBuyTx  
+//CreateRawTradeBuyTx :              
 func CreateRawTradeBuyTx(cfg *types.Chain33Config, parm *TradeBuyTx) (*types.Transaction, error) {
 	if parm == nil {
 		return nil, types.ErrInvalidParam
@@ -227,7 +227,7 @@ func CreateRawTradeBuyTx(cfg *types.Chain33Config, parm *TradeBuyTx) (*types.Tra
 	return types.CreateFormatTx(cfg, cfg.ExecName(TradeX), types.Encode(buy))
 }
 
-//CreateRawTradeRevokeTx  
+//CreateRawTradeRevokeTx :         
 func CreateRawTradeRevokeTx(cfg *types.Chain33Config, parm *TradeRevokeTx) (*types.Transaction, error) {
 	if parm == nil {
 		return nil, types.ErrInvalidParam
@@ -241,7 +241,7 @@ func CreateRawTradeRevokeTx(cfg *types.Chain33Config, parm *TradeRevokeTx) (*typ
 	return types.CreateFormatTx(cfg, cfg.ExecName(TradeX), types.Encode(buy))
 }
 
-//CreateRawTradeBuyLimitTx  
+//CreateRawTradeBuyLimitTx :      
 func CreateRawTradeBuyLimitTx(cfg *types.Chain33Config, parm *TradeBuyLimitTx) (*types.Transaction, error) {
 	if parm == nil {
 		return nil, types.ErrInvalidParam
@@ -263,7 +263,7 @@ func CreateRawTradeBuyLimitTx(cfg *types.Chain33Config, parm *TradeBuyLimitTx) (
 	return types.CreateFormatTx(cfg, cfg.ExecName(TradeX), types.Encode(buyLimit))
 }
 
-//CreateRawTradeSellMarketTx : toke 
+//CreateRawTradeSellMarketTx :          token     
 func CreateRawTradeSellMarketTx(cfg *types.Chain33Config, parm *TradeSellMarketTx) (*types.Transaction, error) {
 	if parm == nil {
 		return nil, types.ErrInvalidParam
@@ -276,7 +276,7 @@ func CreateRawTradeSellMarketTx(cfg *types.Chain33Config, parm *TradeSellMarketT
 	return types.CreateFormatTx(cfg, cfg.ExecName(TradeX), types.Encode(sellMarket))
 }
 
-//CreateRawTradeRevokeBuyTx : 
+//CreateRawTradeRevokeBuyTx :          
 func CreateRawTradeRevokeBuyTx(cfg *types.Chain33Config, parm *TradeRevokeBuyTx) (*types.Transaction, error) {
 	if parm == nil {
 		return nil, types.ErrInvalidParam

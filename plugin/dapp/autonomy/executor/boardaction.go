@@ -21,15 +21,15 @@ import (
 const (
 	minBoards                 = 20
 	maxBoards                 = 40
-	publicPeriod        int32 = 17280 * 7   
-	ticketPrice               = 3000        
-	largeProjectAmount        = 100 * 10000 
-	proposalAmount            = 500         
-	boardApproveRatio   int32 = 51          
-	pubAttendRatio      int32 = 75          
-	pubApproveRatio     int32 = 66          
-	pubOpposeRatio      int32 = 33          
-	startEndBlockPeriod       = 720         
+	publicPeriod        int32 = 17280 * 7                //       ，       
+	ticketPrice               = types.Coin * 3000        //     
+	largeProjectAmount        = types.Coin * 100 * 10000 //           
+	proposalAmount            = types.Coin * 500         //        
+	boardApproveRatio   int32 = 51                       //         ， % ，   
+	pubAttendRatio      int32 = 75                       //         ， % 
+	pubApproveRatio     int32 = 66                       //         ， % 
+	pubOpposeRatio      int32 = 33                       //         ， % 
+	startEndBlockPeriod       = 720                      //           
 )
 
 type action struct {
@@ -69,6 +69,7 @@ func (a *action) propBoard(prob *auty.ProposalBoard) (*types.Receipt, error) {
 			alog.Error("propBoard ", "addr", board, "check toAddr error", err)
 			return nil, types.ErrInvalidAddress
 		}
+		//   board       
 		if _, ok := mpBd[board]; ok {
 			err := auty.ErrRepeatAddr
 			alog.Error("propBoard ", "addr", board, "propBoard have repeat addr ", err)
@@ -111,6 +112,7 @@ func (a *action) propBoard(prob *auty.ProposalBoard) (*types.Receipt, error) {
 		return nil, auty.ErrBoardNumber
 	}
 
+	//           
 	rule, err := a.getActiveRule()
 	if err != nil {
 		alog.Error("propBoard ", "addr", a.fromaddr, "execaddr", a.execaddr, "getActiveRule failed", err)
@@ -158,6 +160,7 @@ func (a *action) rvkPropBoard(rvkProb *auty.RevokeProposalBoard) (*types.Receipt
 	}
 	pre := copyAutonomyProposalBoard(cur)
 
+	//       
 	if cur.Status != auty.AutonomyStatusProposalBoard {
 		err := auty.ErrProposalStatus
 		alog.Error("rvkPropBoard ", "addr", a.fromaddr, "status", cur.Status, "status is not match",
@@ -210,6 +213,7 @@ func (a *action) votePropBoard(voteProb *auty.VoteProposalBoard) (*types.Receipt
 	}
 	pre := copyAutonomyProposalBoard(cur)
 
+	//       
 	if cur.Status == auty.AutonomyStatusRvkPropBoard ||
 		cur.Status == auty.AutonomyStatusTmintPropBoard {
 		err := auty.ErrProposalStatus
@@ -235,6 +239,7 @@ func (a *action) votePropBoard(voteProb *auty.VoteProposalBoard) (*types.Receipt
 				return nil, types.ErrInvalidAddress
 			}
 		}
+		//       
 		addr, err := a.verifyMinerAddr(voteProb.OriginAddr, a.fromaddr)
 		if err != nil {
 			alog.Error("votePropBoard ", "from addr", a.fromaddr, "error addr", addr, "ProposalID",
@@ -243,6 +248,7 @@ func (a *action) votePropBoard(voteProb *auty.VoteProposalBoard) (*types.Receipt
 		}
 	}
 
+	//         
 	var addrs []string
 	if len(voteProb.OriginAddr) == 0 {
 		addrs = append(addrs, a.fromaddr)
@@ -250,16 +256,17 @@ func (a *action) votePropBoard(voteProb *auty.VoteProposalBoard) (*types.Receipt
 		addrs = append(addrs, voteProb.OriginAddr...)
 	}
 
+	//           
 	votes, err := a.checkVotesRecord(addrs, votesRecord(voteProb.ProposalID))
 	if err != nil {
 		alog.Error("votePropBoard ", "addr", a.fromaddr, "execaddr", a.execaddr, "checkVotesRecord failed",
 			voteProb.ProposalID, "err", err)
 		return nil, err
 	}
-
+	//       
 	votes.Address = append(votes.Address, addrs...)
 
-	if cur.GetVoteResult().TotalVotes == 0 { 
+	if cur.GetVoteResult().TotalVotes == 0 { //      
 		vtCouts, err := a.getTotalVotes(start)
 		if err != nil {
 			return nil, err
@@ -282,6 +289,7 @@ func (a *action) votePropBoard(voteProb *auty.VoteProposalBoard) (*types.Receipt
 	var logs []*types.ReceiptLog
 	var kv []*types.KeyValue
 
+	//        ,             
 	if cur.Status == auty.AutonomyStatusProposalBoard {
 		receipt, err := a.coinsAccount.ExecTransferFrozen(cur.Address, a.execaddr, a.execaddr, cur.CurRule.ProposalAmount)
 		if err != nil {
@@ -307,10 +315,12 @@ func (a *action) votePropBoard(voteProb *auty.VoteProposalBoard) (*types.Receipt
 	}
 	kv = append(kv, &types.KeyValue{Key: key, Value: types.Encode(cur)})
 
+	//   VotesRecord
 	kv = append(kv, &types.KeyValue{Key: votesRecord(voteProb.ProposalID), Value: types.Encode(votes)})
 
+	//               
 	if cur.VoteResult.Pass {
-		if !cur.PropBoard.Update { 
+		if !cur.PropBoard.Update { //  update       
 			cur.Board.StartHeight = a.height
 		}
 		kv = append(kv, &types.KeyValue{Key: activeBoardID(), Value: types.Encode(cur.Board)})
@@ -335,6 +345,7 @@ func (a *action) tmintPropBoard(tmintProb *auty.TerminateProposalBoard) (*types.
 	}
 	pre := copyAutonomyProposalBoard(cur)
 
+	//       
 	if cur.Status == auty.AutonomyStatusTmintPropBoard ||
 		cur.Status == auty.AutonomyStatusRvkPropBoard {
 		err := auty.ErrProposalStatus
@@ -352,7 +363,7 @@ func (a *action) tmintPropBoard(tmintProb *auty.TerminateProposalBoard) (*types.
 		return nil, err
 	}
 
-	if cur.GetVoteResult().TotalVotes == 0 { 
+	if cur.GetVoteResult().TotalVotes == 0 { //      
 		vtCouts, err := a.getTotalVotes(start)
 		if err != nil {
 			return nil, err
@@ -371,6 +382,7 @@ func (a *action) tmintPropBoard(tmintProb *auty.TerminateProposalBoard) (*types.
 	var logs []*types.ReceiptLog
 	var kv []*types.KeyValue
 
+	//         ，                
 	if cur.Status == auty.AutonomyStatusProposalBoard {
 		receipt, err := a.coinsAccount.ExecTransferFrozen(cur.Address, a.execaddr, a.execaddr, cur.CurRule.ProposalAmount)
 		if err != nil {
@@ -385,8 +397,9 @@ func (a *action) tmintPropBoard(tmintProb *auty.TerminateProposalBoard) (*types.
 
 	kv = append(kv, &types.KeyValue{Key: propBoardID(tmintProb.ProposalID), Value: types.Encode(cur)})
 
+	//               
 	if cur.VoteResult.Pass {
-		if !cur.PropBoard.Update { 
+		if !cur.PropBoard.Update { //  update       
 			cur.Board.StartHeight = a.height
 		}
 		kv = append(kv, &types.KeyValue{Key: activeBoardID(), Value: types.Encode(cur.Board)})
@@ -407,11 +420,11 @@ func (a *action) getTotalVotes(height int64) (int32, error) {
 	if err != nil {
 		return 0, err
 	}
-	return int32(account.Balance / (ticketPrice * a.api.GetConfig().GetCoinPrecision())), nil
+	return int32(account.Balance / ticketPrice), nil
 }
 
 func (a *action) verifyMinerAddr(addrs []string, bindAddr string) (string, error) {
-
+	//            
 	mp := make(map[string]struct{})
 	for _, addr := range addrs {
 		value, err := a.db.Get(ticket.BindKey(addr))
@@ -452,7 +465,7 @@ func (a *action) getAddressVotes(addr string, height int64) (int32, error) {
 	if subcfg.UseBalance {
 		amount = account.Balance
 	}
-	return int32(amount / (ticketPrice * a.api.GetConfig().GetCoinPrecision())), nil
+	return int32(amount / ticketPrice), nil
 }
 
 func (a *action) getStartHeightVoteAccount(addr, execer string, height int64) (*types.Account, error) {
@@ -494,20 +507,19 @@ func (a *action) getProposalBoard(ID string) (*auty.AutonomyProposalBoard, error
 }
 
 func (a *action) getActiveRule() (*auty.RuleConfig, error) {
-
+	//           ,           
 	rule := &auty.RuleConfig{}
 	value, err := a.db.Get(activeRuleID())
-	cfg := a.api.GetConfig()
 	if err == nil {
 		err = types.Decode(value, rule)
 		if err != nil {
 			return nil, err
 		}
-	} else {
+	} else { //        
 		rule.BoardApproveRatio = boardApproveRatio
 		rule.PubOpposeRatio = pubOpposeRatio
-		rule.ProposalAmount = proposalAmount * cfg.GetCoinPrecision()
-		rule.LargeProjectAmount = largeProjectAmount * cfg.GetCoinPrecision()
+		rule.ProposalAmount = proposalAmount
+		rule.LargeProjectAmount = largeProjectAmount
 		rule.PublicPeriod = publicPeriod
 	}
 	return rule, nil
@@ -526,7 +538,7 @@ func (a *action) checkVotesRecord(addrs []string, key []byte) (*auty.VotesRecord
 	for _, addr := range addrs {
 		mp[addr] = struct{}{}
 	}
-	
+	//        
 	for _, addr := range votes.Address {
 		if _, ok := mp[addr]; ok {
 			err := auty.ErrRepeatVoteAddr
@@ -537,7 +549,8 @@ func (a *action) checkVotesRecord(addrs []string, key []byte) (*auty.VotesRecord
 	return &votes, nil
 }
 
-
+// getReceiptLog         log
+//     ：
 func getReceiptLog(pre, cur *auty.AutonomyProposalBoard, ty int32) *types.ReceiptLog {
 	log := &types.ReceiptLog{}
 	log.Ty = ty

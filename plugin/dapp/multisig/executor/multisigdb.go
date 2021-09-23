@@ -10,17 +10,17 @@ import (
 	mty "github.com/33cn/plugin/plugin/dapp/multisig/types"
 )
 
-// stated 
+// statedb    
 func getMultiSigAccFromDb(db dbm.KV, multiSigAddr string) (*mty.MultiSig, error) {
 
-	/ stated MultiSigAccAdd 
+	//   statedb   MultiSigAccAddr     
 	value, err := db.Get(calcMultiSigAccountKey(multiSigAddr))
 	if err != nil {
 		multisiglog.Error("getMultiSigAccFromDb", "MultiSigAccAddr", multiSigAddr, "err", err)
 		return nil, err
 	}
 
-	// ErrNotFound
+	//         ErrNotFound
 	if len(value) == 0 || err == types.ErrNotFound {
 		return nil, types.ErrNotFound
 	}
@@ -38,7 +38,7 @@ func setMultiSigAccToDb(db dbm.KV, multiSigAcc *mty.MultiSig) ([]byte, []byte) {
 	key := calcMultiSigAccountKey(multiSigAcc.MultiSigAddr)
 	value := types.Encode(multiSigAcc)
 
-	/ d  
+	//     db ，               
 	err := db.Set(key, value)
 	if err != nil {
 		multisiglog.Error("setMultiSigAccToDb", "multiSigAcc", multiSigAcc, "err", err)
@@ -46,16 +46,16 @@ func setMultiSigAccToDb(db dbm.KV, multiSigAcc *mty.MultiSig) ([]byte, []byte) {
 	return key, value
 }
 
-/ d txi 
+//  db           txid       
 func getMultiSigAccTxFromDb(db dbm.KV, multiSigAddr string, txid uint64) (*mty.MultiSigTx, error) {
 
-	/ stated MultiSigAccT 
+	//   statedb   MultiSigAccTx     
 	value, err := db.Get(calcMultiSigAccTxKey(multiSigAddr, txid))
 	if err != nil {
 		multisiglog.Error("getMultiSigAccTxFromDb", "MultiSigAccAddr", multiSigAddr, "err", err)
 		return nil, err
 	}
-	// ErrNotFound
+	//         ErrNotFound
 	if len(value) == 0 || err == types.ErrNotFound {
 		return nil, types.ErrNotFound
 	}
@@ -78,7 +78,7 @@ func setMultiSigAccTxToDb(db dbm.KV, multiSigTx *mty.MultiSigTx) ([]byte, []byte
 	return key, value
 }
 
-// locald 
+// localdb    
 func getMultiSigAccCountKV(count int64) *types.KeyValue {
 	tempcount := &types.Int64{Data: count}
 	countbytes := types.Encode(tempcount)
@@ -86,7 +86,7 @@ func getMultiSigAccCountKV(count int64) *types.KeyValue {
 	return kv
 }
 
-/ 
+//            
 func getMultiSigAccCount(db dbm.KVDB) (int64, error) {
 	count := types.Int64{}
 	value, err := db.Get(calcMultiSigAccCountKey())
@@ -106,14 +106,14 @@ func getMultiSigAccCount(db dbm.KVDB) (int64, error) {
 	return count.Data, nil
 }
 
-/ 
+//            
 func setMultiSigAccCount(db dbm.KVDB, count int64) error {
 	value := &types.Int64{Data: count}
 	valuebytes := types.Encode(value)
 	return db.Set(calcMultiSigAccCountKey(), valuebytes)
 }
 
-/ 
+//          
 func updateMultiSigAccCount(cachedb dbm.KVDB, isadd bool) (*types.KeyValue, error) {
 	count, err := getMultiSigAccCount(cachedb)
 	if err != nil {
@@ -135,14 +135,14 @@ func updateMultiSigAccCount(cachedb dbm.KVDB, isadd bool) (*types.KeyValue, erro
 	return getMultiSigAccCountKV(count), nil
 }
 
-/ ke 
+//          key 
 func getMultiSigAccount(db dbm.KVDB, addr string) (*mty.MultiSig, error) {
 	multiSigAcc := &mty.MultiSig{}
 	value, err := db.Get(calcMultiSigAcc(addr))
 	if err != nil && err != types.ErrNotFound {
 		return nil, err
 	}
-	/ ErrNotFoun ，
+	//       ErrNotFound   ，
 	if len(value) == 0 || err == types.ErrNotFound {
 		return nil, nil
 	}
@@ -155,7 +155,7 @@ func getMultiSigAccount(db dbm.KVDB, addr string) (*mty.MultiSig, error) {
 	return multiSigAcc, nil
 }
 
-/ d ke ,
+//           db   key ,
 func setMultiSigAccount(db dbm.KVDB, multiSig *mty.MultiSig, isadd bool) error {
 	valuebytes := types.Encode(multiSig)
 	if isadd {
@@ -164,7 +164,7 @@ func setMultiSigAccount(db dbm.KVDB, multiSig *mty.MultiSig, isadd bool) error {
 	return db.Set(calcMultiSigAcc(multiSig.MultiSigAddr), nil)
 }
 
-/ k 
+//         kv 
 func getMultiSigAccountKV(multiSig *mty.MultiSig, isadd bool) *types.KeyValue {
 	accountbytes := types.Encode(multiSig)
 	var kv *types.KeyValue
@@ -176,21 +176,21 @@ func getMultiSigAccountKV(multiSig *mty.MultiSig, isadd bool) *types.KeyValue {
 	return kv
 }
 
-/ 
+//          
 func updateMultiSigAccList(db dbm.KVDB, addr string, index int64, isadd bool) (*types.KeyValue, error) {
 	oldaddr, err := getMultiSigAccList(db, index)
 	if err != nil {
 		return nil, err
 	}
-	if isadd && oldaddr != "" { / 
+	if isadd && oldaddr != "" { //  
 		multisiglog.Error("UpdateMultiSigAccList:getMultiSigAccList", "addr", addr, "oldaddr", oldaddr, "index", index, "err", err)
 		return nil, mty.ErrAccCountNoMatch
-	} else if !isadd && oldaddr == "" { // 
+	} else if !isadd && oldaddr == "" { //   
 		multisiglog.Error("UpdateMultiSigAccList:getMultiSigAccList", "addr", addr, "index", index, "err", err)
 		return nil, mty.ErrAccCountNoMatch
 	}
 
-	if isadd { / 
+	if isadd { //  
 		err = db.Set(calcMultiSigAllAcc(index), []byte(addr))
 		if err != nil {
 			multisiglog.Error("UpdateMultiSigAccList add", "addr", addr, "index", index, "err", err)
@@ -198,7 +198,7 @@ func updateMultiSigAccList(db dbm.KVDB, addr string, index int64, isadd bool) (*
 		kv := &types.KeyValue{Key: calcMultiSigAllAcc(index), Value: []byte(addr)}
 		return kv, nil
 	}
-	// 
+	//   
 	err = db.Set(calcMultiSigAllAcc(index), nil)
 	if err != nil {
 		multisiglog.Error("UpdateMultiSigAccList del", "addr", addr, "index", index, "err", err)
@@ -220,14 +220,14 @@ func getMultiSigAccList(db dbm.KVDB, index int64) (string, error) {
 }
 
 //MultiSigTx:
-/ 
+//             
 func getMultiSigTx(db dbm.KVDB, addr string, txid uint64) (*mty.MultiSigTx, error) {
 	multiSigTx := &mty.MultiSigTx{}
 	value, err := db.Get(calcMultiSigAccTx(addr, txid))
 	if err != nil && err != types.ErrNotFound {
 		return nil, err
 	}
-	/ nil
+	//     nil
 	if len(value) == 0 || err == types.ErrNotFound {
 		return nil, nil
 	}
@@ -240,7 +240,7 @@ func getMultiSigTx(db dbm.KVDB, addr string, txid uint64) (*mty.MultiSigTx, erro
 	return multiSigTx, nil
 }
 
-/ d ke , 
+//             db   key ,          
 func setMultiSigTx(db dbm.KVDB, multiSigTx *mty.MultiSigTx, isadd bool) error {
 	valuebytes := types.Encode(multiSigTx)
 	if isadd {
@@ -249,7 +249,7 @@ func setMultiSigTx(db dbm.KVDB, multiSigTx *mty.MultiSigTx, isadd bool) error {
 	return db.Set(calcMultiSigAccTx(multiSigTx.MultiSigAddr, multiSigTx.Txid), nil)
 }
 
-/ k 
+//           kv 
 func getMultiSigTxKV(multiSigTx *mty.MultiSigTx, isadd bool) *types.KeyValue {
 	accountbytes := types.Encode(multiSigTx)
 	var kv *types.KeyValue
@@ -261,7 +261,7 @@ func getMultiSigTxKV(multiSigTx *mty.MultiSigTx, isadd bool) *types.KeyValue {
 	return kv
 }
 
-//  
+//        ,         
 func updateAddrReciver(cachedb dbm.KVDB, addr, execname, symbol string, amount int64, isadd bool) (*types.KeyValue, error) {
 	recv, err := getAddrReciver(cachedb, addr, execname, symbol)
 	if err != nil && err != types.ErrNotFound {
@@ -317,14 +317,14 @@ func setAddrReciver(db dbm.KVDB, addr, execname, symbol string, reciverAmount in
 }
 
 //MultiSigAccAddress:
-/ MultiSigAddress
+//           MultiSigAddress
 func getMultiSigAddress(db dbm.KVDB, createAddr string) (*mty.AccAddress, error) {
 	address := &mty.AccAddress{}
 	value, err := db.Get(calcMultiSigAccCreateAddr(createAddr))
 	if err != nil && err != types.ErrNotFound {
 		return nil, err
 	}
-	/ nil
+	//     nil
 	if len(value) == 0 || err == types.ErrNotFound {
 		return address, nil
 	}
@@ -337,7 +337,7 @@ func getMultiSigAddress(db dbm.KVDB, createAddr string) (*mty.AccAddress, error)
 	return address, nil
 }
 
-/ 
+//             
 func setMultiSigAddress(db dbm.KVDB, createAddr, multiSigAddr string, isadd bool) *types.KeyValue {
 	accAddress, err := getMultiSigAddress(db, createAddr)
 	if err != nil {
@@ -369,14 +369,14 @@ func setMultiSigAddress(db dbm.KVDB, createAddr, multiSigAddr string, isadd bool
 	return &types.KeyValue{Key: key, Value: value}
 }
 
-/ MultiSigAddress
+//           MultiSigAddress
 func getMultiSigAccAllAddress(db dbm.KVDB, createAddr string) (*mty.AccAddress, error) {
 	address := &mty.AccAddress{}
 	value, err := db.Get(calcMultiSigAccCreateAddr(createAddr))
 	if err != nil && err != types.ErrNotFound {
 		return nil, err
 	}
-	/ nil
+	//     nil
 	if len(value) == 0 || err == types.ErrNotFound {
 		return address, nil
 	}
@@ -389,7 +389,7 @@ func getMultiSigAccAllAddress(db dbm.KVDB, createAddr string) (*mty.AccAddress, 
 	return address, nil
 }
 
-/ 
+//                
 func getMultiSigAccAllAssets(db dbm.KVDB, addr string) ([][]byte, error) {
 	values, err := db.List(calcAddrRecvAmountPrefix(addr), nil, 0, 0)
 	if err != nil && err != types.ErrNotFound {

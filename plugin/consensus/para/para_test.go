@@ -25,7 +25,7 @@ import (
 )
 
 var (
-	Amount = 1 * types.DefaultCoinPrecision
+	Amount = 1 * types.Coin
 	Title  = string("user.p.para.")
 	Title2 = string("user.p.test.")
 )

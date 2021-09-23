@@ -9,6 +9,7 @@ import (
 	mty "github.com/33cn/plugin/plugin/dapp/multisig/types"
 )
 
+//ExecDelLocal_MultiSigAccCreate         ,  payload receiptData            db 
 func (m *MultiSig) ExecDelLocal_MultiSigAccCreate(payload *mty.MultiSigAccCreate, tx *types.Transaction, receiptData *types.ReceiptData, index int) (*types.LocalDBSet, error) {
 	if receiptData.GetTy() != types.ExecOk {
 		return &types.LocalDBSet{}, nil
@@ -21,6 +22,7 @@ func (m *MultiSig) ExecDelLocal_MultiSigAccCreate(payload *mty.MultiSigAccCreate
 	return &types.LocalDBSet{KV: kv}, nil
 }
 
+//ExecDelLocal_MultiSigOwnerOperate       owner     ：owner add/del/replace/modify 
 func (m *MultiSig) ExecDelLocal_MultiSigOwnerOperate(payload *mty.MultiSigOwnerOperate, tx *types.Transaction, receiptData *types.ReceiptData, index int) (*types.LocalDBSet, error) {
 	if receiptData.GetTy() != types.ExecOk {
 		return &types.LocalDBSet{}, nil
@@ -33,6 +35,7 @@ func (m *MultiSig) ExecDelLocal_MultiSigOwnerOperate(payload *mty.MultiSigOwnerO
 	return &types.LocalDBSet{KV: kv}, nil
 }
 
+//ExecDelLocal_MultiSigAccOperate            ：weight           
 func (m *MultiSig) ExecDelLocal_MultiSigAccOperate(payload *mty.MultiSigAccOperate, tx *types.Transaction, receiptData *types.ReceiptData, index int) (*types.LocalDBSet, error) {
 	if receiptData.GetTy() != types.ExecOk {
 		return &types.LocalDBSet{}, nil
@@ -45,6 +48,7 @@ func (m *MultiSig) ExecDelLocal_MultiSigAccOperate(payload *mty.MultiSigAccOpera
 	return &types.LocalDBSet{KV: kv}, nil
 }
 
+//ExecDelLocal_MultiSigConfirmTx                
 func (m *MultiSig) ExecDelLocal_MultiSigConfirmTx(payload *mty.MultiSigConfirmTx, tx *types.Transaction, receiptData *types.ReceiptData, index int) (*types.LocalDBSet, error) {
 	if receiptData.GetTy() != types.ExecOk {
 		return &types.LocalDBSet{}, nil
@@ -57,6 +61,7 @@ func (m *MultiSig) ExecDelLocal_MultiSigConfirmTx(payload *mty.MultiSigConfirmTx
 	return &types.LocalDBSet{KV: kv}, nil
 }
 
+//ExecDelLocal_MultiSigExecTransferTo                 ，Addr --->multiSigAddr
 func (m *MultiSig) ExecDelLocal_MultiSigExecTransferTo(payload *mty.MultiSigExecTransferTo, tx *types.Transaction, receiptData *types.ReceiptData, index int) (*types.LocalDBSet, error) {
 	if receiptData.GetTy() != types.ExecOk {
 		return &types.LocalDBSet{}, nil
@@ -69,6 +74,7 @@ func (m *MultiSig) ExecDelLocal_MultiSigExecTransferTo(payload *mty.MultiSigExec
 	return &types.LocalDBSet{KV: kv}, nil
 }
 
+//ExecDelLocal_MultiSigExecTransferFrom                 ，multiSigAddr--->Addr
 func (m *MultiSig) ExecDelLocal_MultiSigExecTransferFrom(payload *mty.MultiSigExecTransferFrom, tx *types.Transaction, receiptData *types.ReceiptData, index int) (*types.LocalDBSet, error) {
 	if receiptData.GetTy() != types.ExecOk {
 		return &types.LocalDBSet{}, nil

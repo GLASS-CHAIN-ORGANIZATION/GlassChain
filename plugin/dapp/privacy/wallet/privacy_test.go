@@ -39,14 +39,14 @@ func (mock *PrivacyMock) Init(walletOp wcom.WalletOperate, password string) {
 }
 
 func (mock *PrivacyMock) getPrivKeyByAddr(addr string) (crypto.PrivKey, error) {
-	/ 
+	//               
 	Accountstor, err := mock.store.getAccountByAddr(addr)
 	if err != nil {
 		bizlog.Error("ProcSendToAddress", "GetAccountByAddr err:", err)
 		return nil, err
 	}
 
-	/ passwor 
+	//  password       
 	prikeybyte, err := common.FromHex(Accountstor.GetPrivkey())
 	if err != nil || len(prikeybyte) == 0 {
 		bizlog.Error("ProcSendToAddress", "FromHex err", err)
@@ -55,7 +55,7 @@ func (mock *PrivacyMock) getPrivKeyByAddr(addr string) (crypto.PrivKey, error) {
 
 	password := []byte(mock.password)
 	privkey := wcom.CBCDecrypterPrivkey(password, prikeybyte)
-	/ privke pubke addr
+	//  privkey    pubkey        addr
 	cr, err := crypto.New(types.GetSignName("", mock.walletOp.GetSignType()))
 	if err != nil {
 		bizlog.Error("ProcSendToAddress", "err", err)
@@ -90,7 +90,7 @@ func (mock *PrivacyMock) getPrivacykeyPair(addr string) (*privacy.Privacy, error
 }
 
 func (mock *PrivacyMock) getPrivacyKeyPairsOfWallet() ([]addrAndprivacy, error) {
-	/ Accoun 
+	//  Account                
 	WalletAccStores, err := mock.walletOp.GetWalletAccounts()
 	if err != nil || len(WalletAccStores) == 0 {
 		return nil, err
@@ -181,7 +181,7 @@ func (mock *PrivacyMock) CreateUTXOs(sender string, pubkeypair string, amount in
 					}
 
 					utxos = append(utxos, utxoCreated)
-					mock.store.setUTXO(info2store, txhashstr, dbbatch)
+					mock.store.setUTXO(info.Addr, &txhashstr, indexoutput, info2store, dbbatch)
 				}
 			}
 		}
@@ -198,7 +198,7 @@ func (mock *PrivacyMock) createPublic2PrivacyTx(req *ty.ReqCreatePrivacyTx) *typ
 	amount := req.GetAmount()
 	viewPublic := (*[32]byte)(unsafe.Pointer(&viewPubSlice[0]))
 	spendPublic := (*[32]byte)(unsafe.Pointer(&spendPubSlice[0]))
-	privacyOutput, err := generateOuts(viewPublic, spendPublic, nil, nil, amount, amount, 0, types.DefaultCoinPrecision)
+	privacyOutput, err := generateOuts(viewPublic, spendPublic, nil, nil, amount, amount, 0)
 	if err != nil {
 		return nil
 	}

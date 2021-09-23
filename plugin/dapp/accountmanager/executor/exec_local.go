@@ -5,6 +5,10 @@ import (
 	et "github.com/33cn/plugin/plugin/dapp/accountmanager/types"
 )
 
+/*
+ *             ，     
+ *      ，    (localDB),       ，   
+ */
 
 //ExecLocal_Register ...
 func (a *Accountmanager) ExecLocal_Register(payload *et.Register, tx *types.Transaction, receiptData *types.ReceiptData, index int) (*types.LocalDBSet, error) {
@@ -127,14 +131,14 @@ func (a *Accountmanager) ExecLocal_Supervise(payload *et.Supervise, tx *types.Tr
 					return nil, err
 				}
 				accountTable := NewAccountTable(a.GetLocalDB())
-
+				//        ，    
 				if receipt.Op == et.AddExpire {
 					for _, account := range receipt.Accounts {
 						err := accountTable.DelRow(account)
 						if err != nil {
 							return nil, err
 						}
-
+						//    
 						account.Index = receipt.Index
 						err = accountTable.Replace(account)
 						if err != nil {
@@ -166,6 +170,7 @@ func (a *Accountmanager) ExecLocal_Supervise(payload *et.Supervise, tx *types.Tr
 	return a.addAutoRollBack(tx, dbSet.KV), nil
 }
 
+//      
 func (a *Accountmanager) addAutoRollBack(tx *types.Transaction, kv []*types.KeyValue) *types.LocalDBSet {
 	dbSet := &types.LocalDBSet{}
 	dbSet.KV = a.AddRollbackKV(tx, tx.Execer, kv)

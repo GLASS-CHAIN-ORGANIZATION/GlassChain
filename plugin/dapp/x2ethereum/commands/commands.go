@@ -17,7 +17,7 @@ import (
 )
 
 /*
- * 
+ *          
  */
 
 // Cmd x2ethereum client command
@@ -397,11 +397,12 @@ func queryRelayerBalance(cmd *cobra.Command, args []string) {
 }
 
 func createTx(cmd *cobra.Command, payLoad []byte, action string) {
-	paraName, _ := cmd.Flags().GetString("paraName")
+	title, _ := cmd.Flags().GetString("title")
+	cfg := types.GetCliSysParam(title)
 	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
 
 	pm := &types2.CreateTxIn{
-		Execer:     types.GetExecName(types3.X2ethereumX, paraName),
+		Execer:     cfg.ExecName(types3.X2ethereumX),
 		ActionName: action,
 		Payload:    payLoad,
 	}

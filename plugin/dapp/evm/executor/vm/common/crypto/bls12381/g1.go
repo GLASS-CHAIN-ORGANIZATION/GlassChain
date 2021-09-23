@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
 
+//nolint:unparam //        golangci-linter  
 package bls12381
 
 import (
@@ -27,6 +28,7 @@ import (
 // If z is equal to one the point is considered as in affine form.
 type PointG1 [3]fe
 
+// Set   G1 point
 func (p *PointG1) Set(p2 *PointG1) *PointG1 {
 	p[0].set(&p2[0])
 	p[1].set(&p2[1])

@@ -128,7 +128,7 @@ func (v *vote) Query_ListGroup(in *vty.ReqListItem) (types.Message, error) {
 	primaryKey = append(primaryKey, []byte(in.StartItemID)...)
 	list := &vty.GroupInfos{}
 	rows, err := table.ListIndex(groupTablePrimary, nil, primaryKey, in.Count, in.Direction)
-	//  
+	//       ，    
 	if err == types.ErrNotFound {
 		return list, nil
 	}
@@ -155,7 +155,7 @@ func (v *vote) Query_ListVote(in *vty.ReqListVote) (types.Message, error) {
 		return nil, types.ErrInvalidParam
 	}
 	table := newVoteTable(v.GetLocalDB())
-	/ ID 
+	//    ID，            
 	groupID := in.GetGroupID()
 	indexName := voteTablePrimary
 	var prefix, primaryKey []byte
@@ -169,7 +169,7 @@ func (v *vote) Query_ListVote(in *vty.ReqListVote) (types.Message, error) {
 
 listMore:
 	rows, err := table.ListIndex(indexName, prefix, primaryKey, listCount, in.GetListReq().Direction)
-	//  
+	//       ，    
 	if err == types.ErrNotFound {
 		return reply, nil
 	}
@@ -190,7 +190,7 @@ listMore:
 	primaryKey = append(primaryKey[:0], []byte(list[len(list)-1].ID)...)
 	list = filterVoteWithStatus(list, in.Status, reply.CurrentTimestamp)
 	reply.VoteList = append(reply.VoteList, list...)
-	/   list, len(rows)==listCount, 
+	//     ，        ，     list,     len(rows)==listCount,           
 	if len(rows) == int(listCount) && int(listCount) > len(list) {
 		listCount -= int32(len(list))
 		goto listMore
@@ -209,7 +209,7 @@ func (v *vote) Query_ListMember(in *vty.ReqListItem) (types.Message, error) {
 	primaryKey = append(primaryKey, []byte(in.StartItemID)...)
 	list := &vty.MemberInfos{}
 	rows, err := table.ListIndex(memberTablePrimary, nil, primaryKey, in.Count, in.Direction)
-	//  
+	//       ，    
 	if err == types.ErrNotFound {
 		return list, nil
 	}

@@ -43,8 +43,8 @@ type Manager struct {
 }
 
 //NewRelayerManager ...
-//1 cl  chain3 ethereu 
-//2 passpi unloc 
+//1.          cli       ， chain33 ethereum              
+//2.                   passpin  unlock   
 func NewRelayerManager(chain33Relayer *chain33.Relayer4Chain33, ethRelayer *ethereum.Relayer4Ethereum, db dbm.DB) *Manager {
 	l, _ := lru.New(4096)
 	manager := &Manager{
@@ -66,24 +66,24 @@ func (manager *Manager) SetPassphase(setPasswdReq relayerTypes.ReqSetPasswd, res
 	manager.mtx.Lock()
 	defer manager.mtx.Unlock()
 
-	//   ChangePasswd
+	//                   ChangePasswd
 	if EncryptEnable == manager.encryptFlag {
 		return errors.New("passphase alreade exists")
 	}
 
-	// 
+	//        
 	if !utils.IsValidPassWord(setPasswdReq.Passphase) {
 		return chain33Types.ErrInvalidPassWord
 	}
 
-	/ passwdhas 
+	//      passwdhash         
 	newBatch := manager.store.NewBatch(true)
 	err := manager.store.SetPasswordHash(setPasswdReq.Passphase, newBatch)
 	if err != nil {
 		mlog.Error("SetPassphase", "SetPasswordHash err", err)
 		return err
 	}
-	/ 
+	//         
 	err = manager.store.SetEncryptionFlag(newBatch)
 	if err != nil {
 		mlog.Error("SetPassphase", "SetEncryptionFlag err", err)
@@ -112,11 +112,11 @@ func (manager *Manager) ChangePassphase(setPasswdReq relayerTypes.ReqChangePassw
 	if setPasswdReq.OldPassphase == setPasswdReq.NewPassphase {
 		return errors.New("the old password is the same as the new one")
 	}
-	// 
+	//         
 	if !utils.IsValidPassWord(setPasswdReq.NewPassphase) {
 		return chain33Types.ErrInvalidPassWord
 	}
-	/   
+	//        ，       ，          
 	tempislock := atomic.LoadInt32(&manager.isLocked)
 	atomic.CompareAndSwapInt32(&manager.isLocked, Locked, Unlocked)
 
@@ -125,7 +125,7 @@ func (manager *Manager) ChangePassphase(setPasswdReq relayerTypes.ReqChangePassw
 		atomic.CompareAndSwapInt32(&manager.isLocked, Unlocked, tempislock)
 	}()
 
-	// oldpas 
+	//           oldpass    
 	if len(manager.passphase) == 0 && manager.encryptFlag == EncryptEnable {
 		isok := manager.store.VerifyPasswordHash(setPasswdReq.OldPassphase)
 		if !isok {
@@ -139,14 +139,14 @@ func (manager *Manager) ChangePassphase(setPasswdReq relayerTypes.ReqChangePassw
 		return chain33Types.ErrVerifyOldpasswdFail
 	}
 
-	/ passwdhas 
+	//        passwdhash         
 	newBatch := manager.store.NewBatch(true)
 	err := manager.store.SetPasswordHash(setPasswdReq.NewPassphase, newBatch)
 	if err != nil {
 		mlog.Error("ChangePassphase", "SetPasswordHash err", err)
 		return err
 	}
-	/ 
+	//         
 	err = manager.store.SetEncryptionFlag(newBatch)
 	if err != nil {
 		mlog.Error("ChangePassphase", "SetEncryptionFlag err", err)
@@ -180,7 +180,7 @@ func (manager *Manager) ChangePassphase(setPasswdReq relayerTypes.ReqChangePassw
 	return nil
 }
 
-//Unlock unlo 
+//Unlock   unlok  
 func (manager *Manager) Unlock(passphase string, result *interface{}) error {
 	manager.mtx.Lock()
 	defer manager.mtx.Unlock()
@@ -215,7 +215,7 @@ func (manager *Manager) Unlock(passphase string, result *interface{}) error {
 	return nil
 }
 
-//Lock    unloc 
+//Lock     ，       ，           ，    unlock      
 func (manager *Manager) Lock(param interface{}, result *interface{}) error {
 	manager.mtx.Lock()
 	defer manager.mtx.Unlock()
@@ -230,7 +230,7 @@ func (manager *Manager) Lock(param interface{}, result *interface{}) error {
 	return nil
 }
 
-//ImportChain33RelayerPrivateKey chain33relaye  ethereu 
+//ImportChain33RelayerPrivateKey   chain33relayer      ,        ethereum           
 func (manager *Manager) ImportChain33RelayerPrivateKey(importKeyReq relayerTypes.ImportKeyReq, result *interface{}) error {
 	manager.mtx.Lock()
 	defer manager.mtx.Unlock()
@@ -251,7 +251,7 @@ func (manager *Manager) ImportChain33RelayerPrivateKey(importKeyReq relayerTypes
 	return nil
 }
 
-//GenerateEthereumPrivateKey 
+//GenerateEthereumPrivateKey        
 func (manager *Manager) GenerateEthereumPrivateKey(param interface{}, result *interface{}) error {
 	manager.mtx.Lock()
 	defer manager.mtx.Unlock()
@@ -268,7 +268,7 @@ func (manager *Manager) GenerateEthereumPrivateKey(param interface{}, result *in
 	return nil
 }
 
-//ImportChain33PrivateKey4EthRelayer ethrelaye chain3  chain3 
+//ImportChain33PrivateKey4EthRelayer  ethrelayer  chain33  ，  chain33           
 func (manager *Manager) ImportChain33PrivateKey4EthRelayer(privateKey string, result *interface{}) error {
 	manager.mtx.Lock()
 	defer manager.mtx.Unlock()
@@ -285,7 +285,7 @@ func (manager *Manager) ImportChain33PrivateKey4EthRelayer(privateKey string, re
 	return nil
 }
 
-//ShowChain33RelayerValidator chain3 validato 
+//ShowChain33RelayerValidator    chain33     validator         
 func (manager *Manager) ShowChain33RelayerValidator(param interface{}, result *interface{}) error {
 	manager.mtx.Lock()
 	defer manager.mtx.Unlock()
@@ -298,7 +298,7 @@ func (manager *Manager) ShowChain33RelayerValidator(param interface{}, result *i
 	return nil
 }
 
-//ShowEthRelayerValidator Ethereu validato 
+//ShowEthRelayerValidator    Ethereum     validator         
 func (manager *Manager) ShowEthRelayerValidator(param interface{}, result *interface{}) error {
 	manager.mtx.Lock()
 	defer manager.mtx.Unlock()

@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+//        
 const (
 	P2pSubCommitTx      = 1
 	P2pSubLeaderSyncMsg = 2
@@ -32,7 +33,7 @@ func (client *client) sendP2PMsg(ty int64, data interface{}) ([]byte, error) {
 	return nil, errors.Wrapf(types.ErrInvalidParam, "resp msg=%s", string(resp.GetData().(*types.Reply).GetMsg()))
 }
 
-
+// p2p    
 func (client *client) SendPubP2PMsg(topic string, msg []byte) error {
 	data := &types.PublishTopicMsg{Topic: topic, Msg: msg}
 	_, err := client.sendP2PMsg(types.EventPubTopicMsg, data)

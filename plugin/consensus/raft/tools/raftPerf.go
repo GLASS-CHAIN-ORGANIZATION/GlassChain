@@ -55,42 +55,42 @@ func main() {
 	createConn(os.Args[1])
 	argsWithoutProg := os.Args[2:]
 	switch argsWithoutProg[0] {
-	case "-h": 
+	case "-h": //    
 		LoadHelp()
 	case "transferperf":
 		if len(argsWithoutProg) != 6 {
-			fmt.Print(errors.New("para error").Error())
+			fmt.Print(errors.New("    ").Error())
 			return
 		}
 		TransferPerf(argsWithoutProg[1], argsWithoutProg[2], argsWithoutProg[3], argsWithoutProg[4], argsWithoutProg[5])
 	case "sendtoaddress":
 		if len(argsWithoutProg) != 5 {
-			fmt.Print(errors.New("para error").Error())
+			fmt.Print(errors.New("    ").Error())
 			return
 		}
 		SendToAddress(argsWithoutProg[1], argsWithoutProg[2], argsWithoutProg[3], argsWithoutProg[4])
 	case "normperf":
 		if len(argsWithoutProg) != 5 {
-			fmt.Print(errors.New("para error").Error())
+			fmt.Print(errors.New("    ").Error())
 			return
 		}
 		NormPerf(argsWithoutProg[1], argsWithoutProg[2], argsWithoutProg[3], argsWithoutProg[4])
 	case "normput":
 		if len(argsWithoutProg) != 4 {
-			fmt.Print(errors.New("para error").Error())
+			fmt.Print(errors.New("    ").Error())
 			return
 		}
 		NormPut(argsWithoutProg[1], argsWithoutProg[2], argsWithoutProg[3])
 	case "normget":
 		if len(argsWithoutProg) != 2 {
-			fmt.Print(errors.New("para error").Error())
+			fmt.Print(errors.New("    ").Error())
 			return
 		}
 		NormGet(argsWithoutProg[1])
 		//zzh
 	case "normreadperf":
 		if len(argsWithoutProg) != 4 {
-			fmt.Print(errors.New("para error").Error())
+			fmt.Print(errors.New("    ").Error())
 			return
 		}
 		NormReadPerf(argsWithoutProg[1], argsWithoutProg[2], argsWithoutProg[3])
@@ -100,12 +100,12 @@ func main() {
 // LoadHelp show available commands
 func LoadHelp() {
 	fmt.Println("Available Commands:")
-	fmt.Println("[ip] transferperf [from, to, amount, txNum, duration]            : Transfer performance test")
-	fmt.Println("[ip] sendtoaddress [from, to, amount, note]                      : Send transaction to address")
-	fmt.Println("[ip] normperf [size, num, interval, duration]                    : Conventional write data performance test")
-	fmt.Println("[ip] normput [privkey, key, value]                               : Regular write data")
-	fmt.Println("[ip] normget [key]                                               : Regular read data")
-	fmt.Println("[ip] normreadperf [num, interval, duration]                      : Conventional read data performance test")
+	fmt.Println("[ip] transferperf [from, to, amount, txNum, duration]            :       ")
+	fmt.Println("[ip] sendtoaddress [from, to, amount, note]                      :        ")
+	fmt.Println("[ip] normperf [size, num, interval, duration]                    :          ")
+	fmt.Println("[ip] normput [privkey, key, value]                               :      ")
+	fmt.Println("[ip] normget [key]                                               :      ")
+	fmt.Println("[ip] normreadperf [num, interval, duration]                      :          ")
 }
 
 // TransferPerf run transfer performance

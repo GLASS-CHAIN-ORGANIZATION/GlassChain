@@ -6,6 +6,7 @@ import (
 	"github.com/robertkrimen/otto"
 )
 
+//  js               
 func execaddressFunc(vm *otto.Otto) {
 	vm.Set("execaddress", func(call otto.FunctionCall) otto.Value {
 		key, err := call.Argument(0).ToString()
@@ -28,4 +29,10 @@ func sha256Func(vm *otto.Otto) {
 	})
 }
 
+/*
+//          
+//randnum
 
+//       hash   
+//prev_blockhash()
+*/

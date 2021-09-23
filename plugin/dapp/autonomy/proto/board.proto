@@ -7,13 +7,16 @@ syntax = "proto3";
 import "lcommon.proto";
 
 package types;
-option go_package = "../types";
 
 message AutonomyProposalBoard {
     ProposalBoard propBoard = 1;
+    //         
     RuleConfig curRule = 2;
+    //      
     ActiveBoard board = 3;
+    //          
     VoteResult voteResult = 4;
+    //   
     int32  status     = 5;
     string address    = 6;
     int64  height     = 7;
@@ -23,16 +26,20 @@ message AutonomyProposalBoard {
 
 // action
 message ProposalBoard {
+    //     
     int32 year  = 1;
     int32 month = 2;
     int32 day   = 3;
 
+    //     
     bool update = 4;
+    //        
     repeated string boards = 5;
 
-    int64 startBlockHeight   = 6; 
-    int64 endBlockHeight     = 7; 
-    int64 realEndBlockHeight = 8; 
+    //     
+    int64 startBlockHeight   = 6; //         
+    int64 endBlockHeight     = 7; //         
+    int64 realEndBlockHeight = 8; //           
 }
 
 message RevokeProposalBoard {

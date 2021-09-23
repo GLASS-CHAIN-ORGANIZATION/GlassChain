@@ -80,7 +80,7 @@ Retry:
 	pServer := NewP2pServer()
 	pServer.node = dl.node
 
-	/  
+	//                  
 	interceptor := func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
 		//checkAuth
 		getctx, ok := pr.FromContext(ctx)
@@ -97,7 +97,7 @@ Retry:
 
 		if !auth(ip) {
 			log.Error("interceptor", "auth faild", ip)
-			/ I 
+			//    IP        
 			pServer.node.nodeInfo.blacklist.Add(ip, int64(3600))
 			return nil, fmt.Errorf("auth faild %v  no authorized", ip)
 
@@ -105,7 +105,7 @@ Retry:
 		// Continue processing the request
 		return handler(ctx, req)
 	}
-	/ 
+	//    
 	interceptorStream := func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		getctx, ok := pr.FromContext(ss.Context())
 		if !ok {
@@ -122,7 +122,7 @@ Retry:
 
 		if !auth(ip) {
 			log.Error("interceptorStream", "auth faild", ip)
-			/ I 
+			//    IP        
 			pServer.node.nodeInfo.blacklist.Add(ip, int64(3600))
 			return fmt.Errorf("auth faild  %v  no authorized", ip)
 		}
@@ -130,11 +130,11 @@ Retry:
 	}
 	var opts []grpc.ServerOption
 	opts = append(opts, grpc.UnaryInterceptor(interceptor), grpc.StreamInterceptor(interceptorStream))
-	maxMsgSize := pb.MaxBlockSize + 1024*1024    /  
-	msgRecvOp := grpc.MaxRecvMsgSize(maxMsgSize) / 
-	msgSendOp := grpc.MaxSendMsgSize(maxMsgSize) / 
+	maxMsgSize := pb.MaxBlockSize + 1024*1024    //             
+	msgRecvOp := grpc.MaxRecvMsgSize(maxMsgSize) //        
+	msgSendOp := grpc.MaxSendMsgSize(maxMsgSize) //        
 	kaep := keepalive.EnforcementPolicy{
-		MinTime:             10 * time.Second, / 10 pin 
+		MinTime:             10 * time.Second, //      10s   ping  
 		PermitWithoutStream: true,
 	}
 	var keepparm keepalive.ServerParameters
@@ -148,7 +148,6 @@ Retry:
 		opts = append(opts, grpc.Creds(node.nodeInfo.servCreds))
 
 	}
-
 	dl.server = grpc.NewServer(opts...)
 	dl.p2pserver = pServer
 	pb.RegisterP2PgserviceServer(dl.server, pServer)
@@ -198,7 +197,7 @@ func (h *statshandler) HandleConn(ctx context.Context, s stats.ConnStats) {
 	}
 }
 
-// HandleRPC .
+// HandleRPC   .
 func (h *statshandler) HandleRPC(ctx context.Context, s stats.RPCStats) {}
 
 type connCtxKey struct{}

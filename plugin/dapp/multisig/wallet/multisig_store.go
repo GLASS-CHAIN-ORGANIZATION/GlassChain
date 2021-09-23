@@ -15,12 +15,12 @@ func newStore(db db.DB) *multisigStore {
 	return &multisigStore{Store: wcom.NewStore(db)}
 }
 
-// multisigStore 
+// multisigStore             
 type multisigStore struct {
 	*wcom.Store
 }
 
-/ owne 
+//    owner         
 func (store *multisigStore) listOwnerAttrsByAddr(addr string) (*mtypes.OwnerAttrs, error) {
 	if len(addr) == 0 {
 		bizlog.Error("listMultisigAddrByOwnerAddr addr is nil")
@@ -47,7 +47,7 @@ func (store *multisigStore) listOwnerAttrsByAddr(addr string) (*mtypes.OwnerAttr
 	return &ownerAttrs, nil
 }
 
-/ 
+//                  
 func (store *multisigStore) listOwnerAttrs() (*mtypes.OwnerAttrs, error) {
 
 	list := store.NewListHelper()

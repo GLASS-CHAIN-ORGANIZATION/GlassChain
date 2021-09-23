@@ -14,13 +14,13 @@ import (
 	privacytypes "github.com/33cn/plugin/plugin/dapp/privacy/types"
 )
 
-func checkAmountValid(amount, coinPrecision int64) bool {
+func checkAmountValid(amount int64) bool {
 	if amount <= 0 {
 		return false
 	}
-	//  types.Coi 
-	// 
-	if (int64(float64(amount)/float64(coinPrecision)) * coinPrecision) != amount {
+	//      ，       types.Coin    
+	//                      
+	if (int64(float64(amount)/float64(types.Coin)) * types.Coin) != amount {
 		return false
 	}
 	return true
@@ -32,7 +32,7 @@ func makeViewSpendPubKeyPairToString(viewPubKey, spendPubKey []byte) string {
 	return hex.EncodeToString(pair)
 }
 
-/ amoun 1,2,  amoun utxo
+// amount   1,2,5   ，     amount                 utxo
 func decomAmount2Nature(amount int64, order int64) []int64 {
 	res := make([]int64, 0)
 	if order == 0 {
@@ -85,22 +85,22 @@ func decomposeAmount2digits(amount, dustThreshold int64) []int64 {
 		amount /= 10
 		order *= 10
 		if dust+chunk < dustThreshold {
-			dust += chunk /  dust_threshol 
+			dust += chunk //    ，    dust_threshold  
 		} else {
 			if !isDustHandled && 0 != dust {
-				//1st  dus 
+				//1st      ，  dust    
 				res = append(res, dust)
 				isDustHandled = true
 			}
 			if 0 != chunk {
-				//2nd 
+				//2nd                
 				goodAmount := decomAmount2Nature(chunk, order/10)
 				res = append(res, goodAmount...)
 			}
 		}
 	}
 
-	/  < dustThreshold 
+	//           < dustThreshold，         
 	if !isDustHandled && 0 != dust {
 		res = append(res, dust)
 	}
@@ -122,8 +122,8 @@ func parseViewSpendPubKeyPair(in string) (viewPubKey, spendPubKey []byte, err er
 	return
 }
 
-// genCustomOuts 
-// ，P=Hs(rA)G+B
+// genCustomOuts          
+//      ，P=Hs(rA)G+B
 //func genCustomOuts(viewpubTo, spendpubto *[32]byte, transAmount int64, count int32) (*privacytypes.PrivacyOutput, error) {
 //	decomDigit := make([]int64, count)
 //	for i := range decomDigit {
@@ -140,7 +140,7 @@ func parseViewSpendPubKeyPair(in string) (viewPubKey, spendPubKey []byte, err er
 //	privacyOutput.RpubKeytx = RtxPublicKey
 //	privacyOutput.Keyoutput = make([]*privacytypes.KeyOutput, len(decomDigit))
 //
-//	/ （UTXO） 
+//	//             （UTXO），          
 //	for index, digit := range decomDigit {
 //		pubkeyOnetime, err := privacy.GenerateOneTimeAddr(viewpubTo, spendpubto, sktx, int64(index))
 //		if err != nil {
@@ -157,16 +157,16 @@ func parseViewSpendPubKeyPair(in string) (viewPubKey, spendPubKey []byte, err er
 //	return &privacyOutput, nil
 //}
 
-/ utx   utxo 
-//1 utxo
-//2 utxo
-func generateOuts(viewpubTo, spendpubto, viewpubChangeto, spendpubChangeto *[32]byte, transAmount, selectedAmount, fee, coinPrecision int64) (*privacytypes.PrivacyOutput, error) {
-	decomDigit := decomposeAmount2digits(transAmount, privacytypes.BTYDustThreshold*coinPrecision)
-	/ 
+//       utxo   2   ，      utxo，        
+//1.      utxo
+//2.      utxo
+func generateOuts(viewpubTo, spendpubto, viewpubChangeto, spendpubChangeto *[32]byte, transAmount, selectedAmount, fee int64) (*privacytypes.PrivacyOutput, error) {
+	decomDigit := decomposeAmount2digits(transAmount, privacytypes.BTYDustThreshold)
+	//    
 	changeAmount := selectedAmount - transAmount - fee
 	var decomChange []int64
 	if 0 < changeAmount {
-		decomChange = decomposeAmount2digits(changeAmount, privacytypes.BTYDustThreshold*coinPrecision)
+		decomChange = decomposeAmount2digits(changeAmount, privacytypes.BTYDustThreshold)
 	}
 	bizlog.Info("generateOuts", "decompose digit for amount", selectedAmount-fee, "decomDigit", decomDigit)
 
@@ -180,7 +180,7 @@ func generateOuts(viewpubTo, spendpubto, viewpubChangeto, spendpubChangeto *[32]
 	privacyOutput.RpubKeytx = RtxPublicKey
 	privacyOutput.Keyoutput = make([]*privacytypes.KeyOutput, len(decomDigit)+len(decomChange))
 
-	/ （UTXO） 
+	//             （UTXO），          
 	for index, digit := range decomDigit {
 		pubkeyOnetime, err := privacy.GenerateOneTimeAddr(viewpubTo, spendpubto, sktx, int64(index))
 		if err != nil {
@@ -193,7 +193,7 @@ func generateOuts(viewpubTo, spendpubto, viewpubChangeto, spendpubChangeto *[32]
 		}
 		privacyOutput.Keyoutput[index] = keyOutput
 	}
-	/ UTX UTXO
+	//         UTXO      UTXO
 	for index, digit := range decomChange {
 		pubkeyOnetime, err := privacy.GenerateOneTimeAddr(viewpubChangeto, spendpubChangeto, sktx, int64(index+len(decomDigit)))
 		if err != nil {
@@ -206,7 +206,7 @@ func generateOuts(viewpubTo, spendpubto, viewpubChangeto, spendpubChangeto *[32]
 		}
 		privacyOutput.Keyoutput[index+len(decomDigit)] = keyOutput
 	}
-	/ utxo 
+	//         utxo，                
 	if 0 != fee {
 		//viewPub, _ := common.Hex2Bytes(types.ViewPubFee)
 		//spendPub, _ := common.Hex2Bytes(types.SpendPubFee)

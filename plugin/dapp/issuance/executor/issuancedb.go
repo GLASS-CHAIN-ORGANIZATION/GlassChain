@@ -17,19 +17,20 @@ import (
 
 // List control
 const (
-	ListDESC     = int32(0)   
-	ListASC      = int32(1)   
-	DefaultCount = int32(20)  
-	MaxCount     = int32(100) 
+	ListDESC     = int32(0)   // list  
+	ListASC      = int32(1)   // list  
+	DefaultCount = int32(20)  //           
+	MaxCount     = int32(100) //    100 
 )
 
 //setting
 const (
-	DefaultDebtCeiling      = 100000          
-	DefaultLiquidationRatio = 0.25 * 1e4      
-	DefaultPeriod           = 3600 * 24 * 365 
-	PriceWarningRate        = 1.3 * 1e4       
-	ExpireWarningTime       = 3600 * 24 * 10  
+	Coin                    = types.Coin      // 1e8
+	DefaultDebtCeiling      = 100000 * Coin   //       
+	DefaultLiquidationRatio = 0.25 * 1e4      //      
+	DefaultPeriod           = 3600 * 24 * 365 //       
+	PriceWarningRate        = 1.3 * 1e4       //        
+	ExpireWarningTime       = 3600 * 24 * 10  //   10     
 )
 
 func getManageKey(key string, db dbm.KV) ([]byte, error) {
@@ -153,8 +154,8 @@ func PriceKey() (key []byte) {
 
 // Action struct
 type Action struct {
-	coinsAccount *account.DB 
-	tokenAccount *account.DB 
+	coinsAccount *account.DB // bty  
+	tokenAccount *account.DB // ccny  
 	db           dbm.KV
 	localDB      dbm.KVDB
 	txhash       []byte
@@ -288,15 +289,18 @@ func getLatestExpireTime(issu *pty.Issuance) int64 {
 	return latest
 }
 
+// IssuanceManage         （     ）
 func (action *Action) IssuanceManage(manage *pty.IssuanceManage) (*types.Receipt, error) {
 	var kv []*types.KeyValue
 	var receipt *types.Receipt
 
+	//         
 	if !isRightAddr(pty.ManageKey, action.fromaddr, action.db) {
 		clog.Error("IssuanceManage", "addr", action.fromaddr, "error", "Address has no permission to config")
 		return nil, pty.ErrPermissionDeny
 	}
 
+	//       
 	var item types.ConfigItem
 	data, err := action.db.Get(AddrKey())
 	if err != nil {
@@ -345,18 +349,19 @@ func (action *Action) getSuperAddr() []string {
 	return addrStore.SuperAddrs
 }
 
+// IssuanceCreate     ，      ccny        ，         
 func (action *Action) IssuanceCreate(create *pty.IssuanceCreate) (*types.Receipt, error) {
 	var logs []*types.ReceiptLog
 	var kv []*types.KeyValue
 	var receipt *types.Receipt
 
-	cfg := action.Issuance.GetAPI().GetConfig()
-
+	//         
 	if !isRightAddr(pty.FundKey, action.fromaddr, action.db) {
 		clog.Error("IssuanceCreate", "addr", action.fromaddr, "error", "Address has no permission to create")
 		return nil, pty.ErrPermissionDeny
 	}
 
+	//     
 	if create.GetTotalBalance() <= 0 {
 		clog.Error("IssuanceCreate", "addr", action.fromaddr, "execaddr", action.execaddr, "total balance", create.GetTotalBalance(), "error", types.ErrAmount)
 		return nil, types.ErrAmount
@@ -366,10 +371,12 @@ func (action *Action) IssuanceCreate(create *pty.IssuanceCreate) (*types.Receipt
 		return nil, types.ErrInvalidParam
 	}
 
+	//   ccny  
 	if !action.CheckExecTokenAccount(action.fromaddr, create.TotalBalance, false) {
 		return nil, types.ErrInsufficientBalance
 	}
 
+	//   ID    
 	issuanceID := common.ToHex(action.txhash)
 	_, err := queryIssuanceByID(action.db, issuanceID)
 	if err != types.ErrNotFound {
@@ -377,6 +384,7 @@ func (action *Action) IssuanceCreate(create *pty.IssuanceCreate) (*types.Receipt
 		return nil, pty.ErrIssuanceRepeatHash
 	}
 
+	//   ccny
 	receipt, err = action.tokenAccount.ExecFrozen(action.fromaddr, action.execaddr, create.TotalBalance)
 	if err != nil {
 		clog.Error("IssuanceCreate.Frozen", "addr", action.fromaddr, "execaddr", action.execaddr, "amount", create.TotalBalance)
@@ -385,6 +393,7 @@ func (action *Action) IssuanceCreate(create *pty.IssuanceCreate) (*types.Receipt
 	logs = append(logs, receipt.Logs...)
 	kv = append(kv, receipt.KV...)
 
+	//   coll  
 	issu := &IssuanceDB{}
 	issu.IssuanceId = issuanceID
 	issu.TotalBalance = create.TotalBalance
@@ -396,7 +405,7 @@ func (action *Action) IssuanceCreate(create *pty.IssuanceCreate) (*types.Receipt
 	if create.DebtCeiling != 0 {
 		issu.DebtCeiling = create.DebtCeiling
 	} else {
-		issu.DebtCeiling = DefaultDebtCeiling * cfg.GetCoinPrecision()
+		issu.DebtCeiling = DefaultDebtCeiling
 	}
 	if create.Period != 0 {
 		issu.Period = create.Period
@@ -410,7 +419,7 @@ func (action *Action) IssuanceCreate(create *pty.IssuanceCreate) (*types.Receipt
 
 	clog.Debug("IssuanceCreate created", "IssuanceID", issuanceID, "TotalBalance", issu.TotalBalance)
 
-
+	//   
 	issu.Save(action.db)
 	kv = append(kv, issu.GetKVSet()...)
 
@@ -421,6 +430,7 @@ func (action *Action) IssuanceCreate(create *pty.IssuanceCreate) (*types.Receipt
 	return receipt, nil
 }
 
+//                 BTY  
 func getBtyNumToFrozen(value int64, price int64, ratio int64) (int64, error) {
 	if price == 0 {
 		clog.Error("Bty price should greate to 0")
@@ -431,6 +441,7 @@ func getBtyNumToFrozen(value int64, price int64, ratio int64) (int64, error) {
 	return btyValue * 1e4, nil
 }
 
+//          
 func getLatestPrice(db dbm.KV) (int64, error) {
 	data, err := db.Get(PriceKey())
 	if err != nil {
@@ -448,6 +459,7 @@ func getLatestPrice(db dbm.KV) (int64, error) {
 	return price.BtyPrice, nil
 }
 
+// CheckExecAccountBalance          
 func (action *Action) CheckExecAccountBalance(fromAddr string, ToFrozen, ToActive int64) bool {
 	acc := action.coinsAccount.LoadExecAccount(fromAddr, action.execaddr)
 	if acc.GetBalance() >= ToFrozen && acc.GetFrozen() >= ToActive {
@@ -456,6 +468,7 @@ func (action *Action) CheckExecAccountBalance(fromAddr string, ToFrozen, ToActiv
 	return false
 }
 
+// CheckExecTokenAccount     token  
 func (action *Action) CheckExecTokenAccount(addr string, amount int64, isFrozen bool) bool {
 	acc := action.tokenAccount.LoadExecAccount(addr, action.execaddr)
 	if isFrozen {
@@ -470,6 +483,7 @@ func (action *Action) CheckExecTokenAccount(addr string, amount int64, isFrozen 
 	return false
 }
 
+// IssuanceDebt     bty  ccny
 func (action *Action) IssuanceDebt(debt *pty.IssuanceDebt) (*types.Receipt, error) {
 	var logs []*types.ReceiptLog
 	var kv []*types.KeyValue
@@ -479,12 +493,14 @@ func (action *Action) IssuanceDebt(debt *pty.IssuanceDebt) (*types.Receipt, erro
 		return nil, pty.ErrPermissionDeny
 	}
 
+	//        ID
 	issuance, err := queryIssuanceByID(action.db, debt.IssuanceId)
 	if err != nil {
 		clog.Error("IssuanceDebt", "IssuanceId", debt.IssuanceId, "error", err)
 		return nil, err
 	}
 
+	//     
 	if issuance.Status == pty.IssuanceStatusClose {
 		clog.Error("IssuanceDebt", "CollID", issuance.IssuanceId, "addr", action.fromaddr, "execaddr", action.execaddr, "status", issuance.Status, "error", pty.ErrIssuanceStatus)
 		return nil, pty.ErrIssuanceStatus
@@ -492,11 +508,13 @@ func (action *Action) IssuanceDebt(debt *pty.IssuanceDebt) (*types.Receipt, erro
 
 	issu := &IssuanceDB{*issuance}
 
+	//       
 	if debt.GetValue() <= 0 {
 		clog.Error("IssuanceDebt", "CollID", issu.IssuanceId, "addr", action.fromaddr, "execaddr", action.execaddr, "debt value", debt.GetValue(), "error", types.ErrInvalidParam)
 		return nil, types.ErrInvalidParam
 	}
 
+	//            
 	userBalance, _ := queryIssuanceUserBalance(action.db, action.localDB, action.fromaddr)
 	if debt.GetValue()+userBalance > issu.DebtCeiling {
 		clog.Error("IssuanceDebt", "CollID", issu.IssuanceId, "addr", action.fromaddr, "execaddr", action.execaddr,
@@ -504,30 +522,34 @@ func (action *Action) IssuanceDebt(debt *pty.IssuanceDebt) (*types.Receipt, erro
 		return nil, pty.ErrIssuanceExceedDebtCeiling
 	}
 
+	//               
 	if debt.GetValue() > issu.Balance {
 		clog.Error("IssuanceDebt", "CollID", issu.IssuanceId, "addr", action.fromaddr, "execaddr", action.execaddr, "debt value", debt.GetValue(), "error", pty.ErrIssuanceLowBalance)
 		return nil, pty.ErrIssuanceLowBalance
 	}
 	clog.Debug("IssuanceDebt", "value", debt.GetValue())
 
-
+	//        
 	lastPrice, err := getLatestPrice(action.db)
 	if err != nil {
 		clog.Error("IssuanceDebt.getLatestPrice", "CollID", issu.IssuanceId, "addr", action.fromaddr, "execaddr", action.execaddr, "error", err)
 		return nil, err
 	}
 
+	//             ，            
 	btyFrozen, err := getBtyNumToFrozen(debt.Value, lastPrice, issu.LiquidationRatio)
 	if err != nil {
 		clog.Error("IssuanceDebt.getBtyNumToFrozen", "CollID", issu.IssuanceId, "addr", action.fromaddr, "execaddr", action.execaddr, "error", err)
 		return nil, err
 	}
 
+	//          
 	if !action.CheckExecAccountBalance(action.fromaddr, btyFrozen, 0) {
 		clog.Error("IssuanceDebt.CheckExecAccountBalance", "CollID", issu.IssuanceId, "addr", action.fromaddr, "execaddr", action.execaddr, "btyFrozen", btyFrozen, "error", types.ErrNoBalance)
 		return nil, types.ErrNoBalance
 	}
 
+	//      
 	receipt, err := action.coinsAccount.ExecTransfer(action.fromaddr, issu.IssuerAddr, action.execaddr, btyFrozen)
 	if err != nil {
 		clog.Error("IssuanceDebt.ExecTransfer", "addr", action.fromaddr, "execaddr", action.execaddr, "amount", btyFrozen)
@@ -536,6 +558,7 @@ func (action *Action) IssuanceDebt(debt *pty.IssuanceDebt) (*types.Receipt, erro
 	logs = append(logs, receipt.Logs...)
 	kv = append(kv, receipt.KV...)
 
+	//      
 	receipt, err = action.coinsAccount.ExecFrozen(issu.IssuerAddr, action.execaddr, btyFrozen)
 	if err != nil {
 		clog.Error("IssuanceDebt.Frozen", "addr", issu.IssuerAddr, "execaddr", action.execaddr, "amount", btyFrozen)
@@ -544,6 +567,7 @@ func (action *Action) IssuanceDebt(debt *pty.IssuanceDebt) (*types.Receipt, erro
 	logs = append(logs, receipt.Logs...)
 	kv = append(kv, receipt.KV...)
 
+	//   ccny
 	receipt, err = action.tokenAccount.ExecTransferFrozen(issu.IssuerAddr, action.fromaddr, action.execaddr, debt.Value)
 	if err != nil {
 		clog.Error("IssuanceDebt.ExecTokenTransfer", "addr", action.fromaddr, "execaddr", action.execaddr, "amount", debt.Value)
@@ -552,6 +576,7 @@ func (action *Action) IssuanceDebt(debt *pty.IssuanceDebt) (*types.Receipt, erro
 	logs = append(logs, receipt.Logs...)
 	kv = append(kv, receipt.KV...)
 
+	//       
 	debtRecord := &pty.DebtRecord{}
 	debtRecord.AccountAddr = action.fromaddr
 	debtRecord.DebtId = common.ToHex(action.txhash)
@@ -564,10 +589,12 @@ func (action *Action) IssuanceDebt(debt *pty.IssuanceDebt) (*types.Receipt, erro
 	debtRecord.Status = pty.IssuanceUserStatusCreate
 	debtRecord.ExpireTime = action.blocktime + issu.Period
 
+	//                
 	if issu.LatestLiquidationPrice < debtRecord.LiquidationPrice {
 		issu.LatestLiquidationPrice = debtRecord.LiquidationPrice
 	}
 
+	//   
 	issu.DebtRecords = append(issu.DebtRecords, debtRecord)
 	issu.CollateralValue += btyFrozen
 	issu.DebtValue += debt.Value
@@ -583,11 +610,13 @@ func (action *Action) IssuanceDebt(debt *pty.IssuanceDebt) (*types.Receipt, erro
 	return receipt, nil
 }
 
+// IssuanceRepay       
 func (action *Action) IssuanceRepay(repay *pty.IssuanceRepay) (*types.Receipt, error) {
 	var logs []*types.ReceiptLog
 	var kv []*types.KeyValue
 	var receipt *types.Receipt
 
+	//        
 	issuance, err := queryIssuanceByID(action.db, repay.IssuanceId)
 	if err != nil {
 		clog.Error("IssuanceRepay", "CollID", repay.IssuanceId, "error", err)
@@ -596,11 +625,13 @@ func (action *Action) IssuanceRepay(repay *pty.IssuanceRepay) (*types.Receipt, e
 
 	issu := &IssuanceDB{*issuance}
 
+	//     
 	if issu.Status != pty.IssuanceStatusCreated {
 		clog.Error("IssuanceRepay", "CollID", repay.IssuanceId, "addr", action.fromaddr, "execaddr", action.execaddr, "error", "status error", "Status", issu.Status)
 		return nil, pty.ErrIssuanceStatus
 	}
 
+	//       
 	var debtRecord *pty.DebtRecord
 	var index int
 	for i, record := range issu.DebtRecords {
@@ -616,11 +647,13 @@ func (action *Action) IssuanceRepay(repay *pty.IssuanceRepay) (*types.Receipt, e
 		return nil, pty.ErrRecordNotExist
 	}
 
+	//   
 	if !action.CheckExecTokenAccount(action.fromaddr, debtRecord.DebtValue, false) {
 		clog.Error("IssuanceRepay", "CollID", issu.IssuanceId, "addr", action.fromaddr, "execaddr", action.execaddr, "amount", debtRecord.DebtValue, "error", types.ErrInsufficientBalance)
 		return nil, types.ErrNoBalance
 	}
 
+	// ccny  
 	receipt, err = action.tokenAccount.ExecTransfer(action.fromaddr, issu.IssuerAddr, action.execaddr, debtRecord.DebtValue)
 	if err != nil {
 		clog.Error("IssuanceRepay.ExecTokenTransfer", "addr", action.fromaddr, "execaddr", action.execaddr, "amount", debtRecord.DebtValue)
@@ -629,6 +662,7 @@ func (action *Action) IssuanceRepay(repay *pty.IssuanceRepay) (*types.Receipt, e
 	logs = append(logs, receipt.Logs...)
 	kv = append(kv, receipt.KV...)
 
+	//   ccny
 	receipt, err = action.tokenAccount.ExecFrozen(issu.IssuerAddr, action.execaddr, debtRecord.DebtValue)
 	if err != nil {
 		clog.Error("IssuanceCreate.Frozen", "addr", action.fromaddr, "execaddr", action.execaddr, "amount", debtRecord.DebtValue)
@@ -637,6 +671,7 @@ func (action *Action) IssuanceRepay(repay *pty.IssuanceRepay) (*types.Receipt, e
 	logs = append(logs, receipt.Logs...)
 	kv = append(kv, receipt.KV...)
 
+	//      
 	receipt, err = action.coinsAccount.ExecTransferFrozen(issu.IssuerAddr, action.fromaddr, action.execaddr, debtRecord.CollateralValue)
 	if err != nil {
 		clog.Error("IssuanceRepay.ExecTransferFrozen", "addr", issu.IssuerAddr, "execaddr", action.execaddr, "amount", debtRecord.CollateralValue)
@@ -645,9 +680,11 @@ func (action *Action) IssuanceRepay(repay *pty.IssuanceRepay) (*types.Receipt, e
 	logs = append(logs, receipt.Logs...)
 	kv = append(kv, receipt.KV...)
 
+	//       
 	debtRecord.PreStatus = debtRecord.Status
 	debtRecord.Status = pty.IssuanceUserStatusClose
 
+	//   
 	issu.Balance += debtRecord.DebtValue
 	issu.CollateralValue -= debtRecord.CollateralValue
 	issu.DebtValue -= debtRecord.DebtValue
@@ -676,6 +713,7 @@ func removeLiquidateRecord(debtRecords []*pty.DebtRecord, remove pty.DebtRecord)
 	return debtRecords
 }
 
+//     
 func (action *Action) systemLiquidation(issu *pty.Issuance, price int64) (*types.Receipt, error) {
 	var logs []*types.ReceiptLog
 	var kv []*types.KeyValue
@@ -683,7 +721,7 @@ func (action *Action) systemLiquidation(issu *pty.Issuance, price int64) (*types
 
 	for _, debtRecord := range issu.DebtRecords {
 		if (debtRecord.LiquidationPrice*PriceWarningRate)/1e4 < price {
-
+			//     ，      
 			if debtRecord.Status == pty.IssuanceUserStatusWarning {
 				debtRecord.PreStatus = debtRecord.Status
 				debtRecord.Status = pty.IssuanceUserStatusCreate
@@ -693,8 +731,9 @@ func (action *Action) systemLiquidation(issu *pty.Issuance, price int64) (*types
 			continue
 		}
 
+		//        ，    
 		if debtRecord.LiquidationPrice >= price {
-
+			//        ，    
 			clog.Debug("systemLiquidation", "issuance id", debtRecord.IssuId, "record id", debtRecord.DebtId, "account", debtRecord.AccountAddr, "price", price)
 
 			getGuarantorAddr, err := getGuarantorAddr(action.db)
@@ -705,6 +744,7 @@ func (action *Action) systemLiquidation(issu *pty.Issuance, price int64) (*types
 				}
 			}
 
+			//      
 			receipt, err := action.coinsAccount.ExecTransferFrozen(issu.IssuerAddr, getGuarantorAddr, action.execaddr, debtRecord.CollateralValue)
 			if err != nil {
 				clog.Error("systemLiquidation", "addr", action.fromaddr, "execaddr", action.execaddr, "amount", debtRecord.CollateralValue, "error", err)
@@ -713,6 +753,7 @@ func (action *Action) systemLiquidation(issu *pty.Issuance, price int64) (*types
 			logs = append(logs, receipt.Logs...)
 			kv = append(kv, receipt.KV...)
 
+			//       
 			debtRecord.LiquidateTime = action.blocktime
 			debtRecord.PreStatus = debtRecord.Status
 			debtRecord.Status = pty.IssuanceUserStatusSystemLiquidate
@@ -725,6 +766,7 @@ func (action *Action) systemLiquidation(issu *pty.Issuance, price int64) (*types
 			continue
 		}
 
+		//        ，         ，    
 		if debtRecord.Status != pty.IssuanceUserStatusWarning {
 			debtRecord.PreStatus = debtRecord.Status
 			debtRecord.Status = pty.IssuanceUserStatusWarning
@@ -734,10 +776,12 @@ func (action *Action) systemLiquidation(issu *pty.Issuance, price int64) (*types
 		}
 	}
 
+	//         
 	for _, record := range removeRecord {
 		issu.DebtRecords = removeLiquidateRecord(issu.DebtRecords, *record)
 	}
 
+	//   
 	issu.LatestLiquidationPrice = getLatestLiquidationPrice(issu)
 	issu.LatestExpireTime = getLatestExpireTime(issu)
 	collDB := &IssuanceDB{*issu}
@@ -748,6 +792,7 @@ func (action *Action) systemLiquidation(issu *pty.Issuance, price int64) (*types
 	return receipt, nil
 }
 
+//     
 func (action *Action) expireLiquidation(issu *pty.Issuance) (*types.Receipt, error) {
 	var logs []*types.ReceiptLog
 	var kv []*types.KeyValue
@@ -758,8 +803,9 @@ func (action *Action) expireLiquidation(issu *pty.Issuance) (*types.Receipt, err
 			continue
 		}
 
+		//       ，    
 		if debtRecord.ExpireTime <= action.blocktime {
-
+			//      ，    
 			clog.Debug("expireLiquidation", "issuance id", debtRecord.IssuId, "record id", debtRecord.DebtId, "account", debtRecord.AccountAddr, "time", action.blocktime)
 
 			getGuarantorAddr, err := getGuarantorAddr(action.db)
@@ -770,6 +816,7 @@ func (action *Action) expireLiquidation(issu *pty.Issuance) (*types.Receipt, err
 				}
 			}
 
+			//      
 			receipt, err := action.coinsAccount.ExecTransferFrozen(issu.IssuerAddr, getGuarantorAddr, action.execaddr, debtRecord.CollateralValue)
 			if err != nil {
 				clog.Error("expireLiquidation", "addr", action.fromaddr, "execaddr", action.execaddr, "amount", debtRecord.CollateralValue, "error", err)
@@ -778,6 +825,7 @@ func (action *Action) expireLiquidation(issu *pty.Issuance) (*types.Receipt, err
 			logs = append(logs, receipt.Logs...)
 			kv = append(kv, receipt.KV...)
 
+			//       
 			debtRecord.LiquidateTime = action.blocktime
 			debtRecord.PreStatus = debtRecord.Status
 			debtRecord.Status = pty.IssuanceUserStatusExpireLiquidate
@@ -789,6 +837,7 @@ func (action *Action) expireLiquidation(issu *pty.Issuance) (*types.Receipt, err
 			continue
 		}
 
+		//         ，    
 		if debtRecord.Status != pty.IssuanceUserStatusExpire {
 			debtRecord.PreStatus = debtRecord.Status
 			debtRecord.Status = pty.IssuanceUserStatusExpire
@@ -797,10 +846,12 @@ func (action *Action) expireLiquidation(issu *pty.Issuance) (*types.Receipt, err
 		}
 	}
 
+	//         
 	for _, record := range removeRecord {
 		issu.DebtRecords = removeLiquidateRecord(issu.DebtRecords, *record)
 	}
 
+	//   
 	issu.LatestLiquidationPrice = getLatestLiquidationPrice(issu)
 	issu.LatestExpireTime = getLatestExpireTime(issu)
 	collDB := &IssuanceDB{*issu}
@@ -811,6 +862,7 @@ func (action *Action) expireLiquidation(issu *pty.Issuance) (*types.Receipt, err
 	return receipt, nil
 }
 
+//       
 func pricePolicy(feed *pty.IssuanceFeed) int64 {
 	var totalPrice int64
 	var totalVolume int64
@@ -829,6 +881,7 @@ func pricePolicy(feed *pty.IssuanceFeed) int64 {
 	return totalPrice
 }
 
+// IssuanceFeed   
 func (action *Action) IssuanceFeed(feed *pty.IssuanceFeed) (*types.Receipt, error) {
 	var logs []*types.ReceiptLog
 	var kv []*types.KeyValue
@@ -838,6 +891,7 @@ func (action *Action) IssuanceFeed(feed *pty.IssuanceFeed) (*types.Receipt, erro
 		return nil, types.ErrInvalidParam
 	}
 
+	//         
 	if !isRightAddr(pty.PriceFeedKey, action.fromaddr, action.db) {
 		clog.Error("IssuancePriceFeed", "addr", action.fromaddr, "error", "Address has no permission to feed price")
 		return nil, pty.ErrPermissionDeny
@@ -861,6 +915,7 @@ func (action *Action) IssuanceFeed(feed *pty.IssuanceFeed) (*types.Receipt, erro
 			continue
 		}
 
+		//       
 		if issu.LatestExpireTime-ExpireWarningTime <= action.blocktime {
 			receipt, err := action.expireLiquidation(issu)
 			if err != nil {
@@ -871,6 +926,7 @@ func (action *Action) IssuanceFeed(feed *pty.IssuanceFeed) (*types.Receipt, erro
 			kv = append(kv, receipt.KV...)
 		}
 
+		//       
 		receipt, err := action.systemLiquidation(issu, price)
 		if err != nil {
 			clog.Error("IssuancePriceFeed", "Issuance ID", issu.IssuanceId, "system liquidation error", err)
@@ -884,6 +940,7 @@ func (action *Action) IssuanceFeed(feed *pty.IssuanceFeed) (*types.Receipt, erro
 	priceRecord.BtyPrice = price
 	priceRecord.RecordTime = action.blocktime
 
+	//       
 	pricekv := &types.KeyValue{Key: PriceKey(), Value: types.Encode(&priceRecord)}
 	action.db.Set(pricekv.Key, pricekv.Value)
 	kv = append(kv, pricekv)
@@ -892,6 +949,7 @@ func (action *Action) IssuanceFeed(feed *pty.IssuanceFeed) (*types.Receipt, erro
 	return receipt, nil
 }
 
+// IssuanceClose     
 func (action *Action) IssuanceClose(close *pty.IssuanceClose) (*types.Receipt, error) {
 	var logs []*types.ReceiptLog
 	var kv []*types.KeyValue
@@ -915,6 +973,7 @@ func (action *Action) IssuanceClose(close *pty.IssuanceClose) (*types.Receipt, e
 		}
 	}
 
+	//   ccny
 	if issuance.Balance > 0 {
 		receipt, err = action.tokenAccount.ExecActive(action.fromaddr, action.execaddr, issuance.Balance)
 		if err != nil {
@@ -938,6 +997,7 @@ func (action *Action) IssuanceClose(close *pty.IssuanceClose) (*types.Receipt, e
 	return &types.Receipt{Ty: types.ExecOk, KV: kv, Logs: logs}, nil
 }
 
+//   ID      
 func queryIssuanceByID(db dbm.KV, issuanceID string) (*pty.Issuance, error) {
 	data, err := db.Get(Key(issuanceID))
 	if err != nil {
@@ -953,6 +1013,7 @@ func queryIssuanceByID(db dbm.KV, issuanceID string) (*pty.Issuance, error) {
 	return &issu, nil
 }
 
+//           ID
 func queryIssuanceByStatus(localdb dbm.KVDB, status int32, issuanceID string) ([]string, error) {
 	query := pty.NewIssuanceTable(localdb).GetQuery(localdb)
 	var primary []byte
@@ -978,6 +1039,7 @@ func queryIssuanceByStatus(localdb dbm.KVDB, status int32, issuanceID string) ([
 	return ids, nil
 }
 
+//         
 func queryIssuanceRecordByID(db dbm.KV, issuanceID string, debtID string) (*pty.DebtRecord, error) {
 	issu, err := queryIssuanceByID(db, issuanceID)
 	if err != nil {
@@ -1000,6 +1062,7 @@ func queryIssuanceRecordByID(db dbm.KV, issuanceID string, debtID string) (*pty.
 	return nil, types.ErrNotFound
 }
 
+//         
 func queryIssuanceRecordsByStatus(db dbm.KV, localdb dbm.KVDB, status int32, debtID string) ([]*pty.DebtRecord, error) {
 	query := pty.NewRecordTable(localdb).GetQuery(localdb)
 	var primary []byte
@@ -1029,6 +1092,7 @@ func queryIssuanceRecordsByStatus(db dbm.KV, localdb dbm.KVDB, status int32, deb
 	return records, nil
 }
 
+//         
 func queryIssuanceRecordByAddr(db dbm.KV, localdb dbm.KVDB, addr string, status int32, debtID string) ([]*pty.DebtRecord, error) {
 	query := pty.NewRecordTable(localdb).GetQuery(localdb)
 	var primary []byte

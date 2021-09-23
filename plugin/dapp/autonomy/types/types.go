@@ -29,6 +29,7 @@ func InitExecutor(cfg *types.Chain33Config) {
 	types.RegistorExecutor(AutonomyX, NewType(cfg))
 }
 
+// NewType         
 func NewType(cfg *types.Chain33Config) *AutonomyType {
 	c := &AutonomyType{}
 	c.SetChild(c)
@@ -36,14 +37,17 @@ func NewType(cfg *types.Chain33Config) *AutonomyType {
 	return c
 }
 
+// AutonomyType        
 type AutonomyType struct {
 	types.ExecTypeBase
 }
 
+// GetName        
 func (a *AutonomyType) GetName() string {
 	return AutonomyX
 }
 
+// GetLogMap         
 func (a *AutonomyType) GetLogMap() map[int64]*types.LogInfo {
 	return map[int64]*types.LogInfo{
 		TyLogPropBoard:      {Ty: reflect.TypeOf(ReceiptProposalBoard{}), Name: "LogPropBoard"},
@@ -71,10 +75,12 @@ func (a *AutonomyType) GetLogMap() map[int64]*types.LogInfo {
 	}
 }
 
+// GetPayload     Unfreeze   Payload
 func (a *AutonomyType) GetPayload() types.Message {
 	return &AutonomyAction{}
 }
 
+// GetTypeMap   Action     
 func (a *AutonomyType) GetTypeMap() map[string]int32 {
 	return map[string]int32{
 		"PropBoard":      AutonomyActionPropBoard,

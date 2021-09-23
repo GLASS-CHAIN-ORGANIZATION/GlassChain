@@ -27,12 +27,12 @@ func InitExecutor(cfg *types.Chain33Config) {
 	types.RegistorExecutor(PokerBullX, NewType(cfg))
 }
 
-// PokerBullType 
+// PokerBullType        
 type PokerBullType struct {
 	types.ExecTypeBase
 }
 
-// NewType pokerbul 
+// NewType   pokerbull     
 func NewType(cfg *types.Chain33Config) *PokerBullType {
 	c := &PokerBullType{}
 	c.SetChild(c)
@@ -40,17 +40,17 @@ func NewType(cfg *types.Chain33Config) *PokerBullType {
 	return c
 }
 
-// GetName 
+// GetName        
 func (t *PokerBullType) GetName() string {
 	return PokerBullX
 }
 
-// GetPayload payload
+// GetPayload   payload
 func (t *PokerBullType) GetPayload() types.Message {
 	return &PBGameAction{}
 }
 
-// GetTypeMap map
+// GetTypeMap     map
 func (t *PokerBullType) GetTypeMap() map[string]int32 {
 	return map[string]int32{
 		"Start":    PBGameActionStart,
@@ -61,7 +61,7 @@ func (t *PokerBullType) GetTypeMap() map[string]int32 {
 	}
 }
 
-// GetLogMap map
+// GetLogMap     map
 func (t *PokerBullType) GetLogMap() map[int64]*types.LogInfo {
 	return map[int64]*types.LogInfo{
 		TyLogPBGameStart:    {Ty: reflect.TypeOf(ReceiptPBGame{}), Name: "TyLogPBGameStart"},

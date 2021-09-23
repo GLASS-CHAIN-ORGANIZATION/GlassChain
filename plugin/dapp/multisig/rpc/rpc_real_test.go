@@ -77,11 +77,11 @@ func TestMultiSigAccount(t *testing.T) {
 	defer mocker.Close()
 	mocker.Listen()
 	jrpcClient := getRPCClient(t, mocker)
-	/ ,owner:AddrA,AddrB,GenAddr,weight:20,10,30;coins:BTY 1000000000 RequestWeight:15
+	//        ,owner:AddrA,AddrB,GenAddr,weight:20,10,30;coins:BTY 1000000000 RequestWeight:15
 	multiSigAccAddr := testAccCreateTx(t, mocker, jrpcClient)
-	/ :4000000000
+	//          :4000000000
 	testTransferInTx(t, mocker, jrpcClient, multiSigAccAddr)
-	/  AddrB  2000000000
+	//           AddrB  2000000000
 	testTransferOutTx(t, mocker, jrpcClient, multiSigAccAddr)
 	//owner add AddrE
 	testAddOwner(t, mocker, jrpcClient, multiSigAccAddr)
@@ -104,11 +104,11 @@ func TestMultiSigAccount(t *testing.T) {
 	testAbnormal(t, mocker, jrpcClient)
 }
 
-/ 
+//        
 func testAccCreateTx(t *testing.T, mocker *testnode.Chain33Mock, jrpcClient *jsonclient.JSONClient) string {
 	gen := mocker.GetGenesisKey()
 	var params rpctypes.Query4Jrpc
-	//1. MultiSigAccCreateTx 
+	//1. MultiSigAccCreateTx     
 	var owners []*mty.Owner
 	owmer1 := &mty.Owner{OwnerAddr: AddrA, Weight: 20}
 	owmer2 := &mty.Owner{OwnerAddr: AddrB, Weight: 10}
@@ -139,7 +139,7 @@ func testAccCreateTx(t *testing.T, mocker *testnode.Chain33Mock, jrpcClient *jso
 	_, err = mocker.WaitTx(reply.GetMsg())
 	assert.Nil(t, err)
 
-	/ account 
+	//  account   
 	params.Execer = mty.MultiSigX
 	params.FuncName = "MultiSigAccCount"
 	params.Payload = types.MustPBToJSON(&types.ReqNil{})
@@ -148,7 +148,7 @@ func testAccCreateTx(t *testing.T, mocker *testnode.Chain33Mock, jrpcClient *jso
 	assert.Nil(t, err)
 	assert.Equal(t, int64(1), rep.Data)
 
-	/ account addr
+	//  account addr
 	//t.Log("MultiSigAccounts ")
 	req1 := mty.ReqMultiSigAccs{
 		Start: 0,
@@ -163,7 +163,7 @@ func testAccCreateTx(t *testing.T, mocker *testnode.Chain33Mock, jrpcClient *jso
 	//t.Log(rep1)
 
 	multiSigAccAddr := rep1.Address[0]
-	/ account info
+	//  account info
 	//t.Log("MultiSigAccountInfo ")
 	req2 := mty.ReqMultiSigAccInfo{
 		MultiSigAccAddr: multiSigAccAddr,
@@ -179,7 +179,7 @@ func testAccCreateTx(t *testing.T, mocker *testnode.Chain33Mock, jrpcClient *jso
 	assert.Equal(t, uint64(15), rep2.RequiredWeight)
 	//t.Log(rep2)
 
-	/ account addr creator
+	//  account addr        creator
 	//t.Log("MultiSigAccounts ")
 	req3 := mty.ReqMultiSigAccInfo{
 		MultiSigAccAddr: "14KEKbYtKKQm4wMthSK9J4La4nAiidGozt",
@@ -193,7 +193,7 @@ func testAccCreateTx(t *testing.T, mocker *testnode.Chain33Mock, jrpcClient *jso
 	assert.Equal(t, rep3.Address[0], multiSigAccAddr)
 	//t.Log(rep3)
 
-	/ owne 
+	//  owner           
 	req4 := &types.ReqString{
 		Data: GenAddr,
 	}
@@ -204,7 +204,7 @@ func testAccCreateTx(t *testing.T, mocker *testnode.Chain33Mock, jrpcClient *jso
 	return multiSigAccAddr
 }
 
-/ 
+//          
 func testTransferInTx(t *testing.T, mocker *testnode.Chain33Mock, jrpcClient *jsonclient.JSONClient, multiSigAccAddr string) {
 	gen := mocker.GetGenesisKey()
 	var params rpctypes.Query4Jrpc
@@ -234,7 +234,7 @@ func testTransferInTx(t *testing.T, mocker *testnode.Chain33Mock, jrpcClient *js
 	assert.Equal(t, int64(5000000000), balance)
 	//t.Log(balance)
 
-	/ 4000000000
+	//          4000000000
 	//t.Log("MultiSigAccTransferInTx")
 	params1 := &mty.MultiSigExecTransferTo{
 		Symbol:   Symbol,
@@ -258,7 +258,7 @@ func testTransferInTx(t *testing.T, mocker *testnode.Chain33Mock, jrpcClient *js
 	assert.Equal(t, int64(1000000000), balance)
 	//t.Log(balance)
 
-	/ 
+	//            
 	//t.Log("MultiSigAccAssets")
 	assets := &mty.Assets{
 		Symbol: Symbol,
@@ -280,7 +280,7 @@ func testTransferInTx(t *testing.T, mocker *testnode.Chain33Mock, jrpcClient *js
 	//t.Log(rep4)
 }
 
-/  AddrB
+//           AddrB
 func testTransferOutTx(t *testing.T, mocker *testnode.Chain33Mock, jrpcClient *jsonclient.JSONClient, multiSigAccAddr string) {
 	gen := mocker.GetGenesisKey()
 	var params rpctypes.Query4Jrpc
@@ -304,7 +304,7 @@ func testTransferOutTx(t *testing.T, mocker *testnode.Chain33Mock, jrpcClient *j
 	_, err = mocker.WaitTx(reply.GetMsg())
 	assert.Nil(t, err)
 
-	/ 
+	//            
 	//t.Log("MultiSigAccAssets")
 	assets := &mty.Assets{
 		Symbol: Symbol,
@@ -325,7 +325,7 @@ func testTransferOutTx(t *testing.T, mocker *testnode.Chain33Mock, jrpcClient *j
 	assert.Equal(t, int64(4000000000), rep7.AccAssets[0].RecvAmount)
 	//t.Log(rep7)
 
-	/ Addr 
+	//  AddrB           
 	//t.Log("MultiSigAccAssets")
 	assets = &mty.Assets{
 		Symbol: Symbol,
@@ -368,7 +368,7 @@ func testAddOwner(t *testing.T, mocker *testnode.Chain33Mock, jrpcClient *jsoncl
 	_, err = mocker.WaitTx(reply.GetMsg())
 	assert.Nil(t, err)
 
-	/ account info owner AddrE add 
+	//  account info owner AddrE add   
 	//t.Log("MultiSigAccountInfo ")
 	req10 := mty.ReqMultiSigAccInfo{
 		MultiSigAccAddr: multiSigAccAddr,
@@ -411,7 +411,7 @@ func testDelOwner(t *testing.T, mocker *testnode.Chain33Mock, jrpcClient *jsoncl
 	_, err = mocker.WaitTx(reply.GetMsg())
 	assert.Nil(t, err)
 
-	/ account info owner AddrE add 
+	//  account info owner AddrE add   
 	//t.Log("MultiSigAccountInfo ")
 	req := mty.ReqMultiSigAccInfo{
 		MultiSigAccAddr: multiSigAccAddr,
@@ -455,7 +455,7 @@ func testModifyOwnerWeight(t *testing.T, mocker *testnode.Chain33Mock, jrpcClien
 	_, err = mocker.WaitTx(reply.GetMsg())
 	assert.Nil(t, err)
 
-	/ account info owner AddrE add 
+	//  account info owner AddrE add   
 	//t.Log("MultiSigAccountInfo ")
 	req := mty.ReqMultiSigAccInfo{
 		MultiSigAccAddr: multiSigAccAddr,
@@ -499,7 +499,7 @@ func testReplaceOwner(t *testing.T, mocker *testnode.Chain33Mock, jrpcClient *js
 	_, err = mocker.WaitTx(reply.GetMsg())
 	assert.Nil(t, err)
 
-	/ account info owner AddrE add 
+	//  account info owner AddrE add   
 	//t.Log("MultiSigAccountInfo ")
 	req := mty.ReqMultiSigAccInfo{
 		MultiSigAccAddr: multiSigAccAddr,
@@ -547,7 +547,7 @@ func testModifyDailyLimit(t *testing.T, mocker *testnode.Chain33Mock, jrpcClient
 	_, err = mocker.WaitTx(reply.GetMsg())
 	assert.Nil(t, err)
 
-	/ account info owner AddrE add 
+	//  account info owner AddrE add   
 	//t.Log("MultiSigAccountInfo ")
 	req := mty.ReqMultiSigAccInfo{
 		MultiSigAccAddr: multiSigAccAddr,
@@ -595,7 +595,7 @@ func testAddDailyLimit(t *testing.T, mocker *testnode.Chain33Mock, jrpcClient *j
 	_, err = mocker.WaitTx(reply.GetMsg())
 	assert.Nil(t, err)
 
-	/ account info owner AddrE add 
+	//  account info owner AddrE add   
 	//t.Log("MultiSigAccountInfo ")
 	req := mty.ReqMultiSigAccInfo{
 		MultiSigAccAddr: multiSigAccAddr,
@@ -638,7 +638,7 @@ func testModifyRequestWeight(t *testing.T, mocker *testnode.Chain33Mock, jrpcCli
 	_, err = mocker.WaitTx(reply.GetMsg())
 	assert.Nil(t, err)
 
-	/ account info RequestWeight 1 
+	//  account info RequestWeight 16  
 	//t.Log("MultiSigAccountInfo ")
 	req := mty.ReqMultiSigAccInfo{
 		MultiSigAccAddr: multiSigAccAddr,
@@ -655,7 +655,7 @@ func testModifyRequestWeight(t *testing.T, mocker *testnode.Chain33Mock, jrpcCli
 func testConfirmTx(t *testing.T, mocker *testnode.Chain33Mock, jrpcClient *jsonclient.JSONClient, multiSigAccAddr string) {
 	var params rpctypes.Query4Jrpc
 
-	//1. Addr ，
+	//1.    AddrB  ，
 	//t.Log("CreateRawTransaction ")
 	req := &rpctypes.CreateTx{
 		To:          AddrB,
@@ -682,7 +682,7 @@ func testConfirmTx(t *testing.T, mocker *testnode.Chain33Mock, jrpcClient *jsonc
 	assert.Equal(t, int64(1000000000), balance)
 	//t.Log(balance)
 
-	//2.owner Addr 10000000 1C5xK2ytuoFqxmVGMcyz9XFKFWcDA8T3r 
+	//2.owner AddrB         100000000 1C5xK2ytuoFqxmVGMcyz9XFKFWcDA8T3rK  
 	//t.Log("MultiSigAccTransferOutTx")
 	params3 := &mty.MultiSigExecTransferFrom{
 		Symbol:   Symbol,
@@ -704,16 +704,16 @@ func testConfirmTx(t *testing.T, mocker *testnode.Chain33Mock, jrpcClient *jsonc
 	_, err = mocker.WaitTx(reply.GetMsg())
 	assert.Nil(t, err)
 
-	/ 
+	//            
 	amount := int64(1900000000)
 	recvAmount := int64(4000000000)
 	checkMultiSigAccAssets(t, jrpcClient, multiSigAccAddr, amount, recvAmount, true)
 
-	/ Addr 
+	//  AddrA           
 	amount = int64(100000000)
 	recvAmount = int64(100000000)
 	checkMultiSigAccAssets(t, jrpcClient, AddrA, amount, recvAmount, false)
-	/ account info coins:BTY  SpentToday=100000000
+	//  account info coins:BTY  SpentToday=100000000
 	//t.Log("MultiSigAccountInfo ")
 	req9 := mty.ReqMultiSigAccInfo{
 		MultiSigAccAddr: multiSigAccAddr,
@@ -734,7 +734,7 @@ func testConfirmTx(t *testing.T, mocker *testnode.Chain33Mock, jrpcClient *jsonc
 	assert.Equal(t, find, true)
 	//t.Log(rep9)
 
-	//2.owner Addr 12000000 Addr 
+	//2.owner AddrB         120000000 AddrD  
 	//t.Log("MultiSigAccTransferOutTx")
 	params10 := &mty.MultiSigExecTransferFrom{
 		Symbol:   Symbol,
@@ -755,12 +755,12 @@ func testConfirmTx(t *testing.T, mocker *testnode.Chain33Mock, jrpcClient *jsonc
 	_, err = mocker.WaitTx(reply.GetMsg())
 	assert.Nil(t, err)
 
-	/ 
+	//                
 	amount = int64(1900000000)
 	recvAmount = int64(4000000000)
 	checkMultiSigAccAssets(t, jrpcClient, multiSigAccAddr, amount, recvAmount, true)
 
-	/ txid
+	//      txid
 	req11 := mty.ReqMultiSigAccInfo{
 		MultiSigAccAddr: multiSigAccAddr,
 	}
@@ -773,30 +773,30 @@ func testConfirmTx(t *testing.T, mocker *testnode.Chain33Mock, jrpcClient *jsonc
 	//t.Log(rep11)
 	txid := rep11.Data - 1
 
-	/ txi t  false
+	//  txid   tx  ，       false
 	checkTxInfo(t, jrpcClient, multiSigAccAddr, txid, false, AddrB)
-	/ 
+	//     
 	confirmTx(t, mocker, jrpcClient, multiSigAccAddr, PrivKeyB, txid, false)
-	/ txi Confir 
+	//  txid   Confirm       
 	checkTxInfo(t, jrpcClient, multiSigAccAddr, txid, false, "")
-	/ owne 
+	//      owner      
 	confirmTx(t, mocker, jrpcClient, multiSigAccAddr, PrivKeyGen, txid, true)
-	/  owner GenAddr
+	//            ， owner GenAddr
 	checkTxInfo(t, jrpcClient, multiSigAccAddr, txid, true, GenAddr)
 
-	/ 
+	//         
 	amount = int64(700000000)
 	recvAmount = int64(4000000000)
 	checkMultiSigAccAssets(t, jrpcClient, multiSigAccAddr, amount, recvAmount, true)
 
-	//AddrD   1200000000
+	//AddrD             1200000000
 	amount = int64(1200000000)
 	recvAmount = int64(1200000000)
 	checkMultiSigAccAssets(t, jrpcClient, AddrD, amount, recvAmount, false)
 
 }
 
-/ txi Confir 
+//  txid   Confirm  
 func checkTxInfo(t *testing.T, jrpcClient *jsonclient.JSONClient, multiSigAccAddr string, txid uint64, executed bool, ownerAddr string) {
 
 	var params rpctypes.Query4Jrpc
@@ -828,7 +828,7 @@ func checkTxInfo(t *testing.T, jrpcClient *jsonclient.JSONClient, multiSigAccAdd
 	assert.Equal(t, true, find)
 }
 func confirmTx(t *testing.T, mocker *testnode.Chain33Mock, jrpcClient *jsonclient.JSONClient, multiSigAccAddr string, privKey string, txid uint64, confirmOrRevoke bool) {
-	/ 
+	//           
 	req := &mty.MultiSigConfirmTx{
 		MultiSigAccAddr: multiSigAccAddr,
 		TxId:            txid,
@@ -873,9 +873,9 @@ func checkMultiSigAccAssets(t *testing.T, jrpcClient *jsonclient.JSONClient, add
 	//t.Log(rep)
 }
 
-/  
+//    ，           
 func testAbnormal(t *testing.T, mocker *testnode.Chain33Mock, jrpcClient *jsonclient.JSONClient) {
-	//1. MultiSigAccCreateTx owne 
+	//1. MultiSigAccCreateTx owner  
 	var owners []*mty.Owner
 	owmer1 := &mty.Owner{OwnerAddr: AddrA, Weight: 20}
 	owmer2 := &mty.Owner{OwnerAddr: AddrB, Weight: 10}
@@ -899,7 +899,7 @@ func testAbnormal(t *testing.T, mocker *testnode.Chain33Mock, jrpcClient *jsoncl
 	}
 	testAbnormalCreateTx(t, mocker, jrpcClient, req, mty.ErrOwnerExist)
 
-	// owner addr 
+	// owner addr   
 	owmer5 := &mty.Owner{OwnerAddr: "34W6mMVYquzGAwY62TwrqnhnhM82VtbGDJ", Weight: 30}
 	owners[2] = owmer5
 	req = &mty.MultiSigAccCreate{
@@ -909,7 +909,7 @@ func testAbnormal(t *testing.T, mocker *testnode.Chain33Mock, jrpcClient *jsoncl
 	}
 	testAbnormalCreateTx(t, mocker, jrpcClient, req, types.ErrInvalidAddress)
 
-	// owner weight==0 
+	// owner weight==0   
 	owmer5 = &mty.Owner{OwnerAddr: "1DkrXbz2bK6XMpY4v9z2YUnhwWTXT6V5jd", Weight: 0}
 	owners[2] = owmer5
 	req = &mty.MultiSigAccCreate{
@@ -919,7 +919,7 @@ func testAbnormal(t *testing.T, mocker *testnode.Chain33Mock, jrpcClient *jsoncl
 	}
 	testAbnormalCreateTx(t, mocker, jrpcClient, req, mty.ErrInvalidWeight)
 
-	// Symbol 
+	// Symbol   
 	owners[2] = owmer4
 	symboldailylimit = &mty.SymbolDailyLimit{
 		Symbol:     "hyb",
@@ -933,7 +933,7 @@ func testAbnormal(t *testing.T, mocker *testnode.Chain33Mock, jrpcClient *jsoncl
 	}
 	testAbnormalCreateTx(t, mocker, jrpcClient, req, nil)
 
-	// Execer 
+	// Execer   
 	symboldailylimit = &mty.SymbolDailyLimit{
 		Symbol:     Symbol,
 		Execer:     "hyb",
@@ -946,7 +946,7 @@ func testAbnormal(t *testing.T, mocker *testnode.Chain33Mock, jrpcClient *jsoncl
 	}
 	testAbnormalCreateTx(t, mocker, jrpcClient, req, mty.ErrInvalidExec)
 
-	// RequiredWeight > totalownerweigh 
+	// RequiredWeight > totalownerweight  
 	symboldailylimit = &mty.SymbolDailyLimit{
 		Symbol:     Symbol,
 		Execer:     Asset,

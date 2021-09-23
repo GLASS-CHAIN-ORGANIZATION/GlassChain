@@ -1,6 +1,5 @@
 syntax = "proto3";
 package jsproto;
-option go_package = "../jsproto";
 
 // create action
 message Create {

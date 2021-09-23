@@ -8,13 +8,12 @@ import (
 	"bytes"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"sort"
 	"strings"
 	"sync"
 	"time"
 	"unsafe"
-
-	"github.com/33cn/chain33/system/dapp"
 
 	"github.com/33cn/chain33/common"
 	"github.com/33cn/chain33/common/address"
@@ -24,6 +23,7 @@ import (
 	wcom "github.com/33cn/chain33/wallet/common"
 	privacy "github.com/33cn/plugin/plugin/dapp/privacy/crypto"
 	privacytypes "github.com/33cn/plugin/plugin/dapp/privacy/types"
+	"github.com/golang/protobuf/proto"
 )
 
 func (policy *privacyPolicy) rescanAllTxAddToUpdateUTXOs() {
@@ -34,7 +34,7 @@ func (policy *privacyPolicy) rescanAllTxAddToUpdateUTXOs() {
 	}
 	bizlog.Debug("rescanAllTxToUpdateUTXOs begin!")
 	for _, acc := range accounts {
-		/ blockchai Account.Add 
+		// blockchain    Account.Addr           
 		policy.rescanwg.Add(1)
 		go policy.rescanReqTxDetailByAddr(acc.Addr, policy.rescanwg)
 	}
@@ -42,13 +42,13 @@ func (policy *privacyPolicy) rescanAllTxAddToUpdateUTXOs() {
 	bizlog.Debug("rescanAllTxToUpdateUTXOs success!")
 }
 
-/ blockchai add 
+// blockchain    addr           
 func (policy *privacyPolicy) rescanReqTxDetailByAddr(addr string, wg *sync.WaitGroup) {
 	defer wg.Done()
 	policy.reqTxDetailByAddr(addr)
 }
 
-/ blockchai add 
+// blockchain    addr           
 func (policy *privacyPolicy) reqTxDetailByAddr(addr string) {
 	if len(addr) == 0 {
 		bizlog.Error("reqTxDetailByAddr input addr is nil!")
@@ -59,7 +59,7 @@ func (policy *privacyPolicy) reqTxDetailByAddr(addr string) {
 	i := 0
 	operater := policy.getWalletOperate()
 	for {
-		/ blockchai hash  
+		//   blockchain             hashs  ,          
 		var ReqAddr types.ReqAddr
 		ReqAddr.Addr = addr
 		ReqAddr.Flag = 0
@@ -120,14 +120,14 @@ func (policy *privacyPolicy) parseViewSpendPubKeyPair(in string) (viewPubKey, sp
 }
 
 func (policy *privacyPolicy) getPrivKeyByAddr(addr string) (crypto.PrivKey, error) {
-	/ 
+	//               
 	Accountstor, err := policy.store.getAccountByAddr(addr)
 	if err != nil {
 		bizlog.Error("ProcSendToAddress", "GetAccountByAddr err:", err)
 		return nil, err
 	}
 
-	/ passwor 
+	//  password       
 	prikeybyte, err := common.FromHex(Accountstor.GetPrivkey())
 	if err != nil || len(prikeybyte) == 0 {
 		bizlog.Error("ProcSendToAddress", "FromHex err", err)
@@ -136,7 +136,7 @@ func (policy *privacyPolicy) getPrivKeyByAddr(addr string) (crypto.PrivKey, erro
 	operater := policy.getWalletOperate()
 	password := []byte(operater.GetPassword())
 	privkey := wcom.CBCDecrypterPrivkey(password, prikeybyte)
-	/ privke pubke addr
+	//  privkey    pubkey        addr
 	cr, err := crypto.New(types.GetSignName("privacy", operater.GetSignType()))
 	if err != nil {
 		bizlog.Error("ProcSendToAddress", "err", err)
@@ -261,7 +261,7 @@ func (policy *privacyPolicy) getPrivacyAccountInfo(req *privacytypes.ReqPrivacyA
 		return nil, errors.New("Address is empty")
 	}
 
-	// 
+	//       
 	privacyDBStore, err := policy.store.listAvailableUTXOs(req.GetAssetExec(), token, addr)
 	if err != nil {
 		bizlog.Error("getPrivacyAccountInfo", "listAvailableUTXOs")
@@ -284,7 +284,7 @@ func (policy *privacyPolicy) getPrivacyAccountInfo(req *privacytypes.ReqPrivacyA
 	}
 	reply.Utxos = &privacytypes.UTXOs{Utxos: utxos}
 
-	// 
+	//       
 	utxos = make([]*privacytypes.UTXO, 0)
 	ftxoslice, err := policy.store.listFrozenUTXOs(req.GetAssetExec(), token, addr)
 	if err == nil && ftxoslice != nil {
@@ -298,10 +298,10 @@ func (policy *privacyPolicy) getPrivacyAccountInfo(req *privacytypes.ReqPrivacyA
 	return reply, nil
 }
 
-// UTX 
-// UTX 1 UTXO
-// 1 UTXO
-// UTX       
+//     UTXO   
+//     UTXO         12      UTXO
+//                12     UTXO
+//         UTXO    ，        ，        ，    ，          ，    ，           
 func (policy *privacyPolicy) selectUTXO(assetExec, token, addr string, amount int64) ([]*txOutputInfo, error) {
 	if len(token) == 0 || len(addr) == 0 || amount <= 0 {
 		return nil, types.ErrInvalidParam
@@ -326,8 +326,8 @@ func (policy *privacyPolicy) selectUTXO(assetExec, token, addr string, amount in
 		}
 	}
 	if balance < amount && len(unconfirmUTXOs) > 0 {
-		// UTX   
-		// 
+		//      UTXO     ，            ，           
+		//         
 		sort.Slice(unconfirmUTXOs, func(i, j int) bool {
 			return unconfirmUTXOs[i].height < unconfirmUTXOs[j].height
 		})
@@ -355,15 +355,15 @@ func (policy *privacyPolicy) selectUTXO(assetExec, token, addr string, amount in
 }
 
 /*
-buildInput 
- 
-	1 UTX 
-	2 (mixcout>0) UTX UTXO UTX 
-	3  x=Hs(aR)+b   xG = Hs(ar)G+bG = Hs(aR)G+B 
+buildInput            
+    
+	1.                   UTXO  
+	2.      (mixcout>0)，   UTXO               UTXO，   UTXO    
+	3.     x=Hs(aR)+b，       ，   xG = Hs(ar)G+bG = Hs(aR)G+B，            
 */
 func (policy *privacyPolicy) buildInput(privacykeyParirs *privacy.Privacy, buildInfo *buildInputInfo) (*privacytypes.PrivacyInput, []*privacytypes.UTXOBasics, []*privacytypes.RealKeyInput, []*txOutputInfo, error) {
 	operater := policy.getWalletOperate()
-	/ utxo
+	//       utxo
 	selectedUtxo, err := policy.selectUTXO(buildInfo.assetExec, buildInfo.assetSymbol, buildInfo.sender, buildInfo.amount)
 	if err != nil {
 		bizlog.Error("buildInput", "Failed to selectOutput for amount", buildInfo.amount,
@@ -386,7 +386,7 @@ func (policy *privacyPolicy) buildInput(privacykeyParirs *privacy.Privacy, build
 	for _, out := range selectedUtxo {
 		reqGetGlobalIndex.Amount = append(reqGetGlobalIndex.Amount, out.amount)
 	}
-	//  blockchai 
+	//      0    blockchain  
 	var resUTXOGlobalIndex *privacytypes.ResUTXOGlobalIndex
 	if buildInfo.mixcount > 0 {
 		query := &types.ChainExecutor{
@@ -394,7 +394,7 @@ func (policy *privacyPolicy) buildInput(privacykeyParirs *privacy.Privacy, build
 			FuncName: "GetUTXOGlobalIndex",
 			Param:    types.Encode(&reqGetGlobalIndex),
 		}
-		/ blockchai utx 
+		// blockchain         utxo           
 		data, err := operater.GetAPI().QueryChain(query)
 		if err != nil {
 			bizlog.Error("buildInput BlockChainQuery", "err", err)
@@ -417,7 +417,7 @@ func (policy *privacyPolicy) buildInput(privacykeyParirs *privacy.Privacy, build
 		}
 	}
 
-	/ PrivacyInput
+	//    PrivacyInput
 	privacyInput := &privacytypes.PrivacyInput{}
 	utxosInKeyInput := make([]*privacytypes.UTXOBasics, len(selectedUtxo))
 	realkeyInputSlice := make([]*privacytypes.RealKeyInput, len(selectedUtxo))
@@ -426,7 +426,7 @@ func (policy *privacyPolicy) buildInput(privacykeyParirs *privacy.Privacy, build
 		if nil != resUTXOGlobalIndex && i < len(resUTXOGlobalIndex.UtxoIndex4Amount) && utxo2pay.amount == resUTXOGlobalIndex.UtxoIndex4Amount[i].Amount {
 			utxoIndex4Amount = resUTXOGlobalIndex.UtxoIndex4Amount[i]
 			for j, utxo := range utxoIndex4Amount.Utxos {
-				/ UTX  
+				//      UTXO    ，            
 				if bytes.Equal(utxo.OnetimePubkey, utxo2pay.onetimePublicKey) {
 					utxoIndex4Amount.Utxos = append(utxoIndex4Amount.Utxos[:j], utxoIndex4Amount.Utxos[j+1:]...)
 					break
@@ -440,7 +440,7 @@ func (policy *privacyPolicy) buildInput(privacykeyParirs *privacy.Privacy, build
 		if utxoIndex4Amount.Utxos == nil {
 			utxoIndex4Amount.Utxos = make([]*privacytypes.UTXOBasic, 0)
 		}
-		/ utx mi  utx  
+		//            utxo        mix   ，      utxo  ，             
 		if len(utxoIndex4Amount.Utxos) > int(buildInfo.mixcount) {
 			utxoIndex4Amount.Utxos = utxoIndex4Amount.Utxos[:len(utxoIndex4Amount.Utxos)-1]
 		}
@@ -449,7 +449,7 @@ func (policy *privacyPolicy) buildInput(privacykeyParirs *privacy.Privacy, build
 			UtxoGlobalIndex: utxo2pay.utxoGlobalIndex,
 			OnetimePubkey:   utxo2pay.onetimePublicKey,
 		}
-		/ utx 
+		//    utxo       
 		utxoIndex4Amount.Utxos = append(utxoIndex4Amount.Utxos, utxo)
 		positions := operater.GetRandom().Perm(len(utxoIndex4Amount.Utxos))
 		utxos := make([]*privacytypes.UTXOBasic, len(utxoIndex4Amount.Utxos))
@@ -484,9 +484,9 @@ func (policy *privacyPolicy) buildInput(privacykeyParirs *privacy.Privacy, build
 		for _, utxo := range utxos {
 			keyInput.UtxoGlobalIndex = append(keyInput.UtxoGlobalIndex, utxo.UtxoGlobalIndex)
 		}
-		/ inpu  ，keyImag ，
-		/  utx keyinpu pubke 
-		/ 
+		//    input   ，           ，keyImage   ，
+		//       ，            utxo     keyinput              pubkey     
+		//             
 		privacyInput.Keyinput = append(privacyInput.Keyinput, keyInput)
 	}
 
@@ -506,7 +506,6 @@ func (policy *privacyPolicy) createTransaction(req *privacytypes.ReqCreatePrivac
 }
 
 func (policy *privacyPolicy) createPublic2PrivacyTx(req *privacytypes.ReqCreatePrivacyTx) (*types.Transaction, error) {
-	cfg := policy.getWalletOperate().GetAPI().GetConfig()
 	viewPubSlice, spendPubSlice, err := parseViewSpendPubKeyPair(req.GetPubkeypair())
 	if err != nil {
 		bizlog.Error("createPublic2PrivacyTx", "parse view spend public key pair failed.  err ", err)
@@ -515,7 +514,7 @@ func (policy *privacyPolicy) createPublic2PrivacyTx(req *privacytypes.ReqCreateP
 	amount := req.GetAmount()
 	viewPublic := (*[32]byte)(unsafe.Pointer(&viewPubSlice[0]))
 	spendPublic := (*[32]byte)(unsafe.Pointer(&spendPubSlice[0]))
-	privacyOutput, err := generateOuts(viewPublic, spendPublic, nil, nil, amount, amount, 0, cfg.GetCoinPrecision())
+	privacyOutput, err := generateOuts(viewPublic, spendPublic, nil, nil, amount, amount, 0)
 	if err != nil {
 		bizlog.Error("createPublic2PrivacyTx", "generate output failed.  err ", err)
 		return nil, err
@@ -528,7 +527,7 @@ func (policy *privacyPolicy) createPublic2PrivacyTx(req *privacytypes.ReqCreateP
 		Output:    privacyOutput,
 		AssetExec: req.GetAssetExec(),
 	}
-
+	cfg := policy.getWalletOperate().GetAPI().GetConfig()
 	action := &privacytypes.PrivacyAction{
 		Ty:    privacytypes.ActionPublic2Privacy,
 		Value: &privacytypes.PrivacyAction_Public2Privacy{Public2Privacy: value},
@@ -557,12 +556,12 @@ func (policy *privacyPolicy) createPublic2PrivacyTx(req *privacytypes.ReqCreateP
 
 func (policy *privacyPolicy) createPrivacy2PrivacyTx(req *privacytypes.ReqCreatePrivacyTx) (*types.Transaction, error) {
 
-	/ utxo
+	//     utxo
 	var utxoBurnedAmount int64
 	cfg := policy.getWalletOperate().GetAPI().GetConfig()
-	isMainetCoins := !cfg.IsPara() && (req.AssetExec == cfg.GetCoinExec())
+	isMainetCoins := !cfg.IsPara() && (req.AssetExec == "coins")
 	if isMainetCoins {
-		utxoBurnedAmount = privacytypes.PrivacyTxFee * cfg.GetCoinPrecision()
+		utxoBurnedAmount = privacytypes.PrivacyTxFee
 	}
 	buildInfo := &buildInputInfo{
 		assetExec:   req.GetAssetExec(),
@@ -598,8 +597,8 @@ func (policy *privacyPolicy) createPrivacy2PrivacyTx(req *privacytypes.ReqCreate
 	for _, input := range privacyInput.Keyinput {
 		selectedAmounTotal += input.Amount
 	}
-	/ UTXO
-	privacyOutput, err := generateOuts(viewPublic, spendPublic, viewPub4chgPtr, spendPub4chgPtr, req.GetAmount(), selectedAmounTotal, utxoBurnedAmount, cfg.GetCoinPrecision())
+	//    UTXO
+	privacyOutput, err := generateOuts(viewPublic, spendPublic, viewPub4chgPtr, spendPub4chgPtr, req.GetAmount(), selectedAmounTotal, utxoBurnedAmount)
 	if err != nil {
 		return nil, err
 	}
@@ -620,7 +619,7 @@ func (policy *privacyPolicy) createPrivacy2PrivacyTx(req *privacytypes.ReqCreate
 	tx := &types.Transaction{
 		Execer:  []byte(cfg.ExecName(privacytypes.PrivacyX)),
 		Payload: types.Encode(action),
-		Fee:     privacytypes.PrivacyTxFee * cfg.GetCoinPrecision(),
+		Fee:     privacytypes.PrivacyTxFee,
 		Nonce:   policy.getWalletOperate().Nonce(),
 		To:      address.ExecAddress(cfg.ExecName(privacytypes.PrivacyX)),
 		ChainID: cfg.GetChainID(),
@@ -634,7 +633,7 @@ func (policy *privacyPolicy) createPrivacy2PrivacyTx(req *privacytypes.ReqCreate
 		}
 	}
 
-	//  UTX  txHas 
+	//       ，       UTXO  ，         txHash         
 	policy.saveFTXOInfo(tx.GetExpire(), req.GetAssetExec(), req.Tokenname, req.GetFrom(), hex.EncodeToString(tx.Hash()), selectedUtxo)
 	tx.Signature = &types.Signature{
 		Signature: types.Encode(&privacytypes.PrivacySignatureParam{
@@ -648,13 +647,13 @@ func (policy *privacyPolicy) createPrivacy2PrivacyTx(req *privacytypes.ReqCreate
 
 func (policy *privacyPolicy) createPrivacy2PublicTx(req *privacytypes.ReqCreatePrivacyTx) (*types.Transaction, error) {
 
-	/ utxo
-	/ utxo
+	//     utxo
+	//     utxo
 	var utxoBurnedAmount int64
 	cfg := policy.getWalletOperate().GetAPI().GetConfig()
-	isMainetCoins := !cfg.IsPara() && (req.AssetExec == cfg.GetCoinExec())
+	isMainetCoins := !cfg.IsPara() && (req.AssetExec == "coins")
 	if isMainetCoins {
-		utxoBurnedAmount = privacytypes.PrivacyTxFee * cfg.GetCoinPrecision()
+		utxoBurnedAmount = privacytypes.PrivacyTxFee
 	}
 	buildInfo := &buildInputInfo{
 		assetExec:   req.GetAssetExec(),
@@ -688,8 +687,8 @@ func (policy *privacyPolicy) createPrivacy2PublicTx(req *privacytypes.ReqCreateP
 	}
 	changeAmount := selectedAmounTotal - req.GetAmount()
 	//step 2,generateOuts
-	/ UTXO UTXO
-	privacyOutput, err := generateOuts(nil, nil, viewPub4chgPtr, spendPub4chgPtr, 0, changeAmount, utxoBurnedAmount, cfg.GetCoinPrecision())
+	//    UTXO,      UTXO
+	privacyOutput, err := generateOuts(nil, nil, viewPub4chgPtr, spendPub4chgPtr, 0, changeAmount, utxoBurnedAmount)
 	if err != nil {
 		return nil, err
 	}
@@ -711,7 +710,7 @@ func (policy *privacyPolicy) createPrivacy2PublicTx(req *privacytypes.ReqCreateP
 	tx := &types.Transaction{
 		Execer:  []byte(cfg.ExecName(privacytypes.PrivacyX)),
 		Payload: types.Encode(action),
-		Fee:     privacytypes.PrivacyTxFee * cfg.GetCoinPrecision(),
+		Fee:     privacytypes.PrivacyTxFee,
 		Nonce:   policy.getWalletOperate().Nonce(),
 		To:      address.ExecAddress(cfg.ExecName(privacytypes.PrivacyX)),
 		ChainID: cfg.GetChainID(),
@@ -724,7 +723,7 @@ func (policy *privacyPolicy) createPrivacy2PublicTx(req *privacytypes.ReqCreateP
 			return nil, err
 		}
 	}
-	//  UTX  txHas 
+	//       ，       UTXO  ，         txHash         
 	policy.saveFTXOInfo(tx.GetExpire(), req.GetAssetExec(), req.Tokenname, req.GetFrom(), hex.EncodeToString(tx.Hash()), selectedUtxo)
 	tx.Signature = &types.Signature{
 		Signature: types.Encode(&privacytypes.PrivacySignatureParam{
@@ -737,14 +736,14 @@ func (policy *privacyPolicy) createPrivacy2PublicTx(req *privacytypes.ReqCreateP
 }
 
 func (policy *privacyPolicy) saveFTXOInfo(expire int64, assetExec, assetSymbol, sender, txhash string, selectedUtxos []*txOutputInfo) {
-	/ utx  
+	//            utxo    ，        
 	policy.store.moveUTXO2FTXO(expire, assetExec, assetSymbol, sender, txhash, selectedUtxos)
-	//TODO  txhas  ，
-	//TODO  FTX STXO，added by hezhengjun on 2018.6.5
+	//TODO:        ，      txhash       ，                     ，
+	//TODO:            ，   FTXO   STXO，added by hezhengjun on 2018.6.5
 }
 
 func (policy *privacyPolicy) getPrivacyKeyPairs() ([]addrAndprivacy, error) {
-	/ Accoun 
+	//  Account                
 	WalletAccStores, err := policy.store.getAccountByPrefix("Account")
 	if err != nil || len(WalletAccStores) == 0 {
 		bizlog.Info("getPrivacyKeyPairs", "store getAccountByPrefix error", err)
@@ -775,7 +774,7 @@ func (policy *privacyPolicy) rescanUTXOs(req *privacytypes.ReqRescanUtxos) (*pri
 	if req.Flag != 0 {
 		return policy.store.getRescanUtxosFlag4Addr(req)
 	}
-	// Resca 
+	// Rescan  
 	var repRescanUtxos privacytypes.RepRescanUtxos
 	repRescanUtxos.Flag = req.Flag
 
@@ -796,7 +795,7 @@ func (policy *privacyPolicy) rescanUTXOs(req *privacytypes.ReqRescanUtxos) (*pri
 	return &repRescanUtxos, nil
 }
 
-/ blockchai add 
+// blockchain    addr           
 func (policy *privacyPolicy) rescanReqUtxosByAddr(addrs []string) {
 	defer policy.getWalletOperate().GetWaitGroup().Done()
 	bizlog.Debug("RescanAllUTXO begin!")
@@ -805,7 +804,7 @@ func (policy *privacyPolicy) rescanReqUtxosByAddr(addrs []string) {
 }
 
 func (policy *privacyPolicy) reqUtxosByAddr(addrs []string) {
-	// 
+	//          
 	var storeAddrs []string
 	if len(addrs) == 0 {
 		WalletAccStores, err := policy.store.getAccountByPrefix("Account")
@@ -833,8 +832,8 @@ func (policy *privacyPolicy) reqUtxosByAddr(addrs []string) {
 		default:
 		}
 
-		/ exec UTXOs,
-		// 1 
+		//   execs           UTXOs,
+		// 1              
 		var ReqAddr types.ReqAddr
 		ReqAddr.Addr = reqAddr
 		ReqAddr.Flag = 0
@@ -846,12 +845,12 @@ func (policy *privacyPolicy) reqUtxosByAddr(addrs []string) {
 		} else {
 			ReqAddr.Height = txInfo.GetHeight()
 			ReqAddr.Index = txInfo.GetIndex()
-			if !cfg.IsDappFork(ReqAddr.Height, privacytypes.PrivacyX, "ForkV21Privacy") { // 
+			if !cfg.IsDappFork(ReqAddr.Height, privacytypes.PrivacyX, "ForkV21Privacy") { //             
 				break
 			}
 		}
 		i++
-		/ 
+		//      
 		msg, err := operater.GetAPI().Query(privacytypes.PrivacyX, "GetTxsByAddr", &ReqAddr)
 		if err != nil {
 			bizlog.Error("reqUtxosByAddr", "GetTxsByAddr error", err, "addr", reqAddr)
@@ -881,14 +880,14 @@ func (policy *privacyPolicy) reqUtxosByAddr(addrs []string) {
 			break
 		}
 	}
-	// 
+	//     
 	policy.SetRescanFlag(privacytypes.UtxoFlagNoScan)
-	// privacyInput
+	//   privacyInput
 	policy.deleteScanPrivacyInputUtxo()
 	policy.store.saveREscanUTXOsAddresses(storeAddrs, privacytypes.UtxoFlagScanEnd)
 }
 
-//TODO:inpu utxo, utxo
+//TODO:input       utxo,          utxo
 func (policy *privacyPolicy) deleteScanPrivacyInputUtxo() {
 	maxUTXOsPerTime := 1000
 	for {
@@ -901,7 +900,7 @@ func (policy *privacyPolicy) deleteScanPrivacyInputUtxo() {
 }
 
 func (policy *privacyPolicy) getPrivacyTxDetailByHashs(ReqHashes *types.ReqHashes, addrs []string) {
-	/ txhash txdetail
+	//  txhashs     txdetail
 	TxDetails, err := policy.getWalletOperate().GetAPI().GetTransactionByHash(ReqHashes)
 	if err != nil {
 		bizlog.Error("getPrivacyTxDetailByHashs", "GetTransactionByHash error", err)
@@ -959,45 +958,53 @@ func (policy *privacyPolicy) signatureTx(tx *types.Transaction, privacyInput *pr
 	tx.Signature = &types.Signature{
 		Ty:        privacytypes.RingBaseonED25519,
 		Signature: ringSignData,
-		//  
+		//             ，       
 		Pubkey: address.ExecPubKey(cfg.ExecName(privacytypes.PrivacyX)),
 	}
 	return nil
 }
 
 func (policy *privacyPolicy) buildAndStoreWalletTxDetail(param *buildStoreWalletTxDetailParam) {
-
-	txInfo := param.txInfo
-	heightstr := dapp.HeightIndexStr(txInfo.blockHeight, int64(txInfo.txIndex))
-	bizlog.Debug("buildAndStoreWalletTxDetail", "heightstr", heightstr, "isRollBack", txInfo.isRollBack)
-	if !txInfo.isRollBack {
+	blockheight := param.block.Block.Height*maxTxNumPerBlock + int64(param.index)
+	heightstr := fmt.Sprintf("%018d", blockheight)
+	bizlog.Debug("buildAndStoreWalletTxDetail", "heightstr", heightstr, "addDelType", param.addDelType)
+	if AddTx == param.addDelType {
 		var txdetail types.WalletTxDetail
 		key := calcTxKey(heightstr)
-		txdetail.Tx = txInfo.tx
-		txdetail.Height = txInfo.blockHeight
-		txdetail.Index = int64(txInfo.txIndex)
-		txdetail.Receipt = txInfo.blockDetail.Receipts[txInfo.txIndex]
-		txdetail.Blocktime = txInfo.blockDetail.Block.BlockTime
+		txdetail.Tx = param.tx
+		txdetail.Height = param.block.Block.Height
+		txdetail.Index = int64(param.index)
+		txdetail.Receipt = param.block.Receipts[param.index]
+		txdetail.Blocktime = param.block.Block.BlockTime
 
-		txdetail.ActionName = txInfo.actionName
-		txdetail.Amount, _ = txInfo.tx.Amount()
-		txdetail.Fromaddr = param.addr
+		txdetail.ActionName = txdetail.Tx.ActionName()
+		txdetail.Amount, _ = param.tx.Amount()
+		txdetail.Fromaddr = param.senderRecver
+		//txdetail.Spendrecv = param.utxos
 
-		txdetailbyte := types.Encode(&txdetail)
+		txdetailbyte, err := proto.Marshal(&txdetail)
+		if err != nil {
+			bizlog.Error("buildAndStoreWalletTxDetail err", "Height", param.block.Block.Height, "index", param.index)
+			return
+		}
 
-		txInfo.batch.Set(key, txdetailbyte)
-		/ 
-		if sendTx == param.sendRecvFlag {
-			txInfo.batch.Set(calcSendPrivacyTxKey(txInfo.assetExec, txInfo.assetSymbol, param.addr, heightstr), key)
-		} else if recvTx == param.sendRecvFlag {
-			txInfo.batch.Set(calcRecvPrivacyTxKey(txInfo.assetExec, txInfo.assetSymbol, param.addr, heightstr), key)
+		param.newbatch.Set(key, txdetailbyte)
+		if param.isprivacy {
+			//                  
+			if sendTx == param.sendRecvFlag {
+				param.newbatch.Set(calcSendPrivacyTxKey(param.assetExec, param.tokenname, param.senderRecver, heightstr), key)
+			} else if recvTx == param.sendRecvFlag {
+				param.newbatch.Set(calcRecvPrivacyTxKey(param.assetExec, param.tokenname, param.senderRecver, heightstr), key)
+			}
 		}
 	} else {
-		txInfo.batch.Delete(calcTxKey(heightstr))
-		if sendTx == param.sendRecvFlag {
-			txInfo.batch.Delete(calcSendPrivacyTxKey(txInfo.assetExec, txInfo.assetSymbol, param.addr, heightstr))
-		} else if recvTx == param.sendRecvFlag {
-			txInfo.batch.Delete(calcRecvPrivacyTxKey(txInfo.assetExec, txInfo.assetSymbol, param.addr, heightstr))
+		param.newbatch.Delete(calcTxKey(heightstr))
+		if param.isprivacy {
+			if sendTx == param.sendRecvFlag {
+				param.newbatch.Delete(calcSendPrivacyTxKey(param.assetExec, param.tokenname, param.senderRecver, heightstr))
+			} else if recvTx == param.sendRecvFlag {
+				param.newbatch.Delete(calcRecvPrivacyTxKey(param.assetExec, param.tokenname, param.senderRecver, heightstr))
+			}
 		}
 	}
 }
@@ -1048,229 +1055,193 @@ func (policy *privacyPolicy) checkWalletStoreData() {
 	}
 }
 
-func (policy *privacyPolicy) addDelPrivacyTxsFromBlock(tx *types.Transaction, index int32, block *types.BlockDetail, batch db.Batch, addDelType int32) {
-
-	privacyPairs, err := policy.getPrivacyKeyPairs()
-	/  
-	if len(privacyPairs) == 0 {
-		bizlog.Debug("addDelPrivacyTxsFromBlock", "getPrivacyKeyPairs err", err)
-		return
-	}
-
+func (policy *privacyPolicy) addDelPrivacyTxsFromBlock(tx *types.Transaction, index int32, block *types.BlockDetail, newbatch db.Batch, addDelType int32) {
 	txhash := tx.Hash()
-	txhashHex := hex.EncodeToString(txhash)
-	var action privacytypes.PrivacyAction
-	if err := types.Decode(tx.GetPayload(), &action); err != nil {
-		bizlog.Error("addDelPrivacyTxsFromBlock", "txhash", txhashHex, "addDelType", addDelType, "index", index, "Decode tx.GetPayload() error", err)
+	txhashstr := hex.EncodeToString(txhash)
+	_, err := tx.Amount()
+	if err != nil {
+		bizlog.Error("addDelPrivacyTxsFromBlock", "txhash", txhashstr, "addDelType", addDelType, "index", index, "tx.Amount() error", err)
 		return
 	}
 
-	assetExec, assetSymbol := action.GetAssetExecSymbol()
+	cfg := policy.getWalletOperate().GetAPI().GetConfig()
+	txExecRes := block.Receipts[index].Ty
+	var privateAction privacytypes.PrivacyAction
+	if err := types.Decode(tx.GetPayload(), &privateAction); err != nil {
+		bizlog.Error("addDelPrivacyTxsFromBlock", "txhash", txhashstr, "addDelType", addDelType, "index", index, "Decode tx.GetPayload() error", err)
+		return
+	}
+	bizlog.Info("addDelPrivacyTxsFromBlock", "Enter addDelPrivacyTxsFromBlock txhash", txhashstr, "index", index, "addDelType", addDelType)
+
+	privacyOutput := privateAction.GetOutput()
+	if privacyOutput == nil {
+		bizlog.Error("addDelPrivacyTxsFromBlock", "txhash", txhashstr, "addDelType", addDelType, "index", index, "privacyOutput is", privacyOutput)
+		return
+	}
+	assetExec, tokenname := privateAction.GetAssetExecSymbol()
 	if assetExec == "" {
-		assetExec = policy.getWalletOperate().GetAPI().GetConfig().GetCoinExec()
+		assetExec = "coins"
 	}
+	RpubKey := privacyOutput.GetRpubKeytx()
 
-	txInfo := &privacyTxInfo{
-		tx:          tx,
-		blockDetail: block,
-		blockHeight: block.GetBlock().GetHeight(),
-		actionName:  action.GetActionName(),
-		actionTy:    action.GetTy(),
-		input:       action.GetInput(),
-		output:      action.GetOutput(),
-		txIndex:     index,
-		txHash:      txhash,
-		txHashHex:   txhashHex,
-		batch:       batch,
-		assetSymbol: assetSymbol,
-		assetExec:   assetExec,
-		isRollBack:  addDelType != AddTx,
-		isExecOk:    types.ExecOk == block.Receipts[index].Ty,
-	}
-
-	bizlog.Debug("addDelPrivacyTxsFromBlock", "txhash", txhashHex, "actionName", txInfo.actionName,
-		"index", index, "isRollBack", txInfo.isRollBack, "isExecOk", txInfo.isExecOk)
-
-	if txInfo.actionTy == privacytypes.ActionPublic2Privacy {
-
-		//  
-		txFrom := tx.From()
-		for _, key := range privacyPairs {
-			if *key.Addr == txFrom {
-				param := &buildStoreWalletTxDetailParam{
-					txInfo:       txInfo,
-					addr:         txInfo.tx.From(),
-					sendRecvFlag: sendTx,
+	totalUtxosLeft := len(privacyOutput.Keyoutput)
+	//  output
+	if privacyInfo, err := policy.getPrivacyKeyPairs(); err == nil {
+		matchedCount := 0
+		utxoProcessed := make([]bool, len(privacyOutput.Keyoutput))
+		for _, info := range privacyInfo {
+			privacykeyParirs := info.PrivacyKeyPair
+			matched4addr := false
+			var utxos []*privacytypes.UTXO
+			for indexoutput, output := range privacyOutput.Keyoutput {
+				if utxoProcessed[indexoutput] {
+					continue
 				}
-				policy.buildAndStoreWalletTxDetail(param)
-				break
-			}
-		}
-		policy.processOutputUtxos(txFrom, privacyPairs, txInfo)
-	} else if txInfo.actionTy == privacytypes.ActionPrivacy2Privacy {
+				priv, err := privacy.RecoverOnetimePriKey(RpubKey, privacykeyParirs.ViewPrivKey, privacykeyParirs.SpendPrivKey, int64(indexoutput))
+				if err == nil {
+					recoverPub := priv.PubKey().Bytes()[:]
+					if bytes.Equal(recoverPub, output.Onetimepubkey) {
+						//                  ，        
+						//               ，
+						//1.     ，      ，            ，
+						//2.                ，       change，   2 
+						matched4addr = true
+						totalUtxosLeft--
+						utxoProcessed[indexoutput] = true
+						//                UTXO   
+						if types.ExecOk == txExecRes {
+							if AddTx == addDelType {
+								info2store := &privacytypes.PrivacyDBStore{
+									AssetExec:        assetExec,
+									Txhash:           txhash,
+									Tokenname:        tokenname,
+									Amount:           output.Amount,
+									OutIndex:         int32(indexoutput),
+									TxPublicKeyR:     RpubKey,
+									OnetimePublicKey: output.Onetimepubkey,
+									Owner:            *info.Addr,
+									Height:           block.Block.Height,
+									Txindex:          index,
+									Blockhash:        block.Block.Hash(cfg),
+								}
 
-		sender := policy.processInputUtxos(txInfo)
-		policy.processOutputUtxos(sender, privacyPairs, txInfo)
-	} else if txInfo.actionTy == privacytypes.ActionPrivacy2Public {
-		sender := policy.processInputUtxos(txInfo)
-		policy.processOutputUtxos(sender, privacyPairs, txInfo)
-		//  
-		txTo := action.GetPrivacy2Public().GetTo()
-		for _, key := range privacyPairs {
-			if *key.Addr == txTo {
+								utxoGlobalIndex := &privacytypes.UTXOGlobalIndex{
+									Outindex: int32(indexoutput),
+									Txhash:   txhash,
+								}
+
+								utxoCreated := &privacytypes.UTXO{
+									Amount: output.Amount,
+									UtxoBasic: &privacytypes.UTXOBasic{
+										UtxoGlobalIndex: utxoGlobalIndex,
+										OnetimePubkey:   output.Onetimepubkey,
+									},
+								}
+
+								utxos = append(utxos, utxoCreated)
+								policy.store.setUTXO(info.Addr, &txhashstr, indexoutput, info2store, newbatch)
+								bizlog.Info("addDelPrivacyTxsFromBlock", "add tx txhash", txhashstr, "setUTXO addr ", *info.Addr, "indexoutput", indexoutput)
+							} else {
+								policy.store.unsetUTXO(assetExec, tokenname, *info.Addr, txhashstr, indexoutput, newbatch)
+								bizlog.Info("addDelPrivacyTxsFromBlock", "delete tx txhash", txhashstr, "unsetUTXO addr ", *info.Addr, "indexoutput", indexoutput)
+							}
+						} else {
+							//         ，              
+							bizlog.Error("addDelPrivacyTxsFromBlock", "txhash", txhashstr, "txExecRes", txExecRes)
+							break
+						}
+					}
+				} else {
+					bizlog.Error("addDelPrivacyTxsFromBlock", "txhash", txhashstr, "RecoverOnetimePriKey error", err)
+				}
+			}
+			if matched4addr {
+				matchedCount++
+				//      2 ，                  
+				bizlog.Debug("addDelPrivacyTxsFromBlock", "txhash", txhashstr, "address", *info.Addr, "totalUtxosLeft", totalUtxosLeft, "matchedCount", matchedCount)
 				param := &buildStoreWalletTxDetailParam{
-					txInfo:       txInfo,
-					addr:         txTo,
+					assetExec:    assetExec,
+					tokenname:    tokenname,
+					block:        block,
+					tx:           tx,
+					index:        int(index),
+					newbatch:     newbatch,
+					senderRecver: *info.Addr,
+					isprivacy:    true,
+					addDelType:   addDelType,
 					sendRecvFlag: recvTx,
+					utxos:        utxos,
 				}
 				policy.buildAndStoreWalletTxDetail(param)
-				break
+				if 2 == matchedCount || 0 == totalUtxosLeft || types.ExecOk != txExecRes {
+					bizlog.Info("addDelPrivacyTxsFromBlock", "txhash", txhashstr, "Get matched privacy transfer for address address", *info.Addr, "totalUtxosLeft", totalUtxosLeft, "matchedCount", matchedCount)
+					break
+				}
 			}
 		}
 	}
-}
 
-func (policy *privacyPolicy) processInputUtxos(txInfo *privacyTxInfo) string {
-
-	bizlog.Debug("processInputUtxos", "txhash", txInfo.txHashHex, "actionName", txInfo.actionName, "isExecOk", txInfo.isExecOk, "isRollBack", txInfo.isRollBack)
-
-	// utx 
-	utxoSender := ""
-	var err error
-	// 
-	if txInfo.isRollBack {
-
-		/  STX  FTXO 
-		stxosInOneTx, _, _ := policy.store.getWalletFtxoStxo(STXOs4Tx)
-		for _, stxo := range stxosInOneTx {
-			if stxo.Txhash != txInfo.txHashHex {
-				continue
-			}
-			if txInfo.isExecOk {
-				err = policy.store.moveSTXO2FTXO(txInfo.tx, txInfo.txHashHex, txInfo.batch)
-				utxoSender = stxo.Sender
-			}
-			if err != nil {
-				bizlog.Error("processInputUtxos", "txHash", txInfo.txHashHex, "moveSTXO2FTXO err", err)
-			}
-		}
-	} else {
-
+	//  input,          ，     output     
+	//                    ，       utxo     TODO:              input(    keyimage)
+	if AddTx == addDelType {
 		ftxos, keys := policy.store.getFTXOlist()
 		for i, ftxo := range ftxos {
-			if ftxo.Txhash != txInfo.txHashHex {
+			//                 
+			if ftxo.Txhash != txhashstr {
 				continue
 			}
-
-			if txInfo.isExecOk {
-				err = policy.store.moveFTXO2STXO(keys[i], txInfo.txHashHex, txInfo.batch)
-			} else {
-				policy.store.moveFTXO2UTXO(keys[i], txInfo.batch)
+			if types.ExecOk == txExecRes && privacytypes.ActionPublic2Privacy != privateAction.Ty {
+				bizlog.Info("addDelPrivacyTxsFromBlock", "txhash", txhashstr, "addDelType", addDelType, "moveFTXO2STXO, key", string(keys[i]), "txExecRes", txExecRes)
+				policy.store.moveFTXO2STXO(keys[i], txhashstr, newbatch)
+			} else if types.ExecOk != txExecRes && privacytypes.ActionPublic2Privacy != privateAction.Ty {
+				//      
+				bizlog.Info("PrivacyTrading AddDelPrivacyTxsFromBlock", "txhash", txhashstr, "addDelType", addDelType, "moveFTXO2UTXO, key", string(keys[i]), "txExecRes", txExecRes)
+				policy.store.moveFTXO2UTXO(keys[i], newbatch)
 			}
-			utxoSender = ftxo.Sender
-			if err != nil {
-				bizlog.Error("processInputUtxos", "txHash", txInfo.txHashHex, "moveSTXO2FTXO err", err)
+			//         ，       
+			param := &buildStoreWalletTxDetailParam{
+				assetExec:    assetExec,
+				tokenname:    tokenname,
+				block:        block,
+				tx:           tx,
+				index:        int(index),
+				newbatch:     newbatch,
+				senderRecver: ftxo.Sender,
+				isprivacy:    true,
+				addDelType:   addDelType,
+				sendRecvFlag: sendTx,
+				utxos:        nil,
 			}
-
+			policy.buildAndStoreWalletTxDetail(param)
 		}
-	}
-	//  
-	if utxoSender != "" {
-		param := &buildStoreWalletTxDetailParam{
-			txInfo:       txInfo,
-			addr:         utxoSender,
-			sendRecvFlag: sendTx,
-		}
-		policy.buildAndStoreWalletTxDetail(param)
-	}
-	return utxoSender
-}
+	} else {
+		//        ，    STXO        ，      FTXO，                   
+		stxosInOneTx, _, _ := policy.store.getWalletFtxoStxo(STXOs4Tx)
+		for _, ftxo := range stxosInOneTx {
+			if ftxo.Txhash == txhashstr {
+				param := &buildStoreWalletTxDetailParam{
+					assetExec:    assetExec,
+					tokenname:    tokenname,
+					block:        block,
+					tx:           tx,
+					index:        int(index),
+					newbatch:     newbatch,
+					senderRecver: "",
+					isprivacy:    true,
+					addDelType:   addDelType,
+					sendRecvFlag: sendTx,
+					utxos:        nil,
+				}
 
-func (policy *privacyPolicy) processOutputUtxos(utxoSender string, keys []addrAndprivacy, txInfo *privacyTxInfo) {
-
-	bizlog.Debug("processOutputUtxos", "txhash", txInfo.txHashHex, "actionName", txInfo.actionName, "isExecOK", txInfo.isExecOk, "isRollBack", txInfo.isRollBack)
-	if txInfo.output == nil {
-		return
-	}
-	var recvUtxos []*privacytypes.PrivacyDBStore
-	// check utxo owner
-	omitCheck := false
-	owner := ""
-	receivers := make(map[string]struct{})
-	for index, out := range txInfo.output.GetKeyoutput() {
-
-		for _, key := range keys {
-			if omitCheck {
-				break
-			}
-			owner = ""
-			priv, err := privacy.RecoverOnetimePriKey(txInfo.output.GetRpubKeytx(), key.PrivacyKeyPair.ViewPrivKey, key.PrivacyKeyPair.SpendPrivKey, int64(index))
-			if err != nil {
-				bizlog.Error("addDelPrivacyTxsFromBlock", "txhash", txInfo.txHashHex, "actionName", txInfo.actionName, "RecoverOnetimePriKey error", err)
-			}
-			if bytes.Equal(priv.PubKey().Bytes()[:], out.GetOnetimepubkey()) {
-				owner = *key.Addr
-				receivers[owner] = struct{}{}
-				break
+				if types.ExecOk == txExecRes && privacytypes.ActionPublic2Privacy != privateAction.Ty {
+					bizlog.Info("addDelPrivacyTxsFromBlock", "txhash", txhashstr, "addDelType", addDelType, "moveSTXO2FTXO txExecRes", txExecRes)
+					policy.store.moveSTXO2FTXO(tx, txhashstr, newbatch)
+					policy.buildAndStoreWalletTxDetail(param)
+				} else if types.ExecOk != txExecRes && privacytypes.ActionPublic2Privacy != privateAction.Ty {
+					bizlog.Info("addDelPrivacyTxsFromBlock", "txhash", txhashstr, "addDelType", addDelType)
+					policy.buildAndStoreWalletTxDetail(param)
+				}
 			}
 		}
-
-		if len(owner) > 0 {
-			info2store := &privacytypes.PrivacyDBStore{
-				AssetExec:        txInfo.assetExec,
-				Txhash:           txInfo.txHash,
-				Tokenname:        txInfo.assetSymbol,
-				Amount:           out.Amount,
-				OutIndex:         int32(index),
-				TxPublicKeyR:     txInfo.output.GetRpubKeytx(),
-				OnetimePublicKey: out.Onetimepubkey,
-				Owner:            owner,
-				Height:           txInfo.blockHeight,
-				Txindex:          txInfo.txIndex,
-			}
-			recvUtxos = append(recvUtxos, info2store)
-		}
-
-		// utx  utxo
-		if txInfo.actionTy == privacytypes.ActionPublic2Privacy {
-			omitCheck = true
-		}
-	}
-
-	// add or del utxo in wallet
-	for _, utxo := range recvUtxos {
-
-		if !txInfo.isExecOk {
-			/  
-			break
-		}
-		var err error
-		if !txInfo.isRollBack {
-			err = policy.store.setUTXO(utxo, txInfo.txHashHex, txInfo.batch)
-		} else {
-			err = policy.store.unsetUTXO(utxo.AssetExec, utxo.Tokenname, utxo.Owner, txInfo.txHashHex, int(utxo.OutIndex), txInfo.batch)
-		}
-
-		if err != nil {
-			bizlog.Error("processOutputUtxos", "txHash", txInfo.txHashHex, "actionName", txInfo.actionName, "isRollBack", txInfo.isRollBack, "setUtxoErr", err)
-		}
-	}
-	// handle recv tx index
-	for receiver := range receivers {
-		// utx    
-		// utx  
-		if len(receivers) > 1 && receiver == utxoSender {
-			continue
-		}
-		// utx  
-		if txInfo.actionTy == privacytypes.ActionPrivacy2Public {
-			continue
-		}
-		param := &buildStoreWalletTxDetailParam{
-			txInfo:       txInfo,
-			addr:         receiver,
-			sendRecvFlag: recvTx,
-		}
-		policy.buildAndStoreWalletTxDetail(param)
 	}
 }

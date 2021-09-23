@@ -46,24 +46,34 @@ const (
 const (
 	//VoteFrozenTime    = 3 * 24 * 3600
 
+	//RegistFrozenCoins                   
 	RegistFrozenCoins int64 = 1000000000000
 
+	//VoteTypeNone      
 	VoteTypeNone int32 = 1
 
+	//VoteTypeVote     
 	VoteTypeVote int32 = 2
 
+	//VoteTypeCancelVote       
 	VoteTypeCancelVote int32 = 3
 
+	//VoteTypeCancelAllVote         
 	VoteTypeCancelAllVote int32 = 4
 
+	//TopNCandidatorsVoteInit topN    ：    
 	TopNCandidatorsVoteInit int64 = 0
 
+	//TopNCandidatorsVoteMajorOK topN    ：2/3      
 	TopNCandidatorsVoteMajorOK int64 = 1
 
+	//TopNCandidatorsVoteMajorFail topN    ：2/3        
 	TopNCandidatorsVoteMajorFail int64 = 2
 )
 
-
+//               
+//   github     ，        ,            
+//      ，              
 var (
 	DPosX          = "dpos"
 	ExecerDposVote = []byte(DPosX)
@@ -91,28 +101,40 @@ const (
 	//FuncNameQueryVote func name
 	FuncNameQueryVote = "QueryVote"
 
+	//CreateRegistTx           
 	CreateRegistTx = "Regist"
 
+	//CreateCancelRegistTx            
 	CreateCancelRegistTx = "CancelRegist"
 
+	//CreateReRegistTx              
 	CreateReRegistTx = "ReRegist"
 
+	//CreateVoteTx             
 	CreateVoteTx = "Vote"
 
+	//CreateCancelVoteTx               
 	CreateCancelVoteTx = "CancelVote"
 
+	//CreateRegistVrfMTx     Vrf M     
 	CreateRegistVrfMTx = "RegistVrfM"
 
+	//CreateRegistVrfRPTx     Vrf R/P     
 	CreateRegistVrfRPTx = "RegistVrfRP"
 
+	//CreateRecordCBTx     CB     
 	CreateRecordCBTx = "RecordCB"
 
+	//QueryVrfByTime   time  Vrf  
 	QueryVrfByTime = 1
 
+	//QueryVrfByCycle   cycle  Vrf  
 	QueryVrfByCycle = 2
 
+	//QueryVrfByCycleForTopN   cycle    topN      Vrf  
 	QueryVrfByCycleForTopN = 3
 
+	//QueryVrfByCycleForPubkeys   cycle    pubkey        Vrf  
 	QueryVrfByCycleForPubkeys = 4
 
 	//FuncNameQueryCBInfoByCycle func name
@@ -127,12 +149,16 @@ const (
 	//FuncNameQueryLatestCBInfoByHeight func name
 	//FuncNameQueryLatestCBInfoByHeight = "QueryLatestCBInfoByHeight"
 
+	//QueryCBInfoByCycle   cycle  cycle boundary  
 	QueryCBInfoByCycle = 1
 
+	//QueryCBInfoByHeight   stopHeight  cycle boundary  
 	QueryCBInfoByHeight = 2
 
+	//QueryCBInfoByHash   stopHash  cycle boundary  
 	QueryCBInfoByHash = 3
 
+	//QueryLatestCBInfoByHeight   stopHeight  cycle boundary  
 	//QueryLatestCBInfoByHeight = 4
 
 	//FuncNameQueryTopNByVersion func name

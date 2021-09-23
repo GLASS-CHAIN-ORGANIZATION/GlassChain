@@ -17,6 +17,27 @@ import (
 	"github.com/robertkrimen/otto"
 )
 
+//json        
+//        json   
+//json   index    format
+/* table ->
+{
+	"#tablename" : "table1",
+	"#primary" : "abc",
+	"abc" :  "%18d",
+	"index1" : "%s",
+	"index2" : "%s",
+}
+
+     
+{
+	"abc" : 0,
+	"index1" : "",
+	"index2" : "",
+}
+*/
+
+//NewTable         ,   handle
 func (u *js) newTable(name, config, defaultvalue string) (id int64, err error) {
 	u.globalHanldeID++
 	id = u.globalHanldeID
@@ -75,6 +96,7 @@ func (u *js) newTableFunc(vm *otto.Otto, name string) {
 	})
 }
 
+//CloseTable         
 func (u *js) closeTable(id int64) error {
 	_, ok := u.globalTableHandle.Load(id)
 	if !ok {
@@ -268,7 +290,7 @@ func (u *js) tableQueryFunc(vm *otto.Otto) {
 		if err != nil {
 			return errReturn(vm, err)
 		}
-
+		//  
 		//List(indexName string, data types.Message, primaryKey []byte, count, direction int32) (rows []*Row, err error)
 		indexName, err := call.Argument(1).ToString()
 		if err != nil {
@@ -374,6 +396,21 @@ func (u *js) tableJoinFunc(vm *otto.Otto) {
 	})
 }
 
+/*
+table
+       json table, row      js object
+handle := new_table(config, defaultvalue)
+table_add(handle, row)
+table_replace(handle, row)
+table_del(handle, row)
+table_save(handle)
+table_close(handle)
+handle := new_join_table(left, right, listofjoinindex)
+*/
+//join table    (      )
+//handle3 := new_table(newcofifg{config1, config2})
+
+//JSONRow meta
 type JSONRow struct {
 	*jsproto.JsLog
 	config       map[string]string
@@ -384,6 +421,7 @@ type JSONRow struct {
 	defaultvalue string
 }
 
+//NewJSONRow     row
 func NewJSONRow(config string, defaultvalue string) (*JSONRow, error) {
 	row := &JSONRow{}
 	row.isint = regexp.MustCompile(`%\d*d`)
@@ -402,6 +440,7 @@ func NewJSONRow(config string, defaultvalue string) (*JSONRow, error) {
 	return row, nil
 }
 
+//CreateRow     
 func (row *JSONRow) CreateRow() *table.Row {
 	return &table.Row{Data: &jsproto.JsLog{Data: row.defaultvalue}}
 }
@@ -413,6 +452,7 @@ func (row *JSONRow) parse() error {
 	return d.Decode(&row.data)
 }
 
+//SetPayload       
 func (row *JSONRow) SetPayload(data types.Message) error {
 	if row.lastdata == data {
 		return nil

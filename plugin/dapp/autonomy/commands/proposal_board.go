@@ -16,6 +16,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// AutonomyCmd        
 func AutonomyCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "autonomy",
@@ -71,6 +72,7 @@ func AutonomyCmd() *cobra.Command {
 	return cmd
 }
 
+// ProposalBoardCmd       
 func ProposalBoardCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "proposalBoard",
@@ -97,7 +99,8 @@ func addProposalBoardFlags(cmd *cobra.Command) {
 }
 
 func proposalBoard(cmd *cobra.Command, args []string) {
-	paraName, _ := cmd.Flags().GetString("paraName")
+	title, _ := cmd.Flags().GetString("title")
+	cfg := types.GetCliSysParam(title)
 
 	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
 	year, _ := cmd.Flags().GetInt32("year")
@@ -126,7 +129,7 @@ func proposalBoard(cmd *cobra.Command, args []string) {
 		return
 	}
 	pm := &rpctypes.CreateTxIn{
-		Execer:     types.GetExecName(auty.AutonomyX, paraName),
+		Execer:     cfg.ExecName(auty.AutonomyX),
 		ActionName: "PropBoard",
 		Payload:    payLoad,
 	}
@@ -136,6 +139,7 @@ func proposalBoard(cmd *cobra.Command, args []string) {
 	ctx.RunWithoutMarshal()
 }
 
+// RevokeProposalBoardCmd     
 func RevokeProposalBoardCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "revokeBoard",
@@ -152,7 +156,8 @@ func addRevokeProposalBoardFlags(cmd *cobra.Command) {
 }
 
 func revokeProposalBoard(cmd *cobra.Command, args []string) {
-	paraName, _ := cmd.Flags().GetString("paraName")
+	title, _ := cmd.Flags().GetString("title")
+	cfg := types.GetCliSysParam(title)
 
 	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
 	ID, _ := cmd.Flags().GetString("proposalID")
@@ -165,7 +170,7 @@ func revokeProposalBoard(cmd *cobra.Command, args []string) {
 		return
 	}
 	pm := &rpctypes.CreateTxIn{
-		Execer:     types.GetExecName(auty.AutonomyX, paraName),
+		Execer:     cfg.ExecName(auty.AutonomyX),
 		ActionName: "RvkPropBoard",
 		Payload:    payLoad,
 	}
@@ -174,6 +179,7 @@ func revokeProposalBoard(cmd *cobra.Command, args []string) {
 	ctx.RunWithoutMarshal()
 }
 
+// VoteProposalBoardCmd     
 func VoteProposalBoardCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "voteBoard",
@@ -192,7 +198,8 @@ func addVoteProposalBoardFlags(cmd *cobra.Command) {
 }
 
 func voteProposalBoard(cmd *cobra.Command, args []string) {
-	paraName, _ := cmd.Flags().GetString("paraName")
+	title, _ := cmd.Flags().GetString("title")
+	cfg := types.GetCliSysParam(title)
 
 	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
 	ID, _ := cmd.Flags().GetString("proposalID")
@@ -220,7 +227,7 @@ func voteProposalBoard(cmd *cobra.Command, args []string) {
 		return
 	}
 	pm := &rpctypes.CreateTxIn{
-		Execer:     types.GetExecName(auty.AutonomyX, paraName),
+		Execer:     cfg.ExecName(auty.AutonomyX),
 		ActionName: "VotePropBoard",
 		Payload:    payLoad,
 	}
@@ -230,6 +237,7 @@ func voteProposalBoard(cmd *cobra.Command, args []string) {
 	ctx.RunWithoutMarshal()
 }
 
+// TerminateProposalBoardCmd     
 func TerminateProposalBoardCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "terminateBoard",
@@ -246,7 +254,8 @@ func addTerminateProposalBoardFlags(cmd *cobra.Command) {
 }
 
 func terminateProposalBoard(cmd *cobra.Command, args []string) {
-	paraName, _ := cmd.Flags().GetString("paraName")
+	title, _ := cmd.Flags().GetString("title")
+	cfg := types.GetCliSysParam(title)
 
 	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
 	ID, _ := cmd.Flags().GetString("proposalID")
@@ -259,7 +268,7 @@ func terminateProposalBoard(cmd *cobra.Command, args []string) {
 		return
 	}
 	pm := &rpctypes.CreateTxIn{
-		Execer:     types.GetExecName(auty.AutonomyX, paraName),
+		Execer:     cfg.ExecName(auty.AutonomyX),
 		ActionName: "TmintPropBoard",
 		Payload:    payLoad,
 	}
@@ -269,6 +278,7 @@ func terminateProposalBoard(cmd *cobra.Command, args []string) {
 	ctx.RunWithoutMarshal()
 }
 
+// ShowProposalBoardCmd         
 func ShowProposalBoardCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "showBoard",
@@ -331,6 +341,7 @@ func showProposalBoard(cmd *cobra.Command, args []string) {
 	ctx.Run()
 }
 
+// ShowActiveBoardCmd         
 func ShowActiveBoardCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "showActiveBoard",

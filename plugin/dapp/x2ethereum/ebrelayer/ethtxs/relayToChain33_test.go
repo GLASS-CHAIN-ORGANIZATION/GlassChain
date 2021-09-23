@@ -25,7 +25,7 @@ func Test_RelayToChain33(t *testing.T) {
 	ret.IsOk = true
 
 	mockapi := &mocks.QueueProtocolAPI{}
-	// moc ,Clos  
+	//      mock     ,Close    ，        
 	mockapi.On("Close").Return()
 	mockapi.On("AddPushSubscribe", mock.Anything).Return(&ret, nil)
 	mockapi.On("CreateTransaction", mock.Anything).Return(&tx, nil)
@@ -36,7 +36,7 @@ func Test_RelayToChain33(t *testing.T) {
 	mock33 := testnode.New("", mockapi)
 	defer mock33.Close()
 	rpcCfg := mock33.GetCfg().RPC
-	//  
+	//           ，       
 	rpcCfg.JrpcBindAddr = "127.0.0.1:8801"
 	mock33.GetRPC().Listen()
 

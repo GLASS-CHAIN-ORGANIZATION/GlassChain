@@ -9,7 +9,7 @@ import (
 )
 
 /*
- * Initialize dapp related components
+ *    dapp     
  */
 
 func init() {

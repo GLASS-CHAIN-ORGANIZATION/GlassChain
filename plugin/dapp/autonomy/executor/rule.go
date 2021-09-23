@@ -127,17 +127,16 @@ func (a *Autonomy) listProposalRule(req *auty.ReqQueryProposalRule) (types.Messa
 func (a *Autonomy) getActiveRule() (types.Message, error) {
 	rule := &auty.RuleConfig{}
 	value, err := a.GetStateDB().Get(activeRuleID())
-	cfg := a.GetAPI().GetConfig()
 	if err == nil {
 		err = types.Decode(value, rule)
 		if err != nil {
 			return nil, err
 		}
-	} else { 
+	} else { //        
 		rule.BoardApproveRatio = boardApproveRatio
 		rule.PubOpposeRatio = pubOpposeRatio
-		rule.ProposalAmount = proposalAmount * cfg.GetCoinPrecision()
-		rule.LargeProjectAmount = largeProjectAmount * cfg.GetCoinPrecision()
+		rule.ProposalAmount = proposalAmount
+		rule.LargeProjectAmount = largeProjectAmount
 		rule.PublicPeriod = publicPeriod
 	}
 	return rule, nil
@@ -201,7 +200,7 @@ func (a *Autonomy) listProposalComment(req *auty.ReqQueryProposalComment) (types
 	localDb := a.GetLocalDB()
 	if req.Height <= 0 {
 		key = nil
-	} else { 
+	} else { //       txhash  
 		heightstr := dapp.HeightIndexStr(req.Height, int64(req.Index))
 		key = calcCommentHeight(req.ProposalID, heightstr)
 	}

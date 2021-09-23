@@ -12,8 +12,8 @@ import (
 )
 
 /*
- 1. 
- 1.  txIndex 
+ 1.               
+ 1.   txIndex   
 */
 
 var opt_addr_table = &table.Option{

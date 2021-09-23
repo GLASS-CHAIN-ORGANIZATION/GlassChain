@@ -15,7 +15,7 @@ import (
 
 var logger = log.New("module", "execs.pokerbull")
 
-// Init 
+// Init       
 func Init(name string, cfg *types.Chain33Config, sub []byte) {
 	drivers.Register(cfg, newPBGame().GetName(), newPBGame, cfg.GetDappFork(driverName, "Enable"))
 	InitExecType()
@@ -29,7 +29,7 @@ func InitExecType() {
 	ety.InitFuncList(types.ListMethod(&PokerBull{}))
 }
 
-// PokerBull 
+// PokerBull        
 type PokerBull struct {
 	drivers.DriverBase
 }
@@ -41,12 +41,12 @@ func newPBGame() drivers.Driver {
 	return t
 }
 
-// GetName 
+// GetName         
 func GetName() string {
 	return newPBGame().GetName()
 }
 
-// GetDriverName 
+// GetDriverName         
 func (g *PokerBull) GetDriverName() string {
 	return pkt.PokerBullX
 }
@@ -147,7 +147,7 @@ func (g *PokerBull) CheckReceiptExecOk() bool {
 	return true
 }
 
-// ExecutorOrder locald EnableRead
+// ExecutorOrder   localdb EnableRead
 func (g *PokerBull) ExecutorOrder() int64 {
 	cfg := g.GetAPI().GetConfig()
 	if cfg.IsFork(g.GetHeight(), "ForkLocalDBAccess") {

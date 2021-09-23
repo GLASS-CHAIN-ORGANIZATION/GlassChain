@@ -16,7 +16,7 @@ func TestParaNode(t *testing.T) {
 	para := NewParaNode(nil, nil)
 	paraCfg := para.Para.GetAPI().GetConfig()
 	defer para.Close()
-	/ rpc 
+	//  rpc     
 	tx := util.CreateTxWithExecer(paraCfg, para.Para.GetGenesisKey(), "user.p.test.none")
 	assert.NotNil(t, tx)
 	para.Para.SendTxRPC(tx)

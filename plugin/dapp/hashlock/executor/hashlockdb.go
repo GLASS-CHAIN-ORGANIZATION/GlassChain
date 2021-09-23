@@ -92,7 +92,7 @@ func (action *Action) Hashlocklock(hlock *pty.HashlockLock) (*types.Receipt, err
 	var logs []*types.ReceiptLog
 	var kv []*types.KeyValue
 	var err error
-
+	//      hashlock，    sha256
 	cfg := action.api.GetConfig()
 	if cfg.IsDappFork(action.height, pty.HashlockX, pty.ForkBadRepeatSecretX) {
 		_, err = readHashlock(action.db, hlock.Hash)
@@ -105,7 +105,7 @@ func (action *Action) Hashlocklock(hlock *pty.HashlockLock) (*types.Receipt, err
 	}
 
 	h := NewDB(hlock.Hash, action.fromaddr, hlock.ToAddress, action.blocktime, hlock.Amount, hlock.Time)
-
+	//       
 	receipt, err := action.coinsAccount.ExecFrozen(action.fromaddr, action.execaddr, hlock.Amount)
 
 	if err != nil {
@@ -245,7 +245,7 @@ func GeHashReciverKV(hashlockID []byte, information *pty.Hashlockquery) *types.K
 	clog.Error("GeHashReciverKV action", "Status", information.Status)
 	reciver, err := json.Marshal(infor)
 	if err == nil {
-		fmt.Println("json")
+		fmt.Println("     json  ")
 	} else {
 		fmt.Println(err)
 	}
@@ -300,6 +300,7 @@ func UpdateHashReciver(cachedb dbm.KVDB, hashlockID []byte, information pty.Hash
 	clog.Error("UpdateHashReciver", "recv", recv)
 	//	clog.Error("UpdateHashReciver", "Status", information.Status)
 	//	var action types.Action
+	//   lock   ， db      ，          db ，       db   
 	if information.Status == hashlockLocked {
 		clog.Error("UpdateHashReciver", "Hashlock_Locked", hashlockLocked)
 		if err == types.ErrNotFound {

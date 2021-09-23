@@ -5,236 +5,249 @@
 package runtime
 
 import (
+	"fmt"
 	"sync/atomic"
-
-	"github.com/33cn/chain33/common/log/log15"
 
 	evmtypes "github.com/33cn/plugin/plugin/dapp/evm/types"
 
 	"github.com/33cn/plugin/plugin/dapp/evm/executor/vm/common"
 	"github.com/33cn/plugin/plugin/dapp/evm/executor/vm/common/math"
+	"github.com/33cn/plugin/plugin/dapp/evm/executor/vm/gas"
+	"github.com/33cn/plugin/plugin/dapp/evm/executor/vm/mm"
 	"github.com/33cn/plugin/plugin/dapp/evm/executor/vm/model"
 	"github.com/33cn/plugin/plugin/dapp/evm/executor/vm/params"
 )
 
+// Config         
 type Config struct {
-	Debug int32
+	// Debug     
+	Debug bool
+	// Tracer       
 	Tracer Tracer
+	// NoRecursion      Call, CallCode, DelegateCall
 	NoRecursion bool
+	// EnablePreimageRecording SHA3/keccak          
 	EnablePreimageRecording bool
-	JumpTable [256]*operation
+	// JumpTable      
+	JumpTable [256]Operation
 }
 
+// Interpreter         
 type Interpreter struct {
-	evm *EVM
-	cfg Config
+	evm      *EVM
+	cfg      Config
+	gasTable gas.Table
+	//         
 	readOnly bool
-	returnData []byte
+	//            
+	ReturnData []byte
 }
 
-const (
-	EVMDebugOn  = int32(1)
-	EVMDebugOff = int32(0)
-)
-
+// NewInterpreter         
 func NewInterpreter(evm *EVM, cfg Config) *Interpreter {
-	if cfg.JumpTable[STOP] == nil {
-		cfg.JumpTable = berlinInstructionSet
+	//          STOP    jump table       
+	//     ，        ，          ，        
+	if !cfg.JumpTable[STOP].Valid {
+		cfg.JumpTable = ConstantinopleInstructionSet
 		if evm.cfg.IsDappFork(evm.StateDB.GetBlockHeight(), "evm", evmtypes.ForkEVMYoloV1) {
-
-			cfg.JumpTable = berlinInstructionSet
+			//             
+			cfg.JumpTable = YoloV1InstructionSet
 		}
 	}
 
 	return &Interpreter{
-		evm: evm,
-		cfg: cfg,
+		evm:      evm,
+		cfg:      cfg,
+		gasTable: evm.GasTable(evm.BlockNumber),
 	}
 }
 
-func (in *Interpreter) enforceRestrictions(op OpCode, operation *operation, stack *Stack) error {
+func (in *Interpreter) enforceRestrictions(op OpCode, operation Operation, stack *mm.Stack) error {
 	if in.readOnly {
-		if operation.writes || (op == CALL && stack.Back(2).BitLen() > 0) {
+		//               ，
+		//           （           ）
+		if operation.Writes || (op == CALL && stack.Back(2).BitLen() > 0) {
 			return model.ErrWriteProtection
 		}
 	}
 	return nil
 }
 
-func (in *Interpreter) Run(contract *Contract, input []byte, readOnly bool) (ret []byte, err error) {
-
+// Run             
+//       ，        ，        Gas
+// （      ErrExecutionReverted，           Gas）
+func (in *Interpreter) Run(contract *Contract, input []byte) (ret []byte, err error) {
+	//TODO           ,        ？
+	//       ，   1
 	in.evm.depth++
 	defer func() { in.evm.depth-- }()
 
 	// Make sure the readOnly is only set if we aren't in readOnly yet.
 	// This makes also sure that the readOnly flag isn't removed for child calls.
-	if readOnly && !in.readOnly {
-		in.readOnly = true
-		defer func() { in.readOnly = false }()
-	}
+	//if !in.readOnly {
+	//	in.readOnly = true
+	//	defer func() { in.readOnly = false }()
+	//}
+	//           
+	in.ReturnData = nil
 
-	in.returnData = nil
-
+	//          
 	if len(contract.Code) == 0 {
 		return nil, nil
 	}
 
 	var (
+		//        
 		op OpCode
-		mem = NewMemory()
-		stack = newstack()
-		//returns     = mm.NewReturnStack() // local returns stack
+		//     
+		mem = mm.NewMemory()
+		//      
+		stack = mm.NewStack()
+		//       
+		returns     = mm.NewReturnStack() // local returns stack
 		callContext = &callCtx{
 			memory:   mem,
 			stack:    stack,
+			rstack:   returns,
 			contract: contract,
 		}
-
+		//      
 		pc = uint64(0)
-
+		//      Gas
 		cost uint64
+		//    tracer       ，             
 		pcCopy  uint64
 		gasCopy uint64
 		logged  bool
+		//           
 		res []byte
 	)
 	contract.Input = input
 
+	//      ，    
 	defer func() {
-		returnStack(stack)
+		mm.Returnstack(stack)
+		mm.ReturnRStack(returns)
 	}()
 
-	if EVMDebugOn == in.cfg.Debug {
+	if in.cfg.Debug {
 		defer func() {
 			if err != nil {
 				if !logged {
-					in.cfg.Tracer.CaptureState(in.evm, pcCopy, op, gasCopy, cost, mem, stack, in.returnData, contract, in.evm.depth, err)
+					in.cfg.Tracer.CaptureState(in.evm, pcCopy, op, gasCopy, cost, mem, stack, returns, in.ReturnData, contract, in.evm.depth, err)
 				} else {
-					in.cfg.Tracer.CaptureFault(in.evm, pcCopy, op, gasCopy, cost, mem, stack, contract, in.evm.depth, err)
+					in.cfg.Tracer.CaptureFault(in.evm, pcCopy, op, gasCopy, cost, mem, stack, returns, contract, in.evm.depth, err)
 				}
 			}
 		}()
 	}
+	//             ，        （  、  、  、  、  ）
 	steps := 0
 	for {
 		steps++
 		if steps%1000 == 0 && atomic.LoadInt32(&in.evm.abort) != 0 {
 			break
 		}
-		if EVMDebugOn == in.cfg.Debug {
+		if in.cfg.Debug {
+			//               
 			logged, pcCopy, gasCopy = false, pc, contract.Gas
 		}
 
+		//               
 		op = contract.GetOp(pc)
 		operation := in.cfg.JumpTable[op]
-		if operation == nil {
-			log15.Error("can't found operation:%s", op)
-			return nil, &ErrInvalidOpCode{opcode: op}
+		if !operation.Valid {
+			return nil, fmt.Errorf("invalid OpCode 0x%x", int(op))
 		}
-		// Validate stack
-		if sLen := stack.len(); sLen < operation.minStack {
-			return nil, &ErrStackUnderflow{stackLen: sLen, required: operation.minStack}
-		} else if sLen > operation.maxStack {
-			return nil, &ErrStackOverflow{stackLen: sLen, limit: operation.maxStack}
+		if err := operation.ValidateStack(stack); err != nil {
+			return nil, err
 		}
-
+		//      
 		if err := in.enforceRestrictions(op, operation, stack); err != nil {
 			return nil, err
 		}
-
-		// Static portion of gas
-		cost = operation.constantGas // For tracing
-		if !contract.UseGas(operation.constantGas) {
-			log15.Error("Run:outOfGas", "op=", op.String(), "contract addr=", contract.self.Address().String(),
-				"CallerAddress=", contract.CallerAddress.String(),
-				"caller=", contract.caller.Address().String())
-			return nil, ErrOutOfGas
-		}
-
 		var memorySize uint64
-		// Memory check needs to be done prior to evaluating the dynamic gas portion,
-		// to detect calculation overflows
-		if operation.memorySize != nil {
-			memSize, overflow := operation.memorySize(stack)
+		//            
+		if operation.MemorySize != nil {
+			memSize, overflow := operation.MemorySize(stack)
 			if overflow {
-				return nil, ErrGasUintOverflow
+				return nil, model.ErrGasUintOverflow
 			}
 			// memory is expanded in words of 32 bytes. Gas
 			// is also calculated in words.
-			if memorySize, overflow = math.SafeMul(toWordSize(memSize), 32); overflow {
-				return nil, ErrGasUintOverflow
+			if memorySize, overflow = math.SafeMul(common.ToWordSize(memSize), 32); overflow {
+				return nil, model.ErrGasUintOverflow
 			}
 		}
-		// Dynamic portion of gas
-		// consume the gas and return an error if not enough gas is available.
-		// cost is explicitly set so that the capture state defer method can get the proper cost
+		//             Gas
+		evmParam := buildEVMParam(in.evm)
+		gasParam := buildGasParam(contract)
+		cost, err = operation.GasCost(in.gasTable, evmParam, gasParam, stack, mem, memorySize)
+		fillEVM(evmParam, in.evm)
 
-		if operation.dynamicGas != nil {
-			var dynamicCost uint64
-			dynamicCost, err = operation.dynamicGas(in.evm, contract, stack, mem, memorySize)
-			cost += dynamicCost // total cost, for debug tracing
-			if err != nil || !contract.UseGas(dynamicCost) {
-				log15.Error("Run:outOfGas", "op=", op.String(), "contract addr=", contract.self.Address().String(),
-					"CallerAddress=", contract.CallerAddress.String(),
-					"caller=", contract.caller.Address().String())
-				return nil, ErrOutOfGas
-			}
+		if err != nil || !contract.UseGas(cost) {
+			return nil, model.ErrOutOfGas
 		}
 		if memorySize > 0 {
+			//     
 			mem.Resize(memorySize)
 		}
 
-		if EVMDebugOn == in.cfg.Debug {
-			in.cfg.Tracer.CaptureState(in.evm, pc, op, gasCopy, cost, mem, stack, in.returnData, contract, in.evm.depth, err)
+		if in.cfg.Debug {
+			in.cfg.Tracer.CaptureState(in.evm, pc, op, gasCopy, cost, mem, stack, returns, in.ReturnData, contract, in.evm.depth, err)
 			logged = true
 		}
 
-		res, err = operation.execute(&pc, in.evm, callContext)
-		if operation.returns {
-			in.returnData = common.CopyBytes(res)
+		//            （       ）
+		res, err = operation.Execute(&pc, in.evm, callContext)
+		//          ，                  
+		if operation.Returns {
+			in.ReturnData = common.CopyBytes(res)
 		}
 
 		switch {
 		case err != nil:
 			return nil, err
-		case operation.reverts:
+		case operation.Reverts:
 			return res, model.ErrExecutionReverted
-		case operation.halts:
+		case operation.Halts:
 			return res, nil
-		case !operation.jumps:
+		case !operation.Jumps:
 			pc++
 		}
 	}
 	return nil, nil
 }
 
-// CanRun tells if the contract, passed as an argument, can be
-// run by the current interpreter.
-func (in *Interpreter) CanRun(code []byte) bool {
-	return true
-}
-
+//  Contract       GasFunc    
+//             ，   GasFun  Gas       Contract      
+//        GasParam  
 func buildGasParam(contract *Contract) *params.GasParam {
 	return &params.GasParam{Gas: contract.Gas, Address: contract.Address()}
 }
 
+//  EVM       GasFunc    
+//             ，   GasFun  Gas       EVM      
+//        EVMParam  
 func buildEVMParam(evm *EVM) *params.EVMParam {
 	return &params.EVMParam{
 		StateDB:     evm.StateDB,
-		CallGasTemp: evm.callGasTemp,
+		CallGasTemp: evm.CallGasTemp,
 		BlockNumber: evm.BlockNumber,
 	}
 }
 
+//           EVM    
+//       CallGasTemp，             ，         EVM    
 func fillEVM(param *params.EVMParam, evm *EVM) {
-	evm.callGasTemp = param.CallGasTemp
+	evm.CallGasTemp = param.CallGasTemp
 }
 
 // callCtx contains the things that are per-call, such as stack and memory,
 // but not transients like pc and gas
 type callCtx struct {
-	memory *Memory
-	stack  *Stack
-	//rstack   *ReturnStack
+	memory   *mm.Memory
+	stack    *mm.Stack
+	rstack   *mm.ReturnStack
 	contract *Contract
 }

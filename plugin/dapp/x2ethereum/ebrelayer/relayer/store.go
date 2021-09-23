@@ -18,66 +18,66 @@ var (
 
 const (
 	keyEncryptionFlag     = "Encryption"
-	keyEncryptionCompFlag = "EncryptionFlag" //   
+	keyEncryptionCompFlag = "EncryptionFlag" //                    ，             ，     
 	keyPasswordHash       = "PasswordHash"
 )
 
-// CalcEncryptionFlag Key
+// CalcEncryptionFlag     Key
 func calcEncryptionFlag() []byte {
 	return []byte(keyEncryptionFlag)
 }
 
-// calckeyEncryptionCompFlag Key
+// calckeyEncryptionCompFlag       Key
 func calckeyEncryptionCompFlag() []byte {
 	return []byte(keyEncryptionCompFlag)
 }
 
-// CalcPasswordHash has Key
+// CalcPasswordHash   hash Key
 func calcPasswordHash() []byte {
 	return []byte(keyPasswordHash)
 }
 
-// NewStore 
+// NewStore       
 func NewStore(db db.DB) *Store {
 	return &Store{db: db}
 }
 
-// Store  
+// Store           ，                 
 type Store struct {
 	db db.DB
 }
 
-// Close 
+// Close      
 func (store *Store) Close() {
 	store.db.Close()
 }
 
-// GetDB 
+// GetDB          
 func (store *Store) GetDB() db.DB {
 	return store.db
 }
 
-// NewBatch 
+// NewBatch            
 func (store *Store) NewBatch(sync bool) db.Batch {
 	return store.db.NewBatch(sync)
 }
 
-// Get 
+// Get   
 func (store *Store) Get(key []byte) ([]byte, error) {
 	return store.db.Get(key)
 }
 
-// Set 
+// Set    
 func (store *Store) Set(key []byte, value []byte) (err error) {
 	return store.db.Set(key, value)
 }
 
-// NewListHelper 
+// NewListHelper           
 func (store *Store) NewListHelper() *db.ListHelper {
 	return db.NewListHelper(store.db)
 }
 
-// SetEncryptionFlag 
+// SetEncryptionFlag         
 func (store *Store) SetEncryptionFlag(batch db.Batch) error {
 	var flag int64 = 1
 	data, err := json.Marshal(flag)
@@ -90,7 +90,7 @@ func (store *Store) SetEncryptionFlag(batch db.Batch) error {
 	return nil
 }
 
-// GetEncryptionFlag 
+// GetEncryptionFlag       
 func (store *Store) GetEncryptionFlag() int64 {
 	var flag int64
 	data, err := store.Get(calcEncryptionFlag())
@@ -108,14 +108,14 @@ func (store *Store) GetEncryptionFlag() int64 {
 	return flag
 }
 
-// SetPasswordHash 
+// SetPasswordHash       
 func (store *Store) SetPasswordHash(password string, batch db.Batch) error {
 	var WalletPwHash types.WalletPwHash
-	/ 
+	//         
 	randstr := fmt.Sprintf("fuzamei:$@%s", crypto.CRandHex(16))
 	WalletPwHash.Randstr = randstr
 
-	/ passwor has 
+	//  password          hash 
 	pwhashstr := fmt.Sprintf("%s:%s", password, WalletPwHash.Randstr)
 	pwhash := sha256.Sum256([]byte(pwhashstr))
 	WalletPwHash.PwHash = pwhash[:]
@@ -129,7 +129,7 @@ func (store *Store) SetPasswordHash(password string, batch db.Batch) error {
 	return nil
 }
 
-// VerifyPasswordHash 
+// VerifyPasswordHash        
 func (store *Store) VerifyPasswordHash(password string) bool {
 	var WalletPwHash types.WalletPwHash
 	pwhashbytes, err := store.Get(calcPasswordHash())
@@ -144,6 +144,6 @@ func (store *Store) VerifyPasswordHash(password string) bool {
 	pwhashstr := fmt.Sprintf("%s:%s", password, WalletPwHash.Randstr)
 	pwhash := sha256.Sum256([]byte(pwhashstr))
 	Pwhash := pwhash[:]
-	/ pwhas 
+	//        pwhash   
 	return bytes.Equal(WalletPwHash.GetPwHash(), Pwhash)
 }

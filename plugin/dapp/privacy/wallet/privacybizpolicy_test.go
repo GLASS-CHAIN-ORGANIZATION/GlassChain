@@ -29,19 +29,19 @@ import (
 )
 
 var (
-	// 
+	//      
 	testPrivateKeys = []string{
 		"0x8dea7332c7bb3e3b0ce542db41161fd021e3cfda9d7dabacf24f98f2dfd69558",
 		"0x920976ffe83b5a98f603b999681a0bc790d97e22ffc4e578a707c2234d55cc8a",
 		"0xb59f2b02781678356c231ad565f73699753a28fd3226f1082b513ebf6756c15c",
 	}
-	// 
+	//      
 	testAddrs = []string{
 		"1EDDghAtgBsamrNEtNmYdQzC1QEhLkr87t",
 		"13cS5G1BDN2YfGudsxRxr7X25yu6ZdgxMU",
 		"1JSRSwp16NvXiTjYBYK9iUQ9wqp3sCxz2p",
 	}
-	// 
+	//         
 	testPubkeyPairs = []string{
 		"92fe6cfec2e19cd15f203f83b5d440ddb63d0cb71559f96dc81208d819fea85886b08f6e874fca15108d244b40f9086d8c03260d4b954a40dfb3cbe41ebc7389",
 		"6326126c968a93a546d8f67d623ad9729da0e3e4b47c328a273dfea6930ffdc87bcc365822b80b90c72d30e955e7870a7a9725e9a946b9e89aec6db9455557eb",
@@ -128,7 +128,7 @@ func (mock *testDataMock) importPrivateKey(PrivKey *types.ReqWalletImportPrivkey
 		return
 	}
 
-	/ labe 
+	//  label       
 	Account, err := wallet.GetAccountByLabel(PrivKey.GetLabel())
 	if Account != nil || err != nil {
 		return
@@ -158,10 +158,10 @@ func (mock *testDataMock) importPrivateKey(PrivKey *types.ReqWalletImportPrivkey
 		return
 	}
 
-	/ 
+	//     
 	Encryptered := wcom.CBCEncrypterPrivkey([]byte(wallet.Password), privkeybyte)
 	Encrypteredstr := common.ToHex(Encryptered)
-	/ PrivKe add 
+	//  PrivKey   addr         
 	Account, err = wallet.GetAccountByAddr(addr)
 	if Account != nil || err != nil {
 		if Account.Privkey == Encrypteredstr {
@@ -171,23 +171,23 @@ func (mock *testDataMock) importPrivateKey(PrivKey *types.ReqWalletImportPrivkey
 
 	var walletaccount types.WalletAccount
 	var WalletAccStore types.WalletAccountStore
-	WalletAccStore.Privkey = Encrypteredstr / 
+	WalletAccStore.Privkey = Encrypteredstr //        
 	WalletAccStore.Label = PrivKey.GetLabel()
 	WalletAccStore.Addr = addr
-	/ Addr:label+privkey+add 
+	//  Addr:label+privkey+addr    
 	err = wallet.SetWalletAccount(false, addr, &WalletAccStore)
 	if err != nil {
 		return
 	}
 
-	/ accoun 
+	//            account  
 	addrs := make([]string, 1)
 	addrs[0] = addr
 	accounts, err := mock.accdb.LoadAccounts(wallet.GetAPI(), addrs)
 	if err != nil {
 		return
 	}
-	// 
+	//         
 	if len(accounts[0].Addr) == 0 {
 		accounts[0].Addr = addr
 	}
@@ -215,7 +215,7 @@ func (mock *testDataMock) initAccounts() {
 	accCoin.SetDB(wallet.GetDBStore())
 	accounts, _ := mock.accdb.LoadAccounts(wallet.GetAPI(), testAddrs)
 	for _, account := range accounts {
-		account.Balance = 1000 * types.DefaultCoinPrecision
+		account.Balance = 1000 * types.Coin
 		accCoin.SaveAccount(account)
 	}
 }
@@ -296,7 +296,7 @@ func Test_EnablePrivacy(t *testing.T) {
 func Test_ShowPrivacyKey(t *testing.T) {
 	mock := &testDataMock{}
 	mock.init()
-	//  
+	//    0         
 	mock.wallet.GetAPI().ExecWalletFunc(ty.PrivacyX, "EnablePrivacy", &ty.ReqEnablePrivacy{Addrs: []string{testAddrs[0]}})
 
 	testCases := []struct {
@@ -336,11 +336,11 @@ func Test_CreateTransaction(t *testing.T) {
 	}
 	mock.init()
 	mock.enablePrivacy()
-	// 
+	//       
 	privacyMock := privacy.PrivacyMock{}
 	privacyMock.Init(mock.wallet, mock.password)
-	// UTXO
-	privacyMock.CreateUTXOs(testAddrs[0], testPubkeyPairs[0], 17*types.DefaultCoinPrecision, 10000, 5)
+	//       UTXO
+	privacyMock.CreateUTXOs(testAddrs[0], testPubkeyPairs[0], 17*types.Coin, 10000, 5)
 	mock.setBlockChainHeight(10020)
 
 	testCases := []struct {
@@ -351,34 +351,34 @@ func Test_CreateTransaction(t *testing.T) {
 		{
 			needError: types.ErrInvalidParam,
 		},
-		{ // 
+		{ //      
 			req: &ty.ReqCreatePrivacyTx{
 				AssetExec:  "coins",
 				Tokenname:  types.BTY,
 				ActionType: ty.ActionPublic2Privacy,
-				Amount:     100 * types.DefaultCoinPrecision,
+				Amount:     100 * types.Coin,
 				From:       testAddrs[0],
 				Pubkeypair: testPubkeyPairs[0],
 			},
 			//needError:types.ErrAddrNotExist,
 		},
-		{ // 
+		{ //      
 			req: &ty.ReqCreatePrivacyTx{
 				AssetExec:  "coins",
 				Tokenname:  types.BTY,
 				ActionType: ty.ActionPrivacy2Privacy,
-				Amount:     10 * types.DefaultCoinPrecision,
+				Amount:     10 * types.Coin,
 				From:       testAddrs[0],
 				Pubkeypair: testPubkeyPairs[1],
 			},
 			needError: types.ErrAddrNotExist,
 		},
-		{ // 
+		{ //      
 			req: &ty.ReqCreatePrivacyTx{
 				AssetExec:  "coins",
 				Tokenname:  types.BTY,
 				ActionType: ty.ActionPrivacy2Public,
-				Amount:     10 * types.DefaultCoinPrecision,
+				Amount:     10 * types.Coin,
 				From:       testAddrs[0],
 				Pubkeypair: testPubkeyPairs[0],
 			},
@@ -457,7 +457,7 @@ func Test_PrivacyTransactionList(t *testing.T) {
 		},
 		{
 			req: &ty.ReqPrivacyTransactionList{
-				AssetSymbol:  types.BTY,
+				Tokenname:    types.BTY,
 				SendRecvFlag: 1,
 				Direction:    0,
 				Count:        10,

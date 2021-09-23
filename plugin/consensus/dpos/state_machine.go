@@ -21,11 +21,16 @@ import (
 )
 
 var (
+	// InitStateType          
 	InitStateType = 1
+	// VotingStateType          
 	VotingStateType = 2
+	// VotedStateType           
 	VotedStateType = 3
+	// WaitNotifyStateType            
 	WaitNotifyStateType = 4
 
+	// StateTypeMapping                  
 	StateTypeMapping = map[int]string{
 		InitStateType:       "InitState",
 		VotingStateType:     "VotingState",
@@ -58,6 +63,7 @@ var LastCheckRegTopNTime = int64(0)
 // LastCheckUpdateTopNTime is the Last Check Update TopN Time
 var LastCheckUpdateTopNTime = int64(0)
 
+// Task                 
 type Task struct {
 	NodeID      int64
 	Cycle       int64
@@ -69,6 +75,7 @@ type Task struct {
 	BlockStop   int64
 }
 
+// TopNVersionInfo              TopN       
 type TopNVersionInfo struct {
 	Version           int64
 	HeightStart       int64
@@ -78,6 +85,7 @@ type TopNVersionInfo struct {
 	HeightUpdateLimit int64
 }
 
+// CalcTopNVersion               TopN       
 func CalcTopNVersion(height int64) (info TopNVersionInfo) {
 	info = TopNVersionInfo{}
 	info.Version = height / blockNumToUpdateDelegate
@@ -89,6 +97,7 @@ func CalcTopNVersion(height int64) (info TopNVersionInfo) {
 	return info
 }
 
+// DecideTaskByTime             ，  cycle  ，      ，      
 func DecideTaskByTime(now int64) (task Task) {
 	task.NodeID = now % dposCycle / dposPeriod
 	task.Cycle = now / dposCycle
@@ -105,12 +114,13 @@ func DecideTaskByTime(now int64) (task Task) {
 }
 
 func generateVote(cs *ConsensusState) *dpostype.Vote {
-
+	//      
 	height := cs.client.GetCurrentHeight()
 	now := time.Now().Unix()
 	if cs.lastMyVote != nil && math.Abs(float64(now-cs.lastMyVote.VoteItem.PeriodStop)) <= 1 {
 		now += 2
 	}
+	//      ，       ，         ，       
 	task := DecideTaskByTime(now)
 
 	cs.ShuffleValidators(task.Cycle)
@@ -121,6 +131,7 @@ func generateVote(cs *ConsensusState) *dpostype.Vote {
 		return nil
 	}
 
+	//  vote，   vote    
 	voteItem := &dpostype.VoteItem{
 		VotedNodeAddress: addr,
 		VotedNodeIndex:   int32(task.NodeID),
@@ -224,12 +235,14 @@ func checkTopNRegist(cs *ConsensusState) {
 
 	now := time.Now().Unix()
 	if now-LastCheckRegTopNTime < dposBlockInterval*3 {
+		//         ，5          
 		return
 	}
 
 	height := cs.client.GetCurrentHeight()
 	info := CalcTopNVersion(height)
 	if height <= info.HeightRegLimit {
+		//   TOPN      ，            ，        
 		topN := cs.GetTopNCandidatorsByVersion(info.Version)
 		if topN == nil || !cs.IsTopNRegisted(topN) {
 			cands, err := cs.client.QueryCandidators()
@@ -269,6 +282,7 @@ func checkTopNUpdate(cs *ConsensusState) {
 
 	now := time.Now().Unix()
 	if now-LastCheckUpdateTopNTime < dposBlockInterval*1 {
+		//         ，1          
 		return
 	}
 
@@ -374,6 +388,7 @@ func (init *InitState) timeOut(cs *ConsensusState) {
 		dposlog.Error("InitState timeout but available nodes less than 2/3,waiting for more connections", "connections", connections, "validators", validators)
 		cs.ClearVotes()
 
+		//      ，          
 		cs.resetTimer(time.Duration(timeoutCheckConnections)*time.Millisecond, InitStateType)
 	} else {
 		vote := generateVote(cs)
@@ -395,12 +410,12 @@ func (init *InitState) timeOut(cs *ConsensusState) {
 		dposlog.Info("Available nodes equal or more than 2/3,change state to VotingState", "connections", connections, "validators", validators)
 		cs.SetState(VotingStateObj)
 		dposlog.Info("Change state.", "from", "InitState", "to", "VotingState")
-
+		//  node  p2p       
 		dposlog.Info("VotingState send a vote", "vote info", printVote(vote.DPosVote), "localNodeIndex", cs.client.ValidatorIndex(), "now", time.Now().Unix())
 		cs.dposState.sendVote(cs, vote.DPosVote)
 
 		cs.resetTimer(time.Duration(timeoutVoting)*time.Millisecond, VotingStateType)
-
+		//           
 		for i := 0; i < len(cs.cachedVotes); i++ {
 			cs.dposState.recvVote(cs, cs.cachedVotes[i])
 		}
@@ -432,6 +447,7 @@ func (init *InitState) sendNotify(cs *ConsensusState, notify *dpostype.DPosNotif
 func (init *InitState) recvNotify(cs *ConsensusState, notify *dpostype.DPosNotify) {
 	dposlog.Info("InitState recvNotify")
 
+	//zzh:     Notify   ，                
 	cs.SetNotify(notify)
 }
 
@@ -445,23 +461,26 @@ type VotingState struct {
 }
 
 func (voting *VotingState) timeOut(cs *ConsensusState) {
+	//       ，      ，           
 	if dposDelegateNum == 1 {
 		result, voteItem := cs.CheckVotes()
 
 		if result == voteSuccess {
 			dposlog.Info("VotingState get 2/3 result", "final vote:", printVoteItem(voteItem))
 			dposlog.Info("VotingState change state to VotedState")
-
+			//    
 			cs.SetState(VotedStateObj)
 			dposlog.Info("Change state because of check votes successfully.", "from", "VotingState", "to", "VotedState")
 
 			cs.SetCurrentVote(voteItem)
 
+			//                ，     ，         ，             。
 			if !bytes.Equal(cs.myVote.VoteItem.VoteID, voteItem.VoteID) {
 				if !cs.validatorMgr.UpdateFromVoteItem(voteItem) {
 					panic("This node's validators are not the same with final vote, please check")
 				}
 			}
+			//1s       ，        
 			cs.resetTimer(time.Millisecond*500, VotedStateType)
 		}
 		return
@@ -469,11 +488,13 @@ func (voting *VotingState) timeOut(cs *ConsensusState) {
 
 	dposlog.Info("VotingState timeout but don't get an agreement. change state to InitState")
 
+	//          ，         
 	cs.ClearVotes()
 	cs.ClearCachedVotes()
 	cs.SetState(InitStateObj)
 	dposlog.Info("Change state because of timeOut.", "from", "VotingState", "to", "InitState")
 
+	//           ，    InitState     
 	cs.resetTimer(time.Duration(timeoutCheckConnections)*time.Millisecond, InitStateType)
 }
 
@@ -496,23 +517,25 @@ func (voting *VotingState) recvVote(cs *ConsensusState, vote *dpostype.DPosVote)
 	if result == voteSuccess {
 		dposlog.Info("VotingState get 2/3 result", "final vote:", printVoteItem(voteItem))
 		dposlog.Info("VotingState change state to VotedState")
-
+		//    
 		cs.SetState(VotedStateObj)
 		dposlog.Info("Change state because of check votes successfully.", "from", "VotingState", "to", "VotedState")
 
 		cs.SetCurrentVote(voteItem)
 
+		//                ，     ，         ，             。
 		if !bytes.Equal(cs.myVote.VoteItem.VoteID, voteItem.VoteID) {
 			if !cs.validatorMgr.UpdateFromVoteItem(voteItem) {
 				panic("This node's validators are not the same with final vote, please check")
 			}
 		}
+		//1s       ，        
 		cs.resetTimer(time.Millisecond*500, VotedStateType)
 	} else if result == continueToVote {
 		dposlog.Info("VotingState get a vote, but don't get an agreement,waiting for new votes...")
 	} else {
 		dposlog.Info("VotingState get a vote, but don't get an agreement,vote fail,abort voting")
-
+		//          ，         
 		cs.ClearVotes()
 		cs.SetState(InitStateObj)
 		dposlog.Info("Change state because of vote failed.", "from", "VotingState", "to", "InitState")
@@ -554,18 +577,22 @@ func (voted *VotedState) timeOut(cs *ConsensusState) {
 
 	dposlog.Info("address info", "privValidatorAddr", hex.EncodeToString(cs.privValidator.GetAddress()), "VotedNodeAddress", hex.EncodeToString(cs.currentVote.VotedNodeAddress))
 	if bytes.Equal(cs.privValidator.GetAddress(), cs.currentVote.VotedNodeAddress) {
+		//         
 
-
+		//       ，   ；       ，               。
 		if block.Height+1 < cs.currentVote.Height {
 			dposlog.Info("VotedState timeOut but block is not sync,wait...", "localHeight", block.Height, "vote height", cs.currentVote.Height)
 			cs.resetTimer(time.Second*1, VotedStateType)
 			return
 		}
 
+		//          
 		if now >= cs.currentVote.PeriodStop {
+			//             ，        
 			dposlog.Info("VotedState timeOut over periodStop.", "periodStop", cs.currentVote.PeriodStop, "cycleStop", cs.currentVote.CycleStop)
 
 			isCycleSwith := false
+			//    cycle  ，        ，    CycleBoundary      
 			if cs.currentVote.PeriodStop == cs.currentVote.CycleStop {
 				dposlog.Info("Create new tx for cycle change to record cycle boundary info.", "height", block.Height)
 				isCycleSwith = true
@@ -592,6 +619,7 @@ func (voted *VotedState) timeOut(cs *ConsensusState) {
 				voted.sendCBInfo(cs, info2)
 			}
 
+			//             ，        
 			notify := &dpostype.Notify{
 				DPosNotify: &dpostype.DPosNotify{
 					Vote:              cs.currentVote,
@@ -626,6 +654,7 @@ func (voted *VotedState) timeOut(cs *ConsensusState) {
 			cs.dposState.sendNotify(cs, notify.DPosNotify)
 			cs.ClearVotes()
 
+			//        TopN，     ，   TOPN           。
 			if isCycleSwith {
 				checkTopNUpdate(cs)
 			}
@@ -637,16 +666,21 @@ func (voted *VotedState) timeOut(cs *ConsensusState) {
 			return
 		}
 
+		//      vrf    ，   (cyclestart,middle)  ，  M，   (middle,cyclestop)  ，  R、P
 		checkVrf(cs)
 
+		//        topN，      topN
 		checkTopNRegist(cs)
 
+		//            ，         
 		if block.BlockTime >= task.BlockStop {
+			//   ，       。
 			dposlog.Info("VotedState timeOut but block already is generated.", "blocktime", block.BlockTime, "blockStop", task.BlockStop, "now", now)
 			cs.resetTimer(time.Second*1, VotedStateType)
 
 			return
 		} else if block.BlockTime < task.BlockStart {
+			//         ，     
 			if task.BlockStop-now <= 1 {
 				dposlog.Info("Create new block.", "height", block.Height+1)
 
@@ -660,7 +694,8 @@ func (voted *VotedState) timeOut(cs *ConsensusState) {
 			cs.resetTimer(time.Millisecond*500, VotedStateType)
 			return
 
-		} else { 
+		} else {
+			//       
 			dposlog.Info("Wait to next block cycle.", "waittime", task.BlockStop-now+1)
 
 			//cs.scheduleDPosTimeout(time.Second * time.Duration(task.blockStop-now+1), VotedStateType)
@@ -670,11 +705,15 @@ func (voted *VotedState) timeOut(cs *ConsensusState) {
 	} else {
 		dposlog.Info("This node is not current owner.", "current owner index", cs.currentVote.VotedNodeIndex, "this node index", cs.client.ValidatorIndex())
 
+		//      vrf    ，   (cyclestart,middle)  ，  M，   (middle,cyclestop)  ，  R、P
 		checkVrf(cs)
 
+		//        topN，      topN
 		checkTopNRegist(cs)
 
+		//       ，             ，       ，    
 		if now >= cs.currentVote.PeriodStop {
+			//             ，        
 			cs.SaveVote()
 			cs.SaveMyVote()
 			cs.ClearVotes()
@@ -687,6 +726,7 @@ func (voted *VotedState) timeOut(cs *ConsensusState) {
 			return
 		}
 
+		//      
 		dposlog.Info("wait until change state.", "waittime", cs.currentVote.PeriodStop-now+1)
 		cs.resetTimer(time.Second*time.Duration(cs.currentVote.PeriodStop-now+1), VotedStateType)
 		return
@@ -760,6 +800,7 @@ type WaitNofifyState struct {
 func (wait *WaitNofifyState) timeOut(cs *ConsensusState) {
 	//cs.clearVotes()
 
+	//        TopN，     ，   TOPN           。
 	now := time.Now().Unix()
 	if now >= cs.lastVote.PeriodStop && cs.lastVote.PeriodStop == cs.lastVote.CycleStop {
 		checkTopNUpdate(cs)
@@ -776,6 +817,7 @@ func (wait *WaitNofifyState) sendVote(cs *ConsensusState, vote *dpostype.DPosVot
 
 func (wait *WaitNofifyState) recvVote(cs *ConsensusState, vote *dpostype.DPosVote) {
 	dposlog.Info("WaitNofifyState recvVote,store it.")
+	//  vote    ，          。         ，                。
 	cs.CacheVotes(vote)
 }
 
@@ -794,6 +836,7 @@ func (wait *WaitNofifyState) sendNotify(cs *ConsensusState, notify *dpostype.DPo
 func (wait *WaitNofifyState) recvNotify(cs *ConsensusState, notify *dpostype.DPosNotify) {
 	dposlog.Info("WaitNofifyState recvNotify")
 	cfg := cs.client.GetAPI().GetConfig()
+	//  Notify，    ，         
 	if !cs.VerifyNotify(notify) {
 		dposlog.Info("VotedState verify notify failed")
 		return
@@ -835,6 +878,7 @@ func (wait *WaitNofifyState) recvNotify(cs *ConsensusState, notify *dpostype.DPo
 	cs.SaveNotify()
 	cs.SetNotify(notify)
 
+	//        TopN，     ，   TOPN           。
 	now := time.Now().Unix()
 	if now >= cs.lastVote.PeriodStop && cs.lastVote.PeriodStop == cs.lastVote.CycleStop {
 		checkTopNUpdate(cs)

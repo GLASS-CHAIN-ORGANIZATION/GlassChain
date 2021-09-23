@@ -7,8 +7,6 @@ package executor
 import (
 	"math"
 
-	"github.com/pkg/errors"
-
 	"bytes"
 	"strconv"
 
@@ -22,14 +20,14 @@ import (
 )
 
 const (
-	maxAmount      int64 = 100
-	minAmount      int64 = 1
+	maxAmount      int64 = 100 * types.Coin
+	minAmount      int64 = 1 * types.Coin
 	minPlayerCount int32 = 3
 	maxPlayerCount int32 = 100000
-	lockAmount     int64 = 100          
-	showTimeout    int64 = 60 * 5       
-	maxPlayTimeout int64 = 60 * 60 * 24 
-	minPlayTimeout int64 = 60 * 10      
+	lockAmount     int64 = types.Coin / 100 //       
+	showTimeout    int64 = 60 * 5           //         
+	maxPlayTimeout int64 = 60 * 60 * 24     //             
+	minPlayTimeout int64 = 60 * 10          //             
 
 	white = "0"
 	black = "1"
@@ -67,8 +65,7 @@ func newAction(t *Blackwhite, tx *types.Transaction, index int32) *action {
 }
 
 func (a *action) Create(create *gt.BlackwhiteCreate) (*types.Receipt, error) {
-	cfg := a.api.GetConfig()
-	if create.PlayAmount < minAmount*cfg.GetCoinPrecision() || create.PlayAmount > maxAmount*cfg.GetCoinPrecision() {
+	if create.PlayAmount < minAmount || create.PlayAmount > maxAmount {
 		return nil, types.ErrAmount
 	}
 	if create.PlayerCount < minPlayerCount || create.PlayerCount > maxPlayerCount {
@@ -78,13 +75,9 @@ func (a *action) Create(create *gt.BlackwhiteCreate) (*types.Receipt, error) {
 		return nil, types.ErrInvalidParam
 	}
 
-	if cfg.GetCoinPrecision() < lockAmount {
-		return nil, errors.Wrapf(types.ErrInvalidParam, "coinPrecison=%d < lockAmount=100", cfg.GetCoinPrecision())
-	}
-
-	receipt, err := a.coinsAccount.ExecFrozen(a.fromaddr, a.execaddr, cfg.GetCoinPrecision()/lockAmount)
+	receipt, err := a.coinsAccount.ExecFrozen(a.fromaddr, a.execaddr, lockAmount)
 	if err != nil {
-		clog.Error("blackwhite create ", "addr", a.fromaddr, "execaddr", a.execaddr, "ExecFrozen amount", cfg.GetCoinPrecision()/lockAmount)
+		clog.Error("blackwhite create ", "addr", a.fromaddr, "execaddr", a.execaddr, "ExecFrozen amount", lockAmount)
 		return nil, err
 	}
 
@@ -110,7 +103,7 @@ func (a *action) Create(create *gt.BlackwhiteCreate) (*types.Receipt, error) {
 }
 
 func (a *action) Play(play *gt.BlackwhitePlay) (*types.Receipt, error) {
-
+	//   GameID
 	value, err := a.db.Get(calcMavlRoundKey(play.GameID))
 	if err != nil {
 		clog.Error("blackwhite play ", "addr", a.fromaddr, "execaddr", a.execaddr, "get round failed",
@@ -125,6 +118,7 @@ func (a *action) Play(play *gt.BlackwhitePlay) (*types.Receipt, error) {
 		return nil, err
 	}
 
+	//       
 	if gt.BlackwhiteStatusPlay != round.Status && gt.BlackwhiteStatusCreate != round.Status {
 		err := gt.ErrIncorrectStatus
 		clog.Error("blackwhite play ", "addr", a.fromaddr, "round status", round.Status, "status is not match, GameID ",
@@ -132,6 +126,7 @@ func (a *action) Play(play *gt.BlackwhitePlay) (*types.Receipt, error) {
 		return nil, err
 	}
 
+	//        
 	for _, addrResult := range round.AddrResult {
 		if addrResult.Addr == a.fromaddr {
 			err := gt.ErrRepeatPlayerAddr
@@ -168,10 +163,12 @@ func (a *action) Play(play *gt.BlackwhitePlay) (*types.Receipt, error) {
 	round.CurPlayerCount++
 
 	if round.CurPlayerCount >= round.PlayerCount {
+		//          
 		round.ShowTime = a.blocktime
 		round.Status = gt.BlackwhiteStatusShow
+		//           
 		for _, addr := range round.AddrResult {
-			if addr.Addr != round.CreateAddr { 
+			if addr.Addr != round.CreateAddr { //            
 				receiptLog := a.GetReceiptLog(&round, addr.Addr)
 				logs = append(logs, receiptLog)
 			}
@@ -187,6 +184,7 @@ func (a *action) Play(play *gt.BlackwhitePlay) (*types.Receipt, error) {
 	value1 := types.Encode(&round)
 	cfg := a.api.GetConfig()
 	if cfg.IsDappFork(a.height, gt.BlackwhiteX, "ForkBlackWhiteV2") {
+		//         ，              
 		a.db.Set(key1, value1)
 	}
 	kv = append(kv, &types.KeyValue{Key: key1, Value: value1})
@@ -195,7 +193,7 @@ func (a *action) Play(play *gt.BlackwhitePlay) (*types.Receipt, error) {
 }
 
 func (a *action) Show(show *gt.BlackwhiteShow) (*types.Receipt, error) {
-
+	//   GameID
 	value, err := a.db.Get(calcMavlRoundKey(show.GameID))
 	if err != nil {
 		clog.Error("blackwhite show ", "addr", a.fromaddr, "execaddr", a.execaddr, "get round failed",
@@ -209,7 +207,7 @@ func (a *action) Show(show *gt.BlackwhiteShow) (*types.Receipt, error) {
 			show.GameID, "err", err)
 		return nil, err
 	}
-
+	//       
 	if gt.BlackwhiteStatusShow != round.Status {
 		err := gt.ErrIncorrectStatus
 		clog.Error("blackwhite show ", "addr", a.fromaddr, "round status", round.Status, "status is not match, GameID ",
@@ -217,6 +215,7 @@ func (a *action) Show(show *gt.BlackwhiteShow) (*types.Receipt, error) {
 		return nil, err
 	}
 
+	//            
 	bIsExist := false
 	index := 0
 	for i, addrResult := range round.AddrResult {
@@ -232,8 +231,9 @@ func (a *action) Show(show *gt.BlackwhiteShow) (*types.Receipt, error) {
 			show.GameID, "err", err)
 		return nil, err
 	}
+	//    
 	if 0 == len(round.AddrResult[index].ShowSecret) {
-		round.CurShowCount++ 
+		round.CurShowCount++ //  show   ，        
 	}
 	round.Status = gt.BlackwhiteStatusShow
 	round.AddrResult[index].ShowSecret = show.Secret
@@ -242,7 +242,7 @@ func (a *action) Show(show *gt.BlackwhiteShow) (*types.Receipt, error) {
 	var kv []*types.KeyValue
 
 	if round.CurShowCount >= round.PlayerCount {
-	
+		//          
 		round.Status = gt.BlackwhiteStatusDone
 		receipt, err := a.StatTransfer(&round)
 		if err != nil {
@@ -251,9 +251,9 @@ func (a *action) Show(show *gt.BlackwhiteShow) (*types.Receipt, error) {
 		}
 		logs = append(logs, receipt.Logs...)
 		kv = append(kv, receipt.KV...)
-
+		//           
 		for _, addr := range round.AddrResult {
-			if addr.Addr != round.CreateAddr { 
+			if addr.Addr != round.CreateAddr { //            
 				receiptLog := a.GetReceiptLog(&round, addr.Addr)
 				logs = append(logs, receiptLog)
 			}
@@ -269,7 +269,7 @@ func (a *action) Show(show *gt.BlackwhiteShow) (*types.Receipt, error) {
 	value1 := types.Encode(&round)
 	cfg := a.api.GetConfig()
 	if cfg.IsDappFork(a.height, gt.BlackwhiteX, "ForkBlackWhiteV2") {
-		
+		//         ，              
 		a.db.Set(key1, value1)
 	}
 	kv = append(kv, &types.KeyValue{Key: key1, Value: value1})
@@ -296,11 +296,10 @@ func (a *action) TimeoutDone(done *gt.BlackwhiteTimeoutDone) (*types.Receipt, er
 	var logs []*types.ReceiptLog
 	var kv []*types.KeyValue
 
-	cfg := a.api.GetConfig()
-
+	//       
 	if gt.BlackwhiteStatusPlay == round.Status {
 		if a.blocktime >= round.Timeout+round.CreateTime {
-
+			//    play    ，           ，      
 			for i, addrRes := range round.AddrResult {
 				receipt, err := a.coinsAccount.ExecActive(addrRes.Addr, a.execaddr, addrRes.Amount)
 				if err != nil {
@@ -318,15 +317,13 @@ func (a *action) TimeoutDone(done *gt.BlackwhiteTimeoutDone) (*types.Receipt, er
 				logs = append(logs, receipt.Logs...)
 				kv = append(kv, receipt.KV...)
 			}
-			if cfg.GetCoinPrecision() < lockAmount {
-				return nil, errors.Wrapf(types.ErrInvalidParam, "coinPrecison=%d < lockAmount=100", cfg.GetCoinPrecision())
-			}
-			receipt, err := a.coinsAccount.ExecActive(round.CreateAddr, a.execaddr, cfg.GetCoinPrecision()/lockAmount)
+			//         
+			receipt, err := a.coinsAccount.ExecActive(round.CreateAddr, a.execaddr, lockAmount)
 			if err != nil {
 				for _, addrR := range round.AddrResult {
 					a.coinsAccount.ExecFrozen(addrR.Addr, a.execaddr, addrR.Amount)
 				}
-				clog.Error("blackwhite timeout done", "addr", round.CreateAddr, "execaddr", a.execaddr, "execActive create lockAmount", cfg.GetCoinPrecision()/lockAmount, "err", err)
+				clog.Error("blackwhite timeout done", "addr", round.CreateAddr, "execaddr", a.execaddr, "execActive create lockAmount", lockAmount, "err", err)
 				return nil, err
 			}
 			logs = append(logs, receipt.Logs...)
@@ -342,6 +339,7 @@ func (a *action) TimeoutDone(done *gt.BlackwhiteTimeoutDone) (*types.Receipt, er
 		}
 	} else if gt.BlackwhiteStatusShow == round.Status {
 		if a.blocktime >= showTimeout+round.ShowTime {
+			//show    ,        
 			round.Status = gt.BlackwhiteStatusDone
 			receipt, err := a.StatTransfer(&round)
 			if err != nil {
@@ -366,15 +364,16 @@ func (a *action) TimeoutDone(done *gt.BlackwhiteTimeoutDone) (*types.Receipt, er
 
 	key1 := calcMavlRoundKey(round.GameID)
 	value1 := types.Encode(&round)
+	cfg := a.api.GetConfig()
 	if cfg.IsDappFork(a.height, gt.BlackwhiteX, "ForkBlackWhiteV2") {
-
+		//         ，              
 		a.db.Set(key1, value1)
 	}
 	kv = append(kv, &types.KeyValue{Key: key1, Value: value1})
 
-
+	//           
 	for _, addr := range round.AddrResult {
-		if addr.Addr != round.CreateAddr { 
+		if addr.Addr != round.CreateAddr { //            
 			receiptLog := a.GetReceiptLog(&round, addr.Addr)
 			logs = append(logs, receiptLog)
 		}
@@ -395,7 +394,7 @@ func (a *action) StatTransfer(round *gt.BlackwhiteRound) (*types.Receipt, error)
 	var averAmount int64
 
 	if len(winers) == 0 || len(Losers) == 0 {
-
+		//           
 		for i, addrRes := range round.AddrResult {
 			receipt, err := a.coinsAccount.ExecActive(addrRes.Addr, a.execaddr, addrRes.Amount)
 			if err != nil {
@@ -417,7 +416,7 @@ func (a *action) StatTransfer(round *gt.BlackwhiteRound) (*types.Receipt, error)
 
 		var sumAmount int64
 		for i, Loser := range Losers {
-
+			//               
 			sumAmount += Loser.amount
 			receipt, err := a.coinsAccount.ExecTransferFrozen(Loser.addr, blackwhiteAddr, a.execaddr, Loser.amount)
 			if err != nil {
@@ -439,7 +438,7 @@ func (a *action) StatTransfer(round *gt.BlackwhiteRound) (*types.Receipt, error)
 
 		winNum := int64(len(winers))
 		averAmount = sumAmount / winNum
-
+		//              
 		for i, winer := range winers {
 			receipt, err := a.coinsAccount.ExecTransfer(blackwhiteAddr, winer.addr, a.execaddr, averAmount)
 			if err != nil {
@@ -462,7 +461,7 @@ func (a *action) StatTransfer(round *gt.BlackwhiteRound) (*types.Receipt, error)
 			kv = append(kv, receipt.KV...)
 		}
 
-
+		//        
 		for i, winer := range winers {
 			receipt, err := a.coinsAccount.ExecActive(winer.addr, a.execaddr, winer.amount)
 			if err != nil {
@@ -493,12 +492,8 @@ func (a *action) StatTransfer(round *gt.BlackwhiteRound) (*types.Receipt, error)
 		round.Winner = append(round.Winner, winer.addr)
 	}
 
-	cfg := a.api.GetConfig()
-	if cfg.GetCoinPrecision() < lockAmount {
-		return nil, errors.Wrapf(types.ErrInvalidParam, "coinPrecison=%d < lockAmount=100", cfg.GetCoinPrecision())
-	}
-
-	receipt, err := a.coinsAccount.ExecActive(round.CreateAddr, a.execaddr, cfg.GetCoinPrecision()/lockAmount)
+	//         
+	receipt, err := a.coinsAccount.ExecActive(round.CreateAddr, a.execaddr, lockAmount)
 	if err != nil {
 		// rollback
 		if len(winers) == 0 {
@@ -517,13 +512,13 @@ func (a *action) StatTransfer(round *gt.BlackwhiteRound) (*types.Receipt, error)
 				a.coinsAccount.ExecFrozen(loser.addr, a.execaddr, loser.amount)
 			}
 		}
-		clog.Error("StatTransfer ExecActive create ExecFrozen ", "addr", round.CreateAddr, "execaddr", a.execaddr, "amount", cfg.GetCoinPrecision()/lockAmount)
+		clog.Error("StatTransfer ExecActive create ExecFrozen ", "addr", round.CreateAddr, "execaddr", a.execaddr, "amount", lockAmount)
 		return nil, err
 	}
 	logs = append(logs, receipt.Logs...)
 	kv = append(kv, receipt.KV...)
 
-
+	//           
 	logs = append(logs, &types.ReceiptLog{Ty: gt.TyLogBlackwhiteLoopInfo, Log: types.Encode(loopResults)})
 
 	return &types.Receipt{Ty: types.ExecOk, KV: kv, Logs: logs}, nil
@@ -542,7 +537,8 @@ func (a *action) getWinner(round *gt.BlackwhiteRound) ([]*addrResult, *gt.ReplyL
 	for _, address := range addrRes {
 		if len(address.ShowSecret) > 0 && len(address.HashValues) == loop {
 			var isBlack []bool
-
+			//         ：     ForkV25BlackWhite ForkV25BlackWhiteV2         ，  ForkV25BlackWhiteV2     ，
+			//   ForkV25BlackWhite     
 			if !cfg.IsDappFork(a.height, gt.BlackwhiteX, "ForkBlackWhiteV2") {
 				for _, hash := range address.HashValues {
 					if bytes.Equal(common.Sha256([]byte(address.ShowSecret+black)), hash) {
@@ -602,7 +598,7 @@ func (a *action) getWinner(round *gt.BlackwhiteRound) ([]*addrResult, *gt.ReplyL
 		}
 
 		winNum := 0
-		var perRes gt.PerLoopResult 
+		var perRes gt.PerLoopResult //       
 		for _, addr := range addresXs {
 			if addr.IsWin {
 				winNum++
@@ -656,12 +652,13 @@ func (a *action) getLoser(round *gt.BlackwhiteRound) []*addrResult {
 	return results
 }
 
-// GetReceiptLog 
-// staus == BlackwhiteStatusCreate  
-// status == BlackwhiteStatusPlay 
-// status == BlackwhiteStatusShow 
-// status == BlackwhiteStatusTime 
-// status == BlackwhiteStatusDone 
+// GetReceiptLog         log
+//     ：
+// staus == BlackwhiteStatusCreate  (  ，    ）
+// status == BlackwhiteStatusPlay (  )
+// status == BlackwhiteStatusShow (    )
+// status == BlackwhiteStatusTime (      )
+// status == BlackwhiteStatusDone (    )
 func (a *action) GetReceiptLog(round *gt.BlackwhiteRound, addr string) *types.ReceiptLog {
 	log := &types.ReceiptLog{}
 	r := &gt.ReceiptBlackwhiteStatus{}

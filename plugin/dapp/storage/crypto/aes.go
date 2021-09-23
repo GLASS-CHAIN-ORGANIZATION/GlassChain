@@ -8,11 +8,11 @@ import (
 //AES ...
 type AES struct {
 	key []byte
-	//i bloc  1  
+	//iv       block    ，   16  ，  
 	iv []byte
 }
 
-//NewAES  16,24,32  
+//NewAES       16,24,32   ，  
 func NewAES(key, iv []byte) *AES {
 	return &AES{key: key, iv: iv}
 }
@@ -28,7 +28,7 @@ func (a *AES) Encrypt(origData []byte) ([]byte, error) {
 	// origData = ZeroPadding(origData, block.BlockSize())
 	blockMode := cipher.NewCBCEncrypter(block, a.iv[:blockSize])
 	crypted := make([]byte, len(origData))
-	// CryptBlock  crypte 
+	//   CryptBlocks     ，       crypted   
 	// crypted := origData
 	blockMode.CryptBlocks(crypted, origData)
 	return crypted, nil

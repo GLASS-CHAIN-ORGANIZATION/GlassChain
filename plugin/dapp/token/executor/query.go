@@ -9,7 +9,7 @@ import (
 	tokenty "github.com/33cn/plugin/plugin/dapp/token/types"
 )
 
-// Query_GetTokens token
+// Query_GetTokens   token
 func (t *token) Query_GetTokens(in *tokenty.ReqTokens) (types.Message, error) {
 	if in == nil {
 		return nil, types.ErrInvalidParam
@@ -17,7 +17,7 @@ func (t *token) Query_GetTokens(in *tokenty.ReqTokens) (types.Message, error) {
 	return t.getTokens(in)
 }
 
-// Query_GetTokenInfo toke 
+// Query_GetTokenInfo   token  
 func (t *token) Query_GetTokenInfo(in *types.ReqString) (types.Message, error) {
 	if in == nil {
 		return nil, types.ErrInvalidParam
@@ -25,7 +25,7 @@ func (t *token) Query_GetTokenInfo(in *types.ReqString) (types.Message, error) {
 	return t.getTokenInfo(in.GetData())
 }
 
-// Query_GetTotalAmount toke 
+// Query_GetTotalAmount   token  
 func (t *token) Query_GetTotalAmount(in *types.ReqString) (types.Message, error) {
 	if in == nil {
 		return nil, types.ErrInvalidParam
@@ -43,7 +43,7 @@ func (t *token) Query_GetTotalAmount(in *types.ReqString) (types.Message, error)
 	}, nil
 }
 
-// Query_GetAddrReceiverforTokens toke 
+// Query_GetAddrReceiverforTokens   token     
 func (t *token) Query_GetAddrReceiverforTokens(in *tokenty.ReqAddrTokens) (types.Message, error) {
 	if in == nil {
 		return nil, types.ErrInvalidParam
@@ -51,7 +51,7 @@ func (t *token) Query_GetAddrReceiverforTokens(in *tokenty.ReqAddrTokens) (types
 	return t.getAddrReceiverforTokens(in)
 }
 
-// Query_GetAccountTokenAssets toke 
+// Query_GetAccountTokenAssets      token  
 func (t *token) Query_GetAccountTokenAssets(in *tokenty.ReqAccountTokenAssets) (types.Message, error) {
 	if in == nil {
 		return nil, types.ErrInvalidParam
@@ -59,7 +59,7 @@ func (t *token) Query_GetAccountTokenAssets(in *tokenty.ReqAccountTokenAssets) (
 	return t.getAccountTokenAssets(in)
 }
 
-// Query_GetTxByToken toke 
+// Query_GetTxByToken   token    
 func (t *token) Query_GetTxByToken(in *tokenty.ReqTokenTx) (types.Message, error) {
 	if in == nil {
 		return nil, types.ErrInvalidParam
@@ -70,7 +70,7 @@ func (t *token) Query_GetTxByToken(in *tokenty.ReqTokenTx) (types.Message, error
 	return t.getTxByToken(in)
 }
 
-// Query_GetTokenHistory token 
+// Query_GetTokenHistory   token      
 func (t *token) Query_GetTokenHistory(in *types.ReqString) (types.Message, error) {
 	if in == nil {
 		return nil, types.ErrInvalidParam

@@ -1,14 +1,15 @@
 syntax = "proto3";
 
 package types;
-option go_package = "../types";
 
+//      
 message EVMContractObject {
     string           addr  = 1;
     EVMContractData  data  = 2;
     EVMContractState state = 3;
 }
 
+//         
 message EVMContractData {
     string creator  = 1;
     string name     = 2;
@@ -16,9 +17,11 @@ message EVMContractData {
     string addr     = 4;
     bytes  code     = 5;
     bytes  codeHash = 6;
+    //   ABI   ForkEVMABI
     string abi = 7;
 }
 
+//         
 message EVMContractState {
     uint64             nonce       = 1;
     bool               suicided    = 2;
@@ -26,42 +29,44 @@ message EVMContractState {
     map<string, bytes> storage     = 4;
 }
 
+//   /         
 message EVMContractAction {
-
+    //     
     uint64 amount = 1;
-
+    //     ，   Transaction.Fee
     uint64 gasLimit = 2;
-
+    // gas  ，   1
     uint32 gasPrice = 3;
-
+    //     
     bytes code = 4;
-
-    bytes para = 5;
-
-    string alias = 6;
-
-    string note = 7;
-
-    string contractAddr = 8;
+    //     ，    
+    string alias = 5;
+    //     
+    string note = 6;
+    //            ABI   ForkEVMABI
+    string abi = 7;
 }
 
+//     /    
 message ReceiptEVMContract {
     string caller       = 1;
     string contractName = 2;
     string contractAddr = 3;
     uint64 usedGas      = 4;
-
+    //          
     bytes ret = 5;
-
+    // json        
     string jsonRet = 6;
 }
 
+//     EVM            
 message EVMStateChangeItem {
     string key          = 1;
     bytes  preValue     = 2;
     bytes  currentValue = 3;
 }
 
+//         
 message EVMContractDataCmd {
     string creator  = 1;
     string name     = 2;
@@ -71,6 +76,7 @@ message EVMContractDataCmd {
     string codeHash = 6;
 }
 
+//         
 message EVMContractStateCmd {
     uint64              nonce       = 1;
     bool                suicided    = 2;
@@ -78,13 +84,14 @@ message EVMContractStateCmd {
     map<string, string> storage     = 4;
 }
 
+//     /    
 message ReceiptEVMContractCmd {
     string caller = 1;
-
+    //             
     string contractName = 2;
     string contractAddr = 3;
     uint64 usedGas      = 4;
-
+    //          
     string ret = 5;
 }
 
@@ -99,8 +106,11 @@ message CheckEVMAddrResp {
 }
 
 message EstimateEVMGasReq {
-    string tx     = 1;
-    string from   = 2;
+    string to     = 1;
+    bytes  code   = 2;
+    string caller = 3;
+    uint64 amount = 4;
+    string abi    = 5;
 }
 message EstimateEVMGasResp {
     uint64 gas = 1;
@@ -140,63 +150,32 @@ message EvmQueryResp {
 
 message EvmContractCreateReq {
     string code     = 1;
-    string abi      = 2;
-    int64  fee      = 3;
-    string note     = 4;
-    string alias    = 5;
-    string parameter= 6;
+    int64  fee      = 2;
+    string note     = 3;
+    string alias    = 4;
+    string caller   = 5;
+    string abi      = 6;
     string expire   = 7;
     string paraName = 8;
-    int64 amount    = 9;
 }
 
 message EvmContractCallReq {
-    int64 amount        = 1;
-    int64  fee          = 2;
-    string note          = 3;
-    string parameter     = 4;
-    string contractAddr  = 5;
-    string expire        = 6;
-    string paraName      = 7;
-    string abi           = 8;
+    uint64 amount   = 1;
+    string code     = 2;
+    int64  fee      = 3;
+    string note     = 4;
+    string caller   = 5;
+    string abi      = 6;
+    string exec     = 7;
+    string expire   = 8;
+    string paraName = 9;
 }
 
-message EvmTransferOnlyReq {
-    string to         = 1;
-    int64  amount     = 2;
-    string paraName   = 3;
-    string note       = 4;
-}
-
-message EvmGetNonceReq {
-    string address     = 1;
-}
-
-message EvmGetNonceRespose {
-    int64 nonce     = 1;
-}
-
-message EvmCalcNewContractAddrReq {
+message EvmContractTransferReq {
     string caller     = 1;
-    string txhash     = 2;
+    float  amount     = 2;
+    string exec       = 3;
+    string expire     = 4;
+    bool   isWithdraw = 5;
+    string paraName   = 6;
 }
-
-message EvmGetPackDataReq {
-    string abi          = 1;
-    string parameter    = 2;
-}
-
-message EvmGetPackDataRespose {
-    string packData     = 1;
-}
-
-message EvmGetUnpackDataReq {
-    string abi          = 1;
-    string parameter    = 2;
-    string data         = 3;
-}
-
-message EvmGetUnpackDataRespose {
-    repeated string unpackData     = 1;
-}
-

@@ -1,4 +1,4 @@
-
+//nolint:unparam //        golangci-linter  
 package bn256
 
 import (

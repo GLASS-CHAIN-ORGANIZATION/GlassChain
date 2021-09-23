@@ -12,6 +12,7 @@ import (
 	"os"
 )
 
+// DirMissingOrEmpty       
 func DirMissingOrEmpty(path string) (bool, error) {
 	dirExists, err := dirExists(path)
 	if err != nil {
@@ -31,6 +32,7 @@ func DirMissingOrEmpty(path string) (bool, error) {
 	return false, nil
 }
 
+// DirExists       
 func dirExists(path string) (bool, error) {
 	_, err := os.Stat(path)
 	if err == nil {
@@ -42,6 +44,7 @@ func dirExists(path string) (bool, error) {
 	return false, err
 }
 
+// DirEmpty       
 func dirEmpty(path string) (bool, error) {
 	f, err := os.Open(path)
 	if err != nil {
@@ -56,6 +59,7 @@ func dirEmpty(path string) (bool, error) {
 	return false, err
 }
 
+// ReadFile     
 func ReadFile(file string) ([]byte, error) {
 	fileCont, err := ioutil.ReadFile(file)
 	if err != nil {
@@ -65,6 +69,7 @@ func ReadFile(file string) ([]byte, error) {
 	return fileCont, nil
 }
 
+// ReadPemFile   pem  
 func ReadPemFile(file string) ([]byte, error) {
 	bytes, err := ReadFile(file)
 	if err != nil {

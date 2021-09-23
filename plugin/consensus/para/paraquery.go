@@ -13,6 +13,7 @@ import (
 	pt "github.com/33cn/plugin/plugin/dapp/paracross/types"
 )
 
+//IsCaughtUp         ,
 func (client *client) Query_IsCaughtUp(req *types.ReqNil) (types.Message, error) {
 	if client == nil {
 		return nil, fmt.Errorf("%s", "client not bind message queue.")
@@ -86,6 +87,7 @@ func (client *client) Query_BlsPubKey(req *types.ReqString) (types.Message, erro
 		pub.Key = p
 		return &pub, nil
 	}
+	//       
 	if nil != client.blsSignCli.blsPubKey {
 		t := client.blsSignCli.blsPubKey.Bytes()
 		pub.Key = common.ToHex(t[:])
@@ -95,20 +97,24 @@ func (client *client) Query_BlsPubKey(req *types.ReqString) (types.Message, erro
 	return nil, errors.New("no bls prikey init")
 }
 
+// Query_CreateNewAccount   para               
 func (client *client) Query_CreateNewAccount(acc *types.Account) (types.Message, error) {
 	if acc == nil {
 		return nil, types.ErrInvalidParam
 	}
 	plog.Info("Query_CreateNewAccount", "acc", acc.Addr)
+	//   para                     commit       
 	client.commitMsgClient.onWalletAccount(acc)
 	return &types.Reply{IsOk: true, Msg: []byte("OK")}, nil
 }
 
+// Query_WalletStatus   para            
 func (client *client) Query_WalletStatus(walletStatus *types.WalletStatus) (types.Message, error) {
 	if walletStatus == nil {
 		return nil, types.ErrInvalidParam
 	}
 	plog.Info("Query_WalletStatus", "walletStatus", walletStatus.IsWalletLock)
+	//   para      walletStatus.IsWalletLock      /        
 	client.commitMsgClient.onWalletStatus(walletStatus)
 	return &types.Reply{IsOk: true, Msg: []byte("OK")}, nil
 }

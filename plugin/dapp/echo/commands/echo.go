@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// EchoCmd               
 func EchoCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "echo",
@@ -17,10 +18,13 @@ func EchoCmd() *cobra.Command {
 		Args:  cobra.MinimumNArgs(1),
 	}
 	cmd.AddCommand(
-		QueryCmd(), 
+		QueryCmd(), //       
+		//        ，     
 	)
 	return cmd
 }
+
+// QueryCmd query   
 func QueryCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "query",
@@ -32,23 +36,28 @@ func QueryCmd() *cobra.Command {
 }
 
 func addPingPangFlags(cmd *cobra.Command) {
+	// type  ，         ， uint32  ，    1，  -t    
 	cmd.Flags().Uint32P("type", "t", 1, "message type, 1:ping  2:pang")
 	//cmd.MarkFlagRequired("type")
 
+	// message  ，      ， string  ，     ，  -m    
 	cmd.Flags().StringP("message", "m", "", "message content")
 	cmd.MarkFlagRequired("message")
 }
 
 func queryMesage(cmd *cobra.Command, args []string) {
+	//            ，             
 	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
 	echoType, _ := cmd.Flags().GetUint32("type")
 	msg, _ := cmd.Flags().GetString("message")
+	//   RPC   ，       QueryPing    
 	client, err := jsonclient.NewJSONClient(rpcLaddr)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return
 	}
 
+	//          
 	var action = &echotypes.Query{Msg: msg}
 	if echoType != 1 {
 		fmt.Fprintln(os.Stderr, "not support")

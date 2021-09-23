@@ -24,6 +24,7 @@ var boardOpt = &table.Option{
 	Index:   []string{"addr", "status", "addr_status"},
 }
 
+//NewBoardTable    
 func NewBoardTable(kvdb db.KV) *table.Table {
 	rowmeta := NewBoardRow()
 	table, err := table.NewTable(rowmeta, kvdb, boardOpt)
@@ -33,19 +34,22 @@ func NewBoardTable(kvdb db.KV) *table.Table {
 	return table
 }
 
-//BoardRow table meta
+//BoardRow table meta   
 type BoardRow struct {
 	*auty.AutonomyProposalBoard
 }
 
+//NewBoardRow     meta   
 func NewBoardRow() *BoardRow {
 	return &BoardRow{AutonomyProposalBoard: &auty.AutonomyProposalBoard{}}
 }
 
+//CreateRow      (  index             ,     heightindex)
 func (r *BoardRow) CreateRow() *table.Row {
 	return &table.Row{Data: &auty.AutonomyProposalBoard{}}
 }
 
+//SetPayload     
 func (r *BoardRow) SetPayload(data types.Message) error {
 	if d, ok := data.(*auty.AutonomyProposalBoard); ok {
 		r.AutonomyProposalBoard = d
@@ -54,6 +58,7 @@ func (r *BoardRow) SetPayload(data types.Message) error {
 	return types.ErrTypeAsset
 }
 
+//Get   indexName    indexValue
 func (r *BoardRow) Get(key string) ([]byte, error) {
 	if key == "heightindex" {
 		return []byte(dapp.HeightIndexStr(r.Height, int64(r.Index))), nil

@@ -12,13 +12,13 @@ import (
 )
 
 /*
- * 
- * （statedb （log）
+ *            
+ *       （statedb）       （log）
  */
 
 //---------------- Ethereum(eth/erc20) --> Chain33-------------------//
 
-// chain3 ETH/ERC2 
+//  chain33  ETH/ERC20  
 func (x *x2ethereum) Exec_Eth2Chain33Lock(payload *x2eTy.Eth2Chain33, tx *types.Transaction, index int) (*types.Receipt, error) {
 	action := newAction(x, tx, int32(index))
 	if action == nil {
@@ -31,7 +31,7 @@ func (x *x2ethereum) Exec_Eth2Chain33Lock(payload *x2eTy.Eth2Chain33, tx *types.
 }
 
 //----------------  Chain33(eth/erc20)------> Ethereum -------------------//
-// chain3  eth
+//  chain33       ，   eth
 func (x *x2ethereum) Exec_Chain33ToEthBurn(payload *x2eTy.Chain33ToEth, tx *types.Transaction, index int) (*types.Receipt, error) {
 	action := newAction(x, tx, int32(index))
 	if action == nil {
@@ -41,7 +41,7 @@ func (x *x2ethereum) Exec_Chain33ToEthBurn(payload *x2eTy.Chain33ToEth, tx *type
 }
 
 //---------------- Ethereum (bty) --> Chain33-------------------//
-// et bt  chain33
+//  eth    bty   ，   chain33
 func (x *x2ethereum) Exec_Eth2Chain33Burn(payload *x2eTy.Eth2Chain33, tx *types.Transaction, index int) (*types.Receipt, error) {
 	action := newAction(x, tx, int32(index))
 	if action == nil {
@@ -54,7 +54,7 @@ func (x *x2ethereum) Exec_Eth2Chain33Burn(payload *x2eTy.Eth2Chain33, tx *types.
 }
 
 //---------------- Chain33 --> Ethereum (bty) -------------------//
-//  ethereum  chain33 
+//   ethereum    chain33   
 func (x *x2ethereum) Exec_Chain33ToEthLock(payload *x2eTy.Chain33ToEth, tx *types.Transaction, index int) (*types.Receipt, error) {
 	action := newAction(x, tx, int32(index))
 	if action == nil {
@@ -63,7 +63,7 @@ func (x *x2ethereum) Exec_Chain33ToEthLock(payload *x2eTy.Chain33ToEth, tx *type
 	return action.procChain33ToEth_lock(payload)
 }
 
-// 
+//     
 func (x *x2ethereum) Exec_Transfer(payload *types.AssetsTransfer, tx *types.Transaction, index int) (*types.Receipt, error) {
 	action := newAction(x, tx, int32(index))
 	if action == nil {
@@ -94,9 +94,9 @@ func (x *x2ethereum) Exec_WithdrawFromExec(payload *types.AssetsWithdraw, tx *ty
 	return nil, errors.New("tx error")
 }
 
-//------------------------- -------------------------//
+//--------------------------         -------------------------//
 
-// AddValidato validator
+// AddValidator     validator
 func (x *x2ethereum) Exec_AddValidator(payload *x2eTy.MsgValidator, tx *types.Transaction, index int) (*types.Receipt, error) {
 	confManager := types.ConfSub(x.GetAPI().GetConfig(), manTy.ManageX).GStrList("superManager")
 	err := checkTxSignBySpecificAddr(tx, confManager)
@@ -110,7 +110,7 @@ func (x *x2ethereum) Exec_AddValidator(payload *x2eTy.MsgValidator, tx *types.Tr
 	return nil, err
 }
 
-// RemoveValidato validator
+// RemoveValidator        validator
 func (x *x2ethereum) Exec_RemoveValidator(payload *x2eTy.MsgValidator, tx *types.Transaction, index int) (*types.Receipt, error) {
 	confManager := types.ConfSub(x.GetAPI().GetConfig(), manTy.ManageX).GStrList("superManager")
 	err := checkTxSignBySpecificAddr(tx, confManager)
@@ -124,7 +124,7 @@ func (x *x2ethereum) Exec_RemoveValidator(payload *x2eTy.MsgValidator, tx *types
 	return nil, err
 }
 
-// ModifyPowe validato power
+// ModifyPower       validator power
 func (x *x2ethereum) Exec_ModifyPower(payload *x2eTy.MsgValidator, tx *types.Transaction, index int) (*types.Receipt, error) {
 	confManager := types.ConfSub(x.GetAPI().GetConfig(), manTy.ManageX).GStrList("superManager")
 	err := checkTxSignBySpecificAddr(tx, confManager)
@@ -138,7 +138,7 @@ func (x *x2ethereum) Exec_ModifyPower(payload *x2eTy.MsgValidator, tx *types.Tra
 	return nil, err
 }
 
-// SetConsensusThreshol validato clai 
+// SetConsensusThreshold      validator    claim       
 func (x *x2ethereum) Exec_SetConsensusThreshold(payload *x2eTy.MsgConsensusThreshold, tx *types.Transaction, index int) (*types.Receipt, error) {
 	confManager := types.ConfSub(x.GetAPI().GetConfig(), manTy.ManageX).GStrList("superManager")
 	err := checkTxSignBySpecificAddr(tx, confManager)
@@ -166,7 +166,7 @@ func checkTxSignBySpecificAddr(tx *types.Transaction, addrs []string) error {
 		return x2eTy.ErrInvalidAdminAddress
 	}
 
-	if !tx.CheckSign(0) {
+	if !tx.CheckSign() {
 		return types.ErrSign
 	}
 	return nil

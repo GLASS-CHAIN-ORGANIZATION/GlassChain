@@ -16,6 +16,7 @@ var opt = &table.Option{
 	Index:   []string{"status"},
 }
 
+//NewIssuanceTable    
 func NewIssuanceTable(kvdb db.KV) *table.Table {
 	rowmeta := NewIssuanceRow()
 	table, err := table.NewTable(rowmeta, kvdb, opt)
@@ -25,18 +26,22 @@ func NewIssuanceTable(kvdb db.KV) *table.Table {
 	return table
 }
 
+//IssuanceRow table meta   
 type IssuanceRow struct {
 	*ReceiptIssuanceID
 }
 
+//NewIssuanceRow     meta   
 func NewIssuanceRow() *IssuanceRow {
 	return &IssuanceRow{ReceiptIssuanceID: &ReceiptIssuanceID{}}
 }
 
+//CreateRow      
 func (tx *IssuanceRow) CreateRow() *table.Row {
 	return &table.Row{Data: &ReceiptIssuanceID{}}
 }
 
+//SetPayload     
 func (tx *IssuanceRow) SetPayload(data types.Message) error {
 	if txdata, ok := data.(*ReceiptIssuanceID); ok {
 		tx.ReceiptIssuanceID = txdata
@@ -45,6 +50,7 @@ func (tx *IssuanceRow) SetPayload(data types.Message) error {
 	return types.ErrTypeAsset
 }
 
+//Get   indexName    indexValue
 func (tx *IssuanceRow) Get(key string) ([]byte, error) {
 	if key == "issuanceid" {
 		return []byte(tx.IssuanceId), nil
@@ -61,6 +67,7 @@ var optRecord = &table.Option{
 	Index:   []string{"status", "addr", "addr_status"},
 }
 
+// NewRecordTable        
 func NewRecordTable(kvdb db.KV) *table.Table {
 	rowmeta := NewRecordRow()
 	table, err := table.NewTable(rowmeta, kvdb, optRecord)
@@ -70,18 +77,22 @@ func NewRecordTable(kvdb db.KV) *table.Table {
 	return table
 }
 
+//IssuanceRecordRow table meta   
 type IssuanceRecordRow struct {
 	*ReceiptIssuance
 }
 
+//NewRecordRow     meta   
 func NewRecordRow() *IssuanceRecordRow {
 	return &IssuanceRecordRow{ReceiptIssuance: &ReceiptIssuance{}}
 }
 
+//CreateRow      
 func (tx *IssuanceRecordRow) CreateRow() *table.Row {
 	return &table.Row{Data: &ReceiptIssuance{}}
 }
 
+//SetPayload     
 func (tx *IssuanceRecordRow) SetPayload(data types.Message) error {
 	if txdata, ok := data.(*ReceiptIssuance); ok {
 		tx.ReceiptIssuance = txdata
@@ -90,6 +101,7 @@ func (tx *IssuanceRecordRow) SetPayload(data types.Message) error {
 	return types.ErrTypeAsset
 }
 
+//Get   indexName    indexValue
 func (tx *IssuanceRecordRow) Get(key string) ([]byte, error) {
 	if key == "debtid" {
 		return []byte(tx.DebtId), nil

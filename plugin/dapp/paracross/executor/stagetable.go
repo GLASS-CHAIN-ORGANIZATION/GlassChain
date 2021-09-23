@@ -22,7 +22,7 @@ var boardOpt = &table.Option{
 	Index:   []string{"id", "status"},
 }
 
-//NewStageTable 
+//NewStageTable    
 func NewStageTable(kvdb db.KV) *table.Table {
 	rowmeta := NewStageRow()
 	table, err := table.NewTable(rowmeta, kvdb, boardOpt)
@@ -32,22 +32,22 @@ func NewStageTable(kvdb db.KV) *table.Table {
 	return table
 }
 
-//StageRow table meta 
+//StageRow table meta   
 type StageRow struct {
 	*pt.LocalSelfConsStageInfo
 }
 
-//NewStageRow meta 
+//NewStageRow     meta   
 func NewStageRow() *StageRow {
 	return &StageRow{LocalSelfConsStageInfo: &pt.LocalSelfConsStageInfo{}}
 }
 
-//CreateRow  index  heightindex)
+//CreateRow      (  index             ,     heightindex)
 func (r *StageRow) CreateRow() *table.Row {
 	return &table.Row{Data: &pt.LocalSelfConsStageInfo{}}
 }
 
-//SetPayload 
+//SetPayload     
 func (r *StageRow) SetPayload(data types.Message) error {
 	if d, ok := data.(*pt.LocalSelfConsStageInfo); ok {
 		r.LocalSelfConsStageInfo = d
@@ -56,7 +56,7 @@ func (r *StageRow) SetPayload(data types.Message) error {
 	return types.ErrTypeAsset
 }
 
-//Get indexName  indexValue
+//Get   indexName    indexValue
 func (r *StageRow) Get(key string) ([]byte, error) {
 	if key == "heightindex" {
 		return []byte(r.TxIndex), nil

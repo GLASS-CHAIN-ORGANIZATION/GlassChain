@@ -11,9 +11,9 @@ const (
 	tradeLocaldbVersioin = "LODB-trade-version"
 )
 
-// 
-//  key -> id ， 
-// 
+//                
+//    key -> id           ，                
+//         
 const (
 	sellOrderSHTAS = "LODB-trade-sellorder-shtas:"
 	sellOrderASTS  = "LODB-trade-sellorder-asts:"
@@ -27,12 +27,12 @@ const (
 	orderASTHK = "LODB-trade-order-asthk:"
 )
 
-// Upgrade 
+// Upgrade       
 func (t *trade) Upgrade() (*types.LocalDBSet, error) {
 	localDB := t.GetLocalDB()
-	// coins symbol， 
+	//      coins symbol，       
 	coinSymbol := t.GetAPI().GetConfig().GetCoinSymbol()
-	kvs, err := UpgradeLocalDBV2(localDB, t.GetAPI().GetConfig().GetCoinExec(), coinSymbol)
+	kvs, err := UpgradeLocalDBV2(localDB, coinSymbol)
 	if err != nil {
 		tradelog.Error("Upgrade failed", "err", err)
 		return nil, errors.Cause(err)
@@ -40,9 +40,9 @@ func (t *trade) Upgrade() (*types.LocalDBSet, error) {
 	return kvs, nil
 }
 
-// UpgradeLocalDBV2 trade 
+// UpgradeLocalDBV2 trade        
 // from 1 to 2
-func UpgradeLocalDBV2(localDB dbm.KVDB, coinExec, coinSymbol string) (*types.LocalDBSet, error) {
+func UpgradeLocalDBV2(localDB dbm.KVDB, coinSymbol string) (*types.LocalDBSet, error) {
 	toVersion := 2
 	tradelog.Info("UpgradeLocalDBV2 upgrade start", "to_version", toVersion)
 	version, err := getVersion(localDB)
@@ -55,7 +55,7 @@ func UpgradeLocalDBV2(localDB dbm.KVDB, coinExec, coinSymbol string) (*types.Loc
 	}
 
 	var kvset types.LocalDBSet
-	kvs, err := UpgradeLocalDBPart2(localDB, coinExec, coinSymbol)
+	kvs, err := UpgradeLocalDBPart2(localDB, coinSymbol)
 	if err != nil {
 		return nil, errors.Wrap(err, "UpgradeLocalDBV2 UpgradeLocalDBPart2")
 	}
@@ -83,7 +83,7 @@ func UpgradeLocalDBV2(localDB dbm.KVDB, coinExec, coinSymbol string) (*types.Loc
 	return &kvset, nil
 }
 
-// UpgradeLocalDBPart1 KV 
+// UpgradeLocalDBPart1     KV，           
 func UpgradeLocalDBPart1(localDB dbm.KVDB) ([]*types.KeyValue, error) {
 	prefixes := []string{
 		sellOrderSHTAS,
@@ -111,7 +111,7 @@ func UpgradeLocalDBPart1(localDB dbm.KVDB) ([]*types.KeyValue, error) {
 	return allKvs, nil
 }
 
-// delOnePrefix  
+// delOnePrefix           
 func delOnePrefix(localDB dbm.KVDB, prefix string) ([]*types.KeyValue, error) {
 	start := []byte(prefix)
 	keys, err := localDB.List(start, nil, 0, dbm.ListASC|dbm.ListKeyOnly)
@@ -135,14 +135,14 @@ func delOnePrefix(localDB dbm.KVDB, prefix string) ([]*types.KeyValue, error) {
 	return kvs, nil
 }
 
-// UpgradeLocalDBPart2 order
-// order  v1  v2
-// tableV1 ， tableV2 , 
-func UpgradeLocalDBPart2(kvdb dbm.KVDB, coinExec, coinSymbol string) ([]*types.KeyValue, error) {
-	return upgradeOrder(kvdb, coinExec, coinSymbol)
+// UpgradeLocalDBPart2   order
+// order   v1     v2
+//   tableV1   ，   tableV2   ,                
+func UpgradeLocalDBPart2(kvdb dbm.KVDB, coinSymbol string) ([]*types.KeyValue, error) {
+	return upgradeOrder(kvdb, coinSymbol)
 }
 
-func upgradeOrder(kvdb dbm.KVDB, coinExec, coinSymbol string) ([]*types.KeyValue, error) {
+func upgradeOrder(kvdb dbm.KVDB, coinSymbol string) ([]*types.KeyValue, error) {
 	tab2 := NewOrderTableV2(kvdb)
 	tab := NewOrderTable(kvdb)
 	q1 := tab.GetQuery(kvdb)
@@ -164,7 +164,7 @@ func upgradeOrder(kvdb dbm.KVDB, coinExec, coinSymbol string) ([]*types.KeyValue
 		}
 
 		o2 := types.Clone(o1).(*pty.LocalOrder)
-		upgradeLocalOrder(o2, coinExec, coinSymbol)
+		upgradeLocalOrder(o2, coinSymbol)
 		err = tab2.Add(o2)
 		if err != nil {
 			return nil, errors.Wrap(err, "upgradeOrder add to order v2 table")
@@ -197,15 +197,15 @@ func upgradeOrder(kvdb dbm.KVDB, coinExec, coinSymbol string) ([]*types.KeyValue
 	return kvs, nil
 }
 
-// upgradeLocalOrder for 
-// 1. 
-// 2. 
-func upgradeLocalOrder(order *pty.LocalOrder, coinExec, coinSymbol string) {
+// upgradeLocalOrder     fork      
+// 1.       
+// 2.         
+func upgradeLocalOrder(order *pty.LocalOrder, coinSymbol string) {
 	if order.AssetExec == "" {
 		order.AssetExec = defaultAssetExec
 	}
 	if order.PriceExec == "" {
-		order.PriceExec = coinExec
+		order.PriceExec = defaultPriceExec
 		order.PriceSymbol = coinSymbol
 	}
 }

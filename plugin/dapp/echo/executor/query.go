@@ -7,6 +7,7 @@ import (
 	echotypes "github.com/33cn/plugin/plugin/dapp/echo/types/echo"
 )
 
+// Query_GetPing    ping   
 func (h *Echo) Query_GetPing(in *echotypes.Query) (types.Message, error) {
 	var pingLog echotypes.PingLog
 	localKey := []byte(fmt.Sprintf(KeyPrefixPingLocal, in.Msg))
@@ -19,6 +20,7 @@ func (h *Echo) Query_GetPing(in *echotypes.Query) (types.Message, error) {
 	return &res, nil
 }
 
+// Query_GetPang    pang   
 func (h *Echo) Query_GetPang(in *echotypes.Query) (types.Message, error) {
 	var pangLog echotypes.PangLog
 	localKey := []byte(fmt.Sprintf(KeyPrefixPangLocal, in.Msg))

@@ -9,14 +9,17 @@ import (
 	"github.com/33cn/chain33/util/testnode"
 	"github.com/stretchr/testify/assert"
 
+	//          ，            ，        ，          
 	evm "github.com/33cn/plugin/plugin/dapp/evm/executor"
 	evmtypes "github.com/33cn/plugin/plugin/dapp/evm/types"
 
+	//           ，         
 	"github.com/33cn/chain33/client/mocks"
 	_ "github.com/33cn/chain33/system"
 	"github.com/stretchr/testify/mock"
 )
 
+// TestQueryDebug        rpc  
 func TestQueryDebug(t *testing.T) {
 	var cfg = types.NewChain33Config(types.GetDefaultCfgstring())
 	evm.Init(evmtypes.ExecutorName, cfg, nil)
@@ -32,6 +35,7 @@ func TestQueryDebug(t *testing.T) {
 	var mockResp = evmtypes.EvmDebugResp{DebugStatus: "on"}
 
 	mockapi := &mocks.QueueProtocolAPI{}
+	//      mock     ,Close    ，        
 	mockapi.On("Close").Return()
 	mockapi.On("Query", "evm", "EvmDebug", &debugReq).Return(&mockResp, nil)
 	mockapi.On("GetConfig", mock.Anything).Return(cfg, nil)
@@ -39,6 +43,7 @@ func TestQueryDebug(t *testing.T) {
 	mock33 := testnode.New("", mockapi)
 	defer mock33.Close()
 	rpcCfg := mock33.GetCfg().RPC
+	//           ，       
 	rpcCfg.JrpcBindAddr = "127.0.0.1:8899"
 	mock33.GetRPC().Listen()
 

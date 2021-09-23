@@ -171,7 +171,7 @@ func (mvccs *KVMVCCStore) IterateRangeByStateHash(statehash []byte, start []byte
 	if !mvccs.enableMVCCIter {
 		panic("call IterateRangeByStateHash when disable mvcc iter")
 	}
-	/ k  statehas statehash 
+	//  kv          ，  statehash        statehash，        
 	maxVersion, err := mvccs.mvcc.GetMaxVersion()
 	if err != nil {
 		klog.Error("KVMVCCStore IterateRangeByStateHash can't get max version, ignore the call.", "err", err)
@@ -233,7 +233,7 @@ func (mvccs *KVMVCCStore) saveKVSets(kvset []*types.KeyValue, sync bool) {
 }
 
 func (mvccs *KVMVCCStore) checkVersion(height int64) ([]*types.KeyValue, error) {
-	/ heigh versio  
+	//        height    version   ，          
 	maxVersion, err := mvccs.mvcc.GetMaxVersion()
 	if err != nil {
 		if err != types.ErrNotFound {

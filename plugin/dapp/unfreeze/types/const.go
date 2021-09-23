@@ -11,28 +11,28 @@ const (
 	UnfreezeActionTerminate
 
 	//log for unfreeze
-	TyLogCreateUnfreeze    = 2001 // TODO 
+	TyLogCreateUnfreeze    = 2001 // TODO       
 	TyLogWithdrawUnfreeze  = 2002
 	TyLogTerminateUnfreeze = 2003
 )
 
 const (
-	// Action_CreateUnfreeze Action 
+	// Action_CreateUnfreeze Action   
 	Action_CreateUnfreeze = "createUnfreeze"
-	// Action_WithdrawUnfreeze Action 
+	// Action_WithdrawUnfreeze Action   
 	Action_WithdrawUnfreeze = "withdrawUnfreeze"
-	// Action_TerminateUnfreeze Action 
+	// Action_TerminateUnfreeze Action   
 	Action_TerminateUnfreeze = "terminateUnfreeze"
 )
 
 const (
-	// FuncName_QueryUnfreezeWithdraw 
+	// FuncName_QueryUnfreezeWithdraw      
 	FuncName_QueryUnfreezeWithdraw = "QueryUnfreezeWithdraw"
 )
 
-/ 
-/ githu  , 
-/  
+//               
+//   github     ，        ,            
+//      ，              
 var (
 	PackageName    = "chain33.unfreeze"
 	RPCName        = "Chain33.Unfreeze"

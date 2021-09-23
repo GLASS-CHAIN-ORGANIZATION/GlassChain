@@ -6,8 +6,8 @@ import (
 )
 
 /*
- * 
- * （statedb （log）
+ *            
+ *       （statedb）       （log）
  */
 
 func (v *vote) Exec_CreateGroup(payload *votetypes.CreateGroup, tx *types.Transaction, index int) (*types.Receipt, error) {

@@ -7,8 +7,9 @@ import (
 	echotypes "github.com/33cn/plugin/plugin/dapp/echo/types/echo"
 )
 
+// ExecLocal_Ping       ，          1
 func (h *Echo) ExecLocal_Ping(ping *echotypes.Ping, tx *types.Transaction, receipt *types.ReceiptData, index int) (*types.LocalDBSet, error) {
-
+	//       ，             
 	var pingLog echotypes.PingLog
 	types.Decode(receipt.Logs[0].Log, &pingLog)
 	localKey := []byte(fmt.Sprintf(KeyPrefixPingLocal, pingLog.Msg))
@@ -24,8 +25,9 @@ func (h *Echo) ExecLocal_Ping(ping *echotypes.Ping, tx *types.Transaction, recei
 	return &types.LocalDBSet{KV: kv}, nil
 }
 
+// ExecLocal_Pang       ，          1
 func (h *Echo) ExecLocal_Pang(ping *echotypes.Pang, tx *types.Transaction, receipt *types.ReceiptData, index int) (*types.LocalDBSet, error) {
-
+	//       ，             
 	var pangLog echotypes.PangLog
 	types.Decode(receipt.Logs[0].Log, &pangLog)
 	localKey := []byte(fmt.Sprintf(KeyPrefixPangLocal, pangLog.Msg))

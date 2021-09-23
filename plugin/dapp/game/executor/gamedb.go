@@ -22,13 +22,18 @@ import (
 
 const (
 
+	// Scissor   
 	Scissor = int32(1)
 
+	// Rock   
 	Rock = int32(2)
+	// Paper  
 	Paper = int32(3)
 
+	// Unknown     
 	Unknown = int32(4)
 
+	// IsDraw   
 	IsDraw = int32(1)
 
 	// IsCreatorWin creator win
@@ -37,6 +42,7 @@ const (
 	// IsMatcherWin matcher win
 	IsMatcherWin = int32(3)
 
+	// IsTimeOut     
 	IsTimeOut = int32(4)
 
 	// ListDESC  desc query
@@ -45,17 +51,22 @@ const (
 	// ListASC  asc query
 	ListASC = int32(1)
 
+	// GameCount     ，                      
 	GameCount = "GameCount"
 
+	// MaxGameAmount max game amount.   types.Coin  1e8
 	MaxGameAmount = int64(100)
 
 	// MinGameAmount min game amount
 	MinGameAmount = int64(2)
 
+	// DefaultCount           
 	DefaultCount = int64(20)
 
+	// MaxCount    100 
 	MaxCount = int64(100)
 
+	//ActiveTime   matcher                   ，    
 	ActiveTime = int64(24)
 )
 
@@ -72,8 +83,10 @@ var (
 func (action *Action) GetReceiptLog(game *gt.Game) *types.ReceiptLog {
 	log := &types.ReceiptLog{}
 	r := &gt.ReceiptGame{}
+	//TODO     action        
 	r.Addr = action.fromaddr
 	if game.Status == gt.GameActionCreate {
+		// TODO:                       
 		log.Ty = gt.TyLogCreateGame
 		r.PrevStatus = -1
 	} else if game.Status == gt.GameActionCancel {
@@ -180,12 +193,12 @@ func (action *Action) GameCreate(create *gt.GameCreate) (*types.Receipt, error) 
 	var kv []*types.KeyValue
 	cfg := action.api.GetConfig()
 	maxGameAmount := getConfValue(cfg, action.db, ConfNameMaxGameAmount, MaxGameAmount)
-	if create.GetValue() > maxGameAmount*cfg.GetCoinPrecision() {
+	if create.GetValue() > maxGameAmount*types.Coin {
 		glog.Error("Create the game, the deposit is too big  ", "value", create.GetValue(), "err", gt.ErrGameCreateAmount.Error())
 		return nil, gt.ErrGameCreateAmount
 	}
 	minGameAmount := getConfValue(cfg, action.db, ConfNameMinGameAmount, MinGameAmount)
-	if create.GetValue() < minGameAmount*cfg.GetCoinPrecision() || math.Remainder(float64(create.GetValue()), 2) != 0 {
+	if create.GetValue() < minGameAmount*types.Coin || math.Remainder(float64(create.GetValue()), 2) != 0 {
 		return nil, fmt.Errorf("%s", "The amount you participate in cannot be less than 2 and must be an even number!")
 	}
 	if !action.checkExecAccountBalance(action.fromaddr, create.GetValue(), 0) {
@@ -193,7 +206,7 @@ func (action *Action) GameCreate(create *gt.GameCreate) (*types.Receipt, error) 
 			gameID, "err", types.ErrNoBalance.Error())
 		return nil, types.ErrNoBalance
 	}
-
+	//       
 	receipt, err := action.coinsAccount.ExecFrozen(action.fromaddr, action.execaddr, create.GetValue())
 	if err != nil {
 		glog.Error("GameCreate.ExecFrozen", "addr", action.fromaddr, "execaddr", action.execaddr, "amount", create.GetValue(), "err", err.Error())
@@ -209,7 +222,7 @@ func (action *Action) GameCreate(create *gt.GameCreate) (*types.Receipt, error) 
 		Status:        gt.GameActionCreate,
 		CreateTxHash:  gameID,
 	}
-
+	//  stateDB  ，    
 	action.updateStateDBCache(game.GetStatus(), "")
 	action.updateStateDBCache(game.GetStatus(), game.GetCreateAddress())
 	game.Index = action.GetIndex(game)
@@ -248,7 +261,7 @@ func (action *Action) GameMatch(match *gt.GameMatch) (*types.Receipt, error) {
 			match.GetGameId(), "err", types.ErrNoBalance.Error())
 		return nil, types.ErrNoBalance
 	}
-
+	//   game value       
 	receipt, err := action.coinsAccount.ExecFrozen(action.fromaddr, action.execaddr, game.GetValue()/2)
 	if err != nil {
 		glog.Error("GameMatch.ExecFrozen", "addr", action.fromaddr, "execaddr", action.execaddr, "amount", game.GetValue()/2, "err", err.Error())
@@ -341,9 +354,9 @@ func (action *Action) GameClose(close *gt.GameClose) (*types.Receipt, error) {
 			close.GetGameId(), "err", err.Error())
 		return nil, err
 	}
-
+	//      
 	if action.fromaddr != game.GetCreateAddress() && !action.checkGameIsTimeOut(game) {
-
+		//           ，       
 		glog.Error(gt.ErrGameCloseAddr.Error())
 		return nil, gt.ErrGameCloseAddr
 	}
@@ -351,7 +364,7 @@ func (action *Action) GameClose(close *gt.GameClose) (*types.Receipt, error) {
 		glog.Error(gt.ErrGameCloseStatus.Error())
 		return nil, gt.ErrGameCloseStatus
 	}
-
+	//        
 	if !action.checkExecAccountBalance(game.GetCreateAddress(), 0, 2*game.GetValue()/3) {
 		glog.Error("GameClose", "addr", game.GetCreateAddress(), "execaddr", action.execaddr, "id",
 			game.GetGameId(), "err", types.ErrNoBalance.Error())
@@ -364,6 +377,7 @@ func (action *Action) GameClose(close *gt.GameClose) (*types.Receipt, error) {
 	}
 	result, creatorGuess := action.checkGameResult(game, close)
 	if result == IsCreatorWin {
+		//       ，      ,                      
 		receipt, err := action.coinsAccount.ExecActive(game.GetCreateAddress(), action.execaddr, 2*game.GetValue()/3)
 		if err != nil {
 			glog.Error("GameClose.execActive", "addr", game.GetCreateAddress(), "execaddr", action.execaddr, "amount", 2*game.GetValue()/3,
@@ -382,7 +396,7 @@ func (action *Action) GameClose(close *gt.GameClose) (*types.Receipt, error) {
 		logs = append(logs, receipt.Logs...)
 		kv = append(kv, receipt.KV...)
 	} else if result == IsMatcherWin {
-
+		//       ，     
 		receipt, err := action.coinsAccount.ExecActive(game.GetCreateAddress(), action.execaddr, game.GetValue()/3)
 		if err != nil {
 			glog.Error("GameClose.ExecActive", "addr", game.GetCreateAddress(), "execaddr", action.execaddr, "amount", game.GetValue()/3,
@@ -412,7 +426,7 @@ func (action *Action) GameClose(close *gt.GameClose) (*types.Receipt, error) {
 		kv = append(kv, receipt.KV...)
 
 	} else if result == IsDraw {
-
+		//            
 		receipt, err := action.coinsAccount.ExecActive(game.GetCreateAddress(), action.execaddr, 2*game.GetValue()/3)
 		if err != nil {
 			glog.Error("GameClose.ExecActive", "addr", game.GetCreateAddress(), "execaddr", action.execaddr, "amount", 2*game.GetValue()/3,
@@ -431,7 +445,7 @@ func (action *Action) GameClose(close *gt.GameClose) (*types.Receipt, error) {
 		logs = append(logs, receipt.Logs...)
 		kv = append(kv, receipt.KV...)
 	} else if result == IsTimeOut {
-
+		//    ，        
 		receipt, err := action.coinsAccount.ExecActive(game.GetMatchAddress(), action.execaddr, game.GetValue()/3)
 		if err != nil {
 			glog.Error("GameClose.ExecActive", "addr", game.GetCreateAddress(), "execaddr", action.execaddr, "amount", 2*game.GetValue()/3,
@@ -472,7 +486,8 @@ func (action *Action) GameClose(close *gt.GameClose) (*types.Receipt, error) {
 	return &types.Receipt{Ty: types.ExecOk, KV: kv, Logs: logs}, nil
 }
 
-
+//         ，     ，       ，        ，
+//      ，          ，         
 func (action *Action) checkGameIsTimeOut(game *gt.Game) bool {
 	cfg := action.api.GetConfig()
 	activeTime := getConfValue(cfg, action.db, ConfNameActiveTime, ActiveTime)
@@ -480,13 +495,14 @@ func (action *Action) checkGameIsTimeOut(game *gt.Game) bool {
 	return action.blocktime > (game.GetMatchTime() + DurTime)
 }
 
+//      ，      
 func (action *Action) checkGameResult(game *gt.Game, close *gt.GameClose) (int32, int32) {
-
+	//    ，         
 	if action.checkGameIsTimeOut(game) {
 		return IsTimeOut, Unknown
 	}
 	if bytes.Equal(common.Sha256([]byte(close.GetSecret()+string(Rock))), game.GetHashValue()) {
-
+		//         
 		if game.GetMatcherGuess() == Rock {
 			return IsDraw, Rock
 		} else if game.GetMatcherGuess() == Scissor {
@@ -494,11 +510,11 @@ func (action *Action) checkGameResult(game *gt.Game, close *gt.GameClose) (int32
 		} else if game.GetMatcherGuess() == Paper {
 			return IsMatcherWin, Rock
 		}
-
+		//      matcher   ，     ，      
 		return IsCreatorWin, Rock
 
 	} else if bytes.Equal(common.Sha256([]byte(close.GetSecret()+string(Scissor))), game.GetHashValue()) {
-
+		//        
 		if game.GetMatcherGuess() == Rock {
 			return IsMatcherWin, Scissor
 		} else if game.GetMatcherGuess() == Scissor {
@@ -509,7 +525,7 @@ func (action *Action) checkGameResult(game *gt.Game, close *gt.GameClose) (int32
 		return IsCreatorWin, Scissor
 
 	} else if bytes.Equal(common.Sha256([]byte(close.GetSecret()+string(Paper))), game.GetHashValue()) {
-
+		//        
 		if game.GetMatcherGuess() == Rock {
 			return IsCreatorWin, Paper
 		} else if game.GetMatcherGuess() == Scissor {
@@ -520,7 +536,7 @@ func (action *Action) checkGameResult(game *gt.Game, close *gt.GameClose) (int32
 		return IsCreatorWin, Paper
 
 	}
-
+	//       matcher win
 	return IsMatcherWin, Unknown
 }
 
@@ -543,6 +559,7 @@ func List(cfg *types.Chain33Config, db dbm.Lister, stateDB dbm.KV, param *gt.Que
 	return QueryGameListByPage(cfg, db, stateDB, param)
 }
 
+// QueryGameListByPage     
 func QueryGameListByPage(cfg *types.Chain33Config, db dbm.Lister, stateDB dbm.KV, param *gt.QueryGameListByStatusAndAddr) (types.Message, error) {
 	switch param.GetStatus() {
 	case gt.GameActionCreate, gt.GameActionMatch, gt.GameActionClose, gt.GameActionCancel:
@@ -572,7 +589,7 @@ func queryGameListByStatusAndAddr(cfg *types.Chain33Config, db dbm.Lister, state
 	}
 	var values [][]byte
 	var err error
-	if param.GetIndex() == 0 { 
+	if param.GetIndex() == 0 { //     
 		values, err = db.List(prefix, nil, count, direction)
 	} else {
 		values, err = db.List(prefix, key, count, direction)
@@ -592,6 +609,7 @@ func queryGameListByStatusAndAddr(cfg *types.Chain33Config, db dbm.Lister, state
 	return &gt.ReplyGameList{Games: GetGameList(stateDB, gameIds)}, nil
 }
 
+// QueryGameListCount count   
 func QueryGameListCount(stateDB dbm.KV, param *gt.QueryGameListCount) (types.Message, error) {
 	if param.Status < 1 || param.Status > 4 {
 		return nil, fmt.Errorf("%s", "the status only fill in 1,2,3,4!")
@@ -653,7 +671,7 @@ func QueryGameListByIds(db dbm.KV, infos *gt.QueryGameInfos) (types.Message, err
 	return &gt.ReplyGameList{Games: games}, nil
 }
 
-
+// GetGameList         ,               
 func GetGameList(db dbm.KV, values []string) []*gt.Game {
 	var games []*gt.Game
 	for _, value := range values {
@@ -683,7 +701,7 @@ func getConfValue(cfg *types.Chain33Config, db dbm.KV, key string, defaultValue 
 		glog.Error("gamedb getConfValue", "can't get value from values arr. key:", key)
 		return defaultValue
 	}
-
+	//       ，         
 	v, err := strconv.ParseInt(values[len(values)-1], 10, 64)
 	if err != nil {
 		glog.Error("gamedb getConfValue", "Type conversion error:", err.Error())
@@ -695,7 +713,7 @@ func getManageKey(cfg *types.Chain33Config, key string, db dbm.KV) ([]byte, erro
 	manageKey := types.ManageKey(key)
 	value, err := db.Get([]byte(manageKey))
 	if err != nil {
-		if cfg.IsPara() { 
+		if cfg.IsPara() { //           
 			glog.Error("gamedb getManage", "can't get value from db,key:", key, "err", err.Error())
 			return nil, err
 		}

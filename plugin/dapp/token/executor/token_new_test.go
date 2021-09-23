@@ -56,20 +56,20 @@ var (
 	tokenSym    = "NEW"
 	tokenIntro  = "newtoken"
 	tokenPrice  int64
-	tokenAmount int64 = 1000 * types.DefaultCoinPrecision
+	tokenAmount int64 = 1000 * 1e4 * 1e4
 	execName          = "user.p.guodun.token"
 	feeForToken int64 = 1e6
 	transToAddr       = "1NYxhca2zVMzxFqMRJdMcZfrSFnqbqotKe"
-	transAmount int64 = 100 * types.DefaultCoinPrecision
+	transAmount int64 = 100 * 1e4 * 1e4
 	walletPass        = "fzm123"
 )
 
-/ ：
-//1.     ）
-//2. precreat token
-//3. finis token
-//4. token
-//5.  query
+//    ：
+//1.      ，       ，       ，        （         ）
+//2.   precreate   token
+//3. finish  token
+//4.        token
+//5.   ：       query
 
 func init() {
 	fmt.Println("Init start")
@@ -448,17 +448,17 @@ func TestToken_validSymbolWithHeight(t *testing.T) {
 		expect bool
 	}{
 		{[]byte("x"), forkBadTokenSymbol - 1, false},
-		{[]byte(" "), forkBadTokenSymbol - 1, true},
+		{[]byte("X "), forkBadTokenSymbol - 1, true},
 
 		{[]byte("x"), forkBadTokenSymbol, false},
-		{[]byte(" "), forkBadTokenSymbol, false},
+		{[]byte("X "), forkBadTokenSymbol, false},
 
 		{[]byte("x"), forkTokenSymbolWithNumber - 1, false},
-		{[]byte(" "), forkTokenSymbolWithNumber - 1, false},
+		{[]byte("X "), forkTokenSymbolWithNumber - 1, false},
 		{[]byte("X1"), forkTokenSymbolWithNumber - 1, false},
 
 		{[]byte("x"), forkTokenSymbolWithNumber, false},
-		{[]byte(" "), forkTokenSymbolWithNumber, false},
+		{[]byte("X "), forkTokenSymbolWithNumber, false},
 		{[]byte("X1"), forkTokenSymbolWithNumber, true},
 	}
 

@@ -9,9 +9,9 @@ MAIN_HTTP=""
 source ../dapp-test-common.sh
 
 # TODO
-# 1.  
-# 2. 
-# 3.  token
+# 1.                        
+# 2.            
+# 3.                         token
 function updateConfig() {
     unsignedTx=$(curl -s --data-binary '{"jsonrpc":"2.0","id":2,"method":"Chain33.CreateTransaction","params":[{"execer": "manage","actionName":"Modify","payload":{ "key": "token-blacklist","value": "BTY","op": "add","addr": ""}}]}' -H 'content-type:text/plain;' ${MAIN_HTTP} | jq -r ".result")
     if [ "${unsignedTx}" == "" ]; then

@@ -102,7 +102,7 @@ init() {
 }
 
 function run_test() {
-
+    #      
     chain33_ImportPrivkey "0xc889d2958843fc96d4bd3f578173137d37230e580d65e9074545c61e7e9c1932" "1NrfEBfdFJUUqgbw5ZbHXhdew6NNQumYhM" "user1" "$MAIN_HTTP"
     chain33_ImportPrivkey "0xf10c79470dc74c229c4ee73b05d14c58322b771a6c749d27824f6a59bb6c2d73" "17tRkBrccmFiVcLPXgEceRxDzJ2WaDZumN" "user2" "$MAIN_HTTP"
     chain33_ImportPrivkey "4257D8692EF7FE13C68B65D6A52F03933DB2FA5CE8FAF210B5B8B80C721CED01" "12qyocayNF7Lv6C9qW4avxs2E7U41fKSfv" "admin" "$MAIN_HTTP"
@@ -113,90 +113,129 @@ function run_test() {
     chain33_QueryExecBalance "${guess_user1_addr}" "${guess_exec}" "$MAIN_HTTP"
     chain33_QueryExecBalance "${guess_user2_addr}" "${guess_exec}" "$MAIN_HTTP"
 
-
+    #  1：start -> bet -> bet -> stop -> publish
+    #       
     guess_game_start
 
+    #      
     guess_QueryGameByID "$eventId" 11
 
+    #  1  
     guess_game_bet "0xc889d2958843fc96d4bd3f578173137d37230e580d65e9074545c61e7e9c1932" "A"
 
+    #      
     guess_QueryGameByID "$eventId" 12
 
+    #  2  
     guess_game_bet "0xf10c79470dc74c229c4ee73b05d14c58322b771a6c749d27824f6a59bb6c2d73" "B"
 
+    #      
     guess_QueryGameByID "$eventId" 12
 
+    #       
     guess_game_stop
 
-
+    #      
     guess_QueryGameByID "$eventId" 13
 
+    #       
     guess_game_publish
 
-
+    #      
     guess_QueryGameByID "$eventId" 15
 
+    #    
     chain33_QueryExecBalance "${guess_user1_addr}" "${guess_exec}" "$MAIN_HTTP"
     chain33_QueryExecBalance "${guess_user2_addr}" "${guess_exec}" "$MAIN_HTTP"
 
+    #  2：start->stop->abort
     guess_game_start
 
+    #      
     guess_QueryGameByID "$eventId" 11
 
+    #       
     guess_game_stop
 
-
+    #      
     guess_QueryGameByID "$eventId" 13
 
-
+    #       
     guess_game_abort
 
+    #      
     guess_QueryGameByID "$eventId" 14
 
+    #  3：start->abort
     guess_game_start
 
+    #      
     guess_QueryGameByID "$eventId" 11
 
+    #       
     guess_game_abort
 
+    #      
     guess_QueryGameByID "$eventId" 14
 
+    #  4：start->bet->abort
+
+    #       
     guess_game_start
 
+    #      
     guess_QueryGameByID "$eventId" 11
 
+    #  1  
     guess_game_bet "0xc889d2958843fc96d4bd3f578173137d37230e580d65e9074545c61e7e9c1932" "A"
 
+    #      
     guess_QueryGameByID "$eventId" 12
 
+    #  2  
     guess_game_bet "0xf10c79470dc74c229c4ee73b05d14c58322b771a6c749d27824f6a59bb6c2d73" "B"
 
+    #      
     guess_QueryGameByID "$eventId" 12
 
+    #       
     guess_game_abort
 
+    #      
     guess_QueryGameByID "$eventId" 14
 
+    #  5：start->bet->stop->abort
+    #       
     guess_game_start
 
+    #      
     guess_QueryGameByID "$eventId" 11
 
+    #  1  
     guess_game_bet "0xc889d2958843fc96d4bd3f578173137d37230e580d65e9074545c61e7e9c1932" "A"
 
+    #      
     guess_QueryGameByID "$eventId" 12
 
+    #  2  
     guess_game_bet "0xf10c79470dc74c229c4ee73b05d14c58322b771a6c749d27824f6a59bb6c2d73" "B"
 
+    #      
     guess_QueryGameByID "$eventId" 12
 
+    #       
     guess_game_stop
 
+    #      
     guess_QueryGameByID "$eventId" 13
 
+    #       
     guess_game_abort
 
+    #      
     guess_QueryGameByID "$eventId" 14
 
+    #    
     chain33_QueryExecBalance "${guess_user1_addr}" "${guess_exec}" "$MAIN_HTTP"
     chain33_QueryExecBalance "${guess_user2_addr}" "${guess_exec}" "$MAIN_HTTP"
 }

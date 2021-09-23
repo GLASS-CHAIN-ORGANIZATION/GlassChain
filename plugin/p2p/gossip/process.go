@@ -18,22 +18,22 @@ import (
 
 var (
 
-	/ , mempoo blockchain
+	//           ,        mempool blockchain
 	txHashFilter    = utils.NewFilter(TxRecvFilterCacheNum)
 	blockHashFilter = utils.NewFilter(BlockFilterCacheNum)
 
-	/ , 
+	//            ,         
 	txSendFilter    = utils.NewFilter(TxSendFilterCacheNum)
 	blockSendFilter = utils.NewFilter(BlockFilterCacheNum)
 
-	/  , 
+	//         ,             ,       
 	totalBlockCache = utils.NewSpaceLimitCache(BlockCacheNum, MaxBlockCacheByteSize)
-	/   , 
+	//          ,          ,    ,               
 	ltBlockCache = utils.NewSpaceLimitCache(BlockCacheNum/2, MaxBlockCacheByteSize/2)
 )
 
 type sendFilterInfo struct {
-	/ ,  , 
+	//                 ,               ,             ,     
 	ignoreSendPeers map[string]bool
 }
 
@@ -44,7 +44,7 @@ func (n *Node) pubToPeer(data interface{}, pid string) {
 }
 
 func (n *Node) processSendP2P(rawData interface{}, peerVersion int32, pid, peerAddr string) (sendData *types.BroadCastData, doSend bool) {
-	/ 
+	//    
 	defer func() {
 		if r := recover(); r != nil {
 			log.Error("processSendP2P_Panic", "sendData", rawData, "peerAddr", peerAddr, "recoverErr", r)
@@ -72,7 +72,7 @@ func (n *Node) processSendP2P(rawData interface{}, peerVersion int32, pid, peerA
 
 func (n *Node) processRecvP2P(data *types.BroadCastData, pid string, pubPeerFunc pubFuncType, peerAddr string) (handled bool) {
 
-	/ 
+	//         
 	defer func() {
 		if r := recover(); r != nil {
 			log.Error("ProcessRecvP2P_Panic", "recvData", data, "peerAddr", peerAddr, "recoverErr", r)
@@ -106,7 +106,7 @@ func (n *Node) sendBlock(block *types.P2PBlock, p2pData *types.BroadCastData, pe
 
 	byteHash := block.Block.Hash(n.chainCfg)
 	blockHash := hex.EncodeToString(byteHash)
-	/ 
+	//      
 	ignoreSend := n.addIgnoreSendPeerAtomic(blockSendFilter, blockHash, pid)
 	log.Debug("P2PSendBlock", "blockHash", blockHash, "peerIsLtVersion", peerVersion >= lightBroadCastVersion,
 		"peerAddr", peerAddr, "ignoreSend", ignoreSend)
@@ -157,22 +157,22 @@ func (n *Node) sendTx(tx *types.P2PTx, p2pData *types.BroadCastData, peerVersion
 	txHash := hex.EncodeToString(tx.Tx.Hash())
 	ttl := tx.GetRoute().GetTTL()
 
-	/ ttl, 
+	//     ttl,     
 	if ttl > n.nodeInfo.cfg.MaxTTL {
 		return false
 	}
 
 	isLightSend := peerVersion >= lightBroadCastVersion && ttl >= n.nodeInfo.cfg.LightTxTTL
-	/ 
+	//      
 	if n.addIgnoreSendPeerAtomic(txSendFilter, txHash, pid) {
 		return false
 	}
 
 	//log.Debug("P2PSendTx", "txHash", txHash, "ttl", ttl, "isLightSend", isLightSend, "peerAddr", peerAddr, "ignoreSend", ignoreSend)
 
-	/ tt 
+	//    ttl     
 	if isLightSend {
-		p2pData.Value = &types.BroadCastData_LtTx{ / ttl, 
+		p2pData.Value = &types.BroadCastData_LtTx{ //     ttl,     
 			LtTx: &types.LightTx{
 				TxHash: tx.Tx.Hash(),
 				Route:  tx.GetRoute(),
@@ -189,15 +189,15 @@ func (n *Node) recvTx(tx *types.P2PTx, pid, peerAddr string) {
 		return
 	}
 	txHash := hex.EncodeToString(tx.GetTx().Hash())
-	/ i , 
+	//   id       ,       
 	n.addIgnoreSendPeerAtomic(txSendFilter, txHash, pid)
-	/ 
+	//    
 	isDuplicate := txHashFilter.AddWithCheckAtomic(txHash, true)
 	//log.Debug("recvTx", "tx", txHash, "ttl", tx.GetRoute().GetTTL(), "peerAddr", peerAddr, "duplicateTx", isDuplicate)
 	if isDuplicate {
 		return
 	}
-	/  rout 
+	//             ,  route    
 	if tx.GetRoute() == nil {
 		tx.Route = &types.P2PRoute{TTL: 1}
 	}
@@ -213,11 +213,11 @@ func (n *Node) recvTx(tx *types.P2PTx, pid, peerAddr string) {
 func (n *Node) recvLtTx(tx *types.LightTx, pid, peerAddr string, pubPeerFunc pubFuncType) {
 
 	txHash := hex.EncodeToString(tx.TxHash)
-	/ i , 
+	//   id       ,       
 	n.addIgnoreSendPeerAtomic(txSendFilter, txHash, pid)
 	exist := txHashFilter.Contains(txHash)
 	//log.Debug("recvLtTx", "txHash", txHash, "ttl", tx.GetRoute().GetTTL(), "peerAddr", peerAddr, "exist", exist)
-	/ , . , 
+	//     ,                .                  ,       
 	if !exist {
 
 		query := &types.P2PQueryData{}
@@ -226,7 +226,7 @@ func (n *Node) recvLtTx(tx *types.LightTx, pid, peerAddr string, pubPeerFunc pub
 				TxHash: tx.TxHash,
 			},
 		}
-		/ 
+		//        
 		pubPeerFunc(query, pid)
 	}
 }
@@ -237,16 +237,16 @@ func (n *Node) recvBlock(block *types.P2PBlock, pid, peerAddr string) {
 		return
 	}
 	blockHash := hex.EncodeToString(block.GetBlock().Hash(n.chainCfg))
-	/ i , 
+	//   id       ,       
 	n.addIgnoreSendPeerAtomic(blockSendFilter, blockHash, pid)
-	/ , blockchai 
+	//      ,      blockchain  
 	isDuplicate := blockHashFilter.AddWithCheckAtomic(blockHash, true)
 	log.Debug("recvBlock", "blockHeight", block.GetBlock().GetHeight(), "peerAddr", peerAddr,
 		"block size(KB)", float32(block.Block.Size())/1024, "blockHash", blockHash, "duplicateBlock", isDuplicate)
 	if isDuplicate {
 		return
 	}
-	/ blockchai 
+	//   blockchain  
 	if err := n.postBlockChain(blockHash, pid, block.GetBlock()); err != nil {
 		log.Error("recvBlock", "send block to blockchain Error", err.Error())
 	}
@@ -256,16 +256,16 @@ func (n *Node) recvBlock(block *types.P2PBlock, pid, peerAddr string) {
 func (n *Node) recvLtBlock(ltBlock *types.LightBlock, pid, peerAddr string, pubPeerFunc pubFuncType) {
 
 	blockHash := hex.EncodeToString(ltBlock.Header.Hash)
-	/ i , 
+	//   id       ,       
 	n.addIgnoreSendPeerAtomic(blockSendFilter, blockHash, pid)
-	/ block
+	//         block
 	isDuplicate := blockHashFilter.AddWithCheckAtomic(blockHash, true)
 	log.Debug("recvLtBlock", "blockHash", blockHash, "blockHeight", ltBlock.GetHeader().GetHeight(),
 		"peerAddr", peerAddr, "duplicateBlock", isDuplicate)
 	if isDuplicate {
 		return
 	}
-	/ block
+	//  block
 	block := &types.Block{}
 	block.TxHash = ltBlock.Header.TxHash
 	block.Signature = ltBlock.Header.Signature
@@ -305,12 +305,12 @@ func (n *Node) recvLtBlock(ltBlock *types.LightBlock, pid, peerAddr string, pubP
 			group, err := tx.GetTxGroup()
 			if err != nil {
 				log.Error("recvLtBlock", "getTxGroupErr", err)
-				/ 
+				//      
 				nilTxIndices = nilTxIndices[:0]
 				break
 			}
 			block.Txs = append(block.Txs, group.Txs...)
-			/ 
+			//    
 			i += len(group.Txs) - 1
 			continue
 		}
@@ -318,12 +318,12 @@ func (n *Node) recvLtBlock(ltBlock *types.LightBlock, pid, peerAddr string, pubP
 		block.Txs = append(block.Txs, tx)
 	}
 	nilTxLen := len(nilTxIndices)
-	/ , 
+	//             ,                
 	if nilTxLen == 0 && len(block.Txs) == int(ltBlock.Header.TxCount) {
 		if bytes.Equal(block.TxHash, merkle.CalcMerkleRoot(n.chainCfg, block.Height, block.Txs)) {
 			log.Debug("recvLtBlock", "height", block.GetHeight(), "peerAddr", peerAddr,
 				"blockHash", blockHash, "block size(KB)", float32(ltBlock.Size)/1024)
-			/ blockchai 
+			//   blockchain  
 			if err := n.postBlockChain(blockHash, pid, block); err != nil {
 				log.Error("recvLtBlock", "send block to blockchain Error", err.Error())
 			}
@@ -332,7 +332,7 @@ func (n *Node) recvLtBlock(ltBlock *types.LightBlock, pid, peerAddr string, pubP
 		log.Debug("recvLtBlock:TxHashCheckFail", "height", block.GetHeight(), "peerAddr", peerAddr,
 			"blockHash", blockHash, "block.Txs", block.Txs)
 	}
-	// 1/3 2/3, 
+	//            1/3           2/3,             
 	if nilTxLen > 0 && (float32(nilTxLen) > float32(ltBlock.Header.TxCount)/3 ||
 		float32(block.Size()) < float32(ltBlock.Size)/3) {
 		nilTxIndices = nilTxIndices[:0]
@@ -348,7 +348,7 @@ func (n *Node) recvLtBlock(ltBlock *types.LightBlock, pid, peerAddr string, pubP
 			},
 		},
 	}
-	/ bloc 
+	//       block  
 	ltBlockCache.Add(blockHash, block, block.Size())
 	//pub to specified peer
 	pubPeerFunc(query, pid)
@@ -360,7 +360,7 @@ func (n *Node) recvQueryData(query *types.P2PQueryData, pid, peerAddr string, pu
 
 		txHash := hex.EncodeToString(txReq.TxHash)
 		log.Debug("recvQueryTx", "txHash", txHash, "peerAddr", peerAddr)
-		/ mempoo 
+		// mempool    
 		resp, err := n.queryMempool(types.EventTxListByHash, &types.ReqTxHashList{Hashes: []string{string(txReq.TxHash)}})
 		if err != nil {
 			log.Error("recvQuery", "queryMempoolErr", err)
@@ -368,13 +368,13 @@ func (n *Node) recvQueryData(query *types.P2PQueryData, pid, peerAddr string, pu
 		}
 
 		txList, _ := resp.(*types.ReplyTxList)
-		/ 
+		//       
 		if len(txList.GetTxs()) != 1 || txList.GetTxs()[0] == nil {
 			log.Error("recvQueryTx", "txHash", txHash, "err", "recvNilTxFromMempool")
 			return
 		}
 		p2pTx := &types.P2PTx{Tx: txList.Txs[0]}
-		/ , tt 1
+		//           , ttl   1
 		p2pTx.Route = &types.P2PRoute{TTL: 1}
 		n.removeIgnoreSendPeerAtomic(txSendFilter, txHash, pid)
 		pubPeerFunc(p2pTx, pid)
@@ -390,7 +390,7 @@ func (n *Node) recvQueryData(query *types.P2PQueryData, pid, peerAddr string, pu
 			for _, idx := range blcReq.TxIndices {
 				blockRep.Txs = append(blockRep.Txs, block.Txs[idx])
 			}
-			/ 
+			//       
 			if len(blockRep.TxIndices) == 0 {
 				blockRep.Txs = block.Txs
 			}
@@ -412,23 +412,23 @@ func (n *Node) recvQueryReply(rep *types.P2PBlockTxReply, pid, peerAddr string, 
 		block.Txs[idx] = rep.Txs[i]
 	}
 
-	/ 
+	//      
 	if len(rep.TxIndices) == 0 {
 		block.Txs = rep.Txs
 	}
 
-	/ root has 
+	//   root hash    
 	if bytes.Equal(block.TxHash, merkle.CalcMerkleRoot(n.chainCfg, block.Height, block.Txs)) {
 
 		log.Debug("recvQueryReplyBlock", "blockHeight", block.GetHeight(), "peerAddr", peerAddr,
 			"block size(KB)", float32(block.Size())/1024, "blockHash", rep.BlockHash)
-		/ blockchai 
+		//   blockchain  
 		if err := n.postBlockChain(rep.BlockHash, pid, block); err != nil {
 			log.Error("recvQueryReplyBlock", "send block to blockchain Error", err.Error())
 		}
 	} else if len(rep.TxIndices) != 0 {
 		log.Debug("recvQueryReplyBlock", "GetTotalBlock", block.GetHeight())
-		/ , 
+		//              ,               
 		query := &types.P2PQueryData{
 			Value: &types.P2PQueryData_BlockTxReq{
 				BlockTxReq: &types.P2PBlockTxReq{
@@ -468,7 +468,7 @@ func (n *Node) postMempool(txHash string, tx *types.Transaction) error {
 	return n.p2pMgr.PubBroadCast(txHash, tx, types.EventTx)
 }
 
-/ ,  , filter lr )
+//        ,          (               ,  filter lru          )
 func (n *Node) addIgnoreSendPeerAtomic(filter *utils.Filterdata, key, pid string) (exist bool) {
 
 	filter.GetAtomicLock()
@@ -486,7 +486,7 @@ func (n *Node) addIgnoreSendPeerAtomic(filter *utils.Filterdata, key, pid string
 	return exist
 }
 
-// 
+//          
 func (n *Node) removeIgnoreSendPeerAtomic(filter *utils.Filterdata, key, pid string) {
 
 	filter.GetAtomicLock()

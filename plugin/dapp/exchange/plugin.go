@@ -8,6 +8,10 @@ import (
 	exchangetypes "github.com/33cn/plugin/plugin/dapp/exchange/types"
 )
 
+/*
+ *    dapp     
+ */
+
 func init() {
 	pluginmgr.Register(&pluginmgr.PluginBase{
 		Name:     exchangetypes.ExchangeX,

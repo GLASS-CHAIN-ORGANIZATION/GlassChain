@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	// store/mav  
+	//  store/mavl       ，       
 	hashNodePrefix        = "_mh_"
 	leafNodePrefix        = "_mb_"
 	leafKeyCountPrefix    = "..mk.."
@@ -42,7 +42,7 @@ func NewMavl(sub *subMavlConfig, db dbm.DB) *MavlStore {
 		subcfg.TkCloseCacheLen = sub.TkCloseCacheLen
 	}
 
-	// 
+	//              
 	if subcfg.EnableMavlPrune {
 		subcfg.EnableMavlPrefix = subcfg.EnableMavlPrune
 	}
@@ -80,7 +80,7 @@ func (mavls *MavlStore) Get(datas *types.StoreGet) [][]byte {
 		tree = data.(*mavl.Tree)
 	} else {
 		tree = mavl.NewTree(mavls.db, true, mavls.treeCfg)
-		//ge 
+		//get         
 		//tree.SetBlockHeight(datas.Height)
 		err = tree.Load(datas.StateHash)
 		kmlog.Debug("store mavl get tree", "err", err, "StateHash", common.ToHex(datas.StateHash))
@@ -121,7 +121,7 @@ func (mavls *MavlStore) MemSet(datas *types.StoreSet, sync bool) ([]byte, error)
 	return hash, nil
 }
 
-// MemSetUpgrade has 
+// MemSetUpgrade   hash          
 func (mavls *MavlStore) MemSetUpgrade(datas *types.StoreSet, sync bool) ([]byte, error) {
 	beg := types.Now()
 	defer func() {
@@ -169,7 +169,7 @@ func (mavls *MavlStore) Commit(req *types.ReqHash) ([]byte, error) {
 	return req.Hash, nil
 }
 
-// Rollback mav 
+// Rollback       mavl    
 func (mavls *MavlStore) Rollback(req *types.ReqHash) ([]byte, error) {
 	beg := types.Now()
 	defer func() {
@@ -184,7 +184,7 @@ func (mavls *MavlStore) Rollback(req *types.ReqHash) ([]byte, error) {
 	return req.Hash, nil
 }
 
-// IterateRangeByStateHash ； statehash hash, start key, end: key, ascending  , fn 
+// IterateRangeByStateHash       ； statehash：    hash, start：     key, end:    key, ascending：  ，  , fn       
 func (mavls *MavlStore) IterateRangeByStateHash(statehash []byte, start []byte, end []byte, ascending bool, fn func(key, value []byte) bool) {
 	mavl.IterateRangeByStateHash(mavls.db, statehash, start, end, ascending, mavls.treeCfg, fn)
 }

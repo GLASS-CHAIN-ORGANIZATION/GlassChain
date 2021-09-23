@@ -21,7 +21,7 @@ func (o *oracle) execDelLocal(receipt *types.ReceiptData) (*types.LocalDBSet, er
 			return nil, err
 		}
 
-		/ EventPublishe  
+		//        EventPublished     ，         
 		if oraclelog.Status == oty.EventPublished {
 			err = table.Del([]byte(oraclelog.EventID))
 			if err != nil {

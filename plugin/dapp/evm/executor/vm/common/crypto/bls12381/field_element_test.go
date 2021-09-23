@@ -1,4 +1,4 @@
-
+//nolint:unparam //        golangci-linter  
 package bls12381
 
 import (

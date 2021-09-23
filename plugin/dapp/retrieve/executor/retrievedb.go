@@ -134,7 +134,7 @@ func (action *Action) RetrieveBackup(backupRet *rt.BackupRetrieve) (*types.Recei
 			return nil, rt.ErrRetrieveDefaultAddress
 		}
 	}
-	/    
+	//       ，    ，     ，         
 	retrieve, err := readRetrieve(action.db, backupRet.BackupAddress)
 	if err != nil && err != types.ErrNotFound {
 		rlog.Error("RetrieveBackup", "readRetrieve", err)
@@ -212,9 +212,9 @@ func (action *Action) RetrievePerformAssets(perfRet *rt.PerformRetrieve, default
 	var kv []*types.KeyValue
 	var receipt *types.Receipt
 	cfg := action.api.GetConfig()
-	// ，  
+	//        ，         ，    
 	if len(perfRet.Assets) == 0 {
-		perfRet.Assets = append(perfRet.Assets, &rt.AssetSymbol{Exec: cfg.GetCoinExec(), Symbol: cfg.GetCoinSymbol()})
+		perfRet.Assets = append(perfRet.Assets, &rt.AssetSymbol{Exec: "coins", Symbol: cfg.GetCoinSymbol()})
 		//return nil, nil
 	}
 

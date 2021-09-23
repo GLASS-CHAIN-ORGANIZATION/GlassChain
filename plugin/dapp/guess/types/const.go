@@ -31,7 +31,9 @@ const (
 	TyLogGuessGameTimeout = 906
 )
 
-
+//               
+//   github     ，        ,            
+//      ，              
 var (
 	GuessX      = "guess"
 	ExecerGuess = []byte(GuessX)
@@ -62,14 +64,19 @@ const (
 	//FuncNameQueryGameByCategoryStatus func name
 	FuncNameQueryGameByCategoryStatus = "QueryGamesByCategoryStatus"
 
+	//CreateStartTx       
 	CreateStartTx = "Start"
 
+	//CreateBetTx       
 	CreateBetTx = "Bet"
 
+	//CreateStopBetTx         
 	CreateStopBetTx = "StopBet"
 
+	//CreatePublishTx         
 	CreatePublishTx = "Publish"
 
+	//CreateAbortTx         
 	CreateAbortTx = "Abort"
 )
 

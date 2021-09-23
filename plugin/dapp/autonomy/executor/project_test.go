@@ -169,6 +169,7 @@ func testexecDelLocalProject(t *testing.T) {
 		},
 	}
 
+	//    local      
 	tx, err := types.CreateFormatTx(chainTestCfg, chainTestCfg.ExecName(auty.AutonomyX), nil)
 	assert.NoError(t, err)
 	set, err := au.execAutoLocalProject(tx, receipt)
@@ -204,6 +205,8 @@ func testexecDelLocalProject(t *testing.T) {
 		Logs: []*types.ReceiptLog{
 			{Ty: auty.TyLogVotePropProject, Log: types.Encode(receiptProject2)},
 		}}
+	//    local      
+	//         ，           
 	tx, err = types.CreateFormatTx(chainTestCfg, chainTestCfg.ExecName(auty.AutonomyX), nil)
 	assert.NoError(t, err)
 	set, err = au.execAutoLocalProject(tx, receipt)
@@ -211,6 +214,7 @@ func testexecDelLocalProject(t *testing.T) {
 	assert.NotNil(t, set)
 	saveKvs(sdb, set.KV)
 
+	//       
 	tx, err = types.CreateFormatTx(chainTestCfg, chainTestCfg.ExecName(auty.AutonomyX), nil)
 	assert.NoError(t, err)
 	set, err = au.execAutoLocalProject(tx, recpt)
@@ -277,6 +281,7 @@ func TestListProposalProject(t *testing.T) {
 		Index:        2,
 	}
 
+	//       
 	var kvs []*types.KeyValue
 	table := NewProjectTable(kvdb)
 	for _, tcase := range testcase {
@@ -292,6 +297,7 @@ func TestListProposalProject(t *testing.T) {
 	}
 	saveKvs(sdb, kvs)
 
+	//     
 	req := &auty.ReqQueryProposalProject{
 		Status:    auty.AutonomyStatusProposalProject,
 		Count:     10,
@@ -308,6 +314,7 @@ func TestListProposalProject(t *testing.T) {
 		k--
 	}
 
+	//     
 	req = &auty.ReqQueryProposalProject{
 		Status:    auty.AutonomyStatusProposalProject,
 		Count:     10,
@@ -322,6 +329,7 @@ func TestListProposalProject(t *testing.T) {
 		assert.Equal(t, rsp.(*auty.ReplyQueryProposalProject).PropProjects[i].Index, int32(tcase.index))
 	}
 
+	//     
 	req = &auty.ReqQueryProposalProject{
 		Status:    auty.AutonomyStatusProposalProject,
 		Count:     1,

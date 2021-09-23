@@ -31,10 +31,10 @@ func CreateBridgeToken(symbol string, client ethinterface.EthClientSpec, para *O
 	if nil == para {
 		return "", errors.New("no operator private key configured")
 	}
-	/ 
+	//    
 	eventName := "LogNewBridgeToken"
 	bridgeBankABI := LoadABI(BridgeBankABI)
-	logNewBridgeTokenSig := bridgeBankABI.Events[eventName].ID.Hex()
+	logNewBridgeTokenSig := bridgeBankABI.Events[eventName].ID().Hex()
 	query := ethereum.FilterQuery{
 		Addresses: []common.Address{x2EthDeployInfo.BridgeBank.Address},
 	}
@@ -55,7 +55,7 @@ func CreateBridgeToken(symbol string, client ethinterface.EthClientSpec, para *O
 		}
 	}()
 
-	/ token
+	//  token
 	auth, err := PrepareAuth(client, para.PrivateKey, para.Address)
 	if nil != err {
 		return "", err
@@ -90,7 +90,7 @@ func CreateBridgeToken(symbol string, client ethinterface.EthClientSpec, para *O
 		if vLog.Topics[0].Hex() == logNewBridgeTokenSig {
 			txslog.Debug("CreateBrigeToken", "Witnessed new event", eventName, "Block number", vLog.BlockNumber)
 
-			err = bridgeBankABI.UnpackIntoInterface(logEvent, eventName, vLog.Data)
+			err = bridgeBankABI.Unpack(logEvent, eventName, vLog.Data)
 			if nil != err {
 				return "", err
 			}
@@ -245,7 +245,7 @@ func Burn(ownerPrivateKeyStr, tokenAddrstr, chain33Receiver string, bridgeBank c
 	if nil != err {
 		return "", err
 	}
-	//chain33bank bridgeBan  bridgeBan 
+	//chain33bank  bridgeBank   ，    bridgeBank   
 	tx, err := tokenInstance.Approve(auth, bridgeBank, amount)
 	if nil != err {
 		return "", err
@@ -365,10 +365,10 @@ func LockEthErc20Asset(ownerPrivateKeyStr, tokenAddrStr, chain33Receiver string,
 		}
 	}()
 
-	//ET   value
+	//ETH  ，   ，   value
 	var tokenAddr common.Address
 	if "" != tokenAddrStr {
-		/ et erc20 approv 
+		//   eth   erc20，      approve  
 		tokenAddr = common.HexToAddress(tokenAddrStr)
 		tokenInstance, err := generated.NewBridgeToken(tokenAddr, client)
 		if nil != err {
@@ -382,7 +382,7 @@ func LockEthErc20Asset(ownerPrivateKeyStr, tokenAddrStr, chain33Receiver string,
 
 		prepareDone = true
 
-		//chain33bank bridgeBan  bridgeBan 
+		//chain33bank  bridgeBank   ，    bridgeBank   
 		tx, err := tokenInstance.Approve(auth, bridgeBankAddr, amount)
 		if nil != err {
 			return "", err
@@ -436,7 +436,7 @@ func LockEthErc20AssetAsync(ownerPrivateKeyStr, tokenAddrStr, chain33Receiver st
 		txslog.Error("LockEthErc20AssetAsync", "PrepareAuth err", err.Error())
 		return "", err
 	}
-	//ET   value
+	//ETH  ，   ，   value
 	var tokenAddr common.Address
 	if "" == tokenAddrStr {
 		auth.Value = amount

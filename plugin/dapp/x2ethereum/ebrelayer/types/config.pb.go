@@ -112,13 +112,13 @@ func (m *SyncTxReceiptConfig) String() string { return proto.CompactTextString(m
 func (*SyncTxReceiptConfig) ProtoMessage()    {}
 
 type Deploy struct {
-	// 
+	//        
 	OperatorAddr string `protobuf:"bytes,1,opt,name=operatorAddr" json:"operatorAddr,omitempty"`
-	//  
+	//         ，           
 	DeployerPrivateKey string `protobuf:"bytes,2,opt,name=deployerPrivateKey" json:"deployerPrivateKey,omitempty"`
-	// 
+	//      
 	ValidatorsAddr []string `protobuf:"bytes,3,rep,name=validatorsAddr" json:"validatorsAddr,omitempty"`
-	// 
+	//      
 	InitPowers []int64 `protobuf:"varint,4,rep,name=initPowers" json:"initPowers,omitempty"`
 }
 

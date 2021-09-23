@@ -16,6 +16,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// ProposalChangeCmd       
 func ProposalChangeCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "proposalChange",
@@ -40,8 +41,10 @@ func addProposalChangeFlags(cmd *cobra.Command) {
 }
 
 func proposalChange(cmd *cobra.Command, args []string) {
+	title, _ := cmd.Flags().GetString("title")
+	cfg := types.GetCliSysParam(title)
+
 	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
-	paraName, _ := cmd.Flags().GetString("paraName")
 	year, _ := cmd.Flags().GetInt32("year")
 	month, _ := cmd.Flags().GetInt32("month")
 	day, _ := cmd.Flags().GetInt32("day")
@@ -85,7 +88,7 @@ func proposalChange(cmd *cobra.Command, args []string) {
 		return
 	}
 	pm := &rpctypes.CreateTxIn{
-		Execer:     types.GetExecName(auty.AutonomyX, paraName),
+		Execer:     cfg.ExecName(auty.AutonomyX),
 		ActionName: "PropChange",
 		Payload:    payLoad,
 	}
@@ -95,6 +98,7 @@ func proposalChange(cmd *cobra.Command, args []string) {
 	ctx.RunWithoutMarshal()
 }
 
+// RevokeProposalChangeCmd     
 func RevokeProposalChangeCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "revokeChange",
@@ -111,8 +115,10 @@ func addRevokeProposalChangeFlags(cmd *cobra.Command) {
 }
 
 func revokeProposalChange(cmd *cobra.Command, args []string) {
+	title, _ := cmd.Flags().GetString("title")
+	cfg := types.GetCliSysParam(title)
+
 	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
-	paraName, _ := cmd.Flags().GetString("paraName")
 	ID, _ := cmd.Flags().GetString("proposalID")
 
 	params := &auty.RevokeProposalChange{
@@ -123,7 +129,7 @@ func revokeProposalChange(cmd *cobra.Command, args []string) {
 		return
 	}
 	pm := &rpctypes.CreateTxIn{
-		Execer:     types.GetExecName(auty.AutonomyX, paraName),
+		Execer:     cfg.ExecName(auty.AutonomyX),
 		ActionName: "RvkPropChange",
 		Payload:    payLoad,
 	}
@@ -132,6 +138,7 @@ func revokeProposalChange(cmd *cobra.Command, args []string) {
 	ctx.RunWithoutMarshal()
 }
 
+// VoteProposalChangeCmd     
 func VoteProposalChangeCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "voteChange",
@@ -149,8 +156,10 @@ func addVoteProposalChangeFlags(cmd *cobra.Command) {
 }
 
 func voteProposalChange(cmd *cobra.Command, args []string) {
+	title, _ := cmd.Flags().GetString("title")
+	cfg := types.GetCliSysParam(title)
+
 	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
-	paraName, _ := cmd.Flags().GetString("paraName")
 	ID, _ := cmd.Flags().GetString("proposalID")
 	approve, _ := cmd.Flags().GetInt32("approve")
 
@@ -170,7 +179,7 @@ func voteProposalChange(cmd *cobra.Command, args []string) {
 		return
 	}
 	pm := &rpctypes.CreateTxIn{
-		Execer:     types.GetExecName(auty.AutonomyX, paraName),
+		Execer:     cfg.ExecName(auty.AutonomyX),
 		ActionName: "VotePropChange",
 		Payload:    payLoad,
 	}
@@ -180,6 +189,7 @@ func voteProposalChange(cmd *cobra.Command, args []string) {
 	ctx.RunWithoutMarshal()
 }
 
+// TerminateProposalChangeCmd     
 func TerminateProposalChangeCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "terminateChange",
@@ -196,8 +206,10 @@ func addTerminateProposalChangeFlags(cmd *cobra.Command) {
 }
 
 func terminateProposalChange(cmd *cobra.Command, args []string) {
+	title, _ := cmd.Flags().GetString("title")
+	cfg := types.GetCliSysParam(title)
+
 	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
-	paraName, _ := cmd.Flags().GetString("paraName")
 	ID, _ := cmd.Flags().GetString("proposalID")
 
 	params := &auty.RevokeProposalChange{
@@ -208,7 +220,7 @@ func terminateProposalChange(cmd *cobra.Command, args []string) {
 		return
 	}
 	pm := &rpctypes.CreateTxIn{
-		Execer:     types.GetExecName(auty.AutonomyX, paraName),
+		Execer:     cfg.ExecName(auty.AutonomyX),
 		ActionName: "TmintPropChange",
 		Payload:    payLoad,
 	}
@@ -218,6 +230,7 @@ func terminateProposalChange(cmd *cobra.Command, args []string) {
 	ctx.RunWithoutMarshal()
 }
 
+// ShowProposalChangeCmd         
 func ShowProposalChangeCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "showChange",

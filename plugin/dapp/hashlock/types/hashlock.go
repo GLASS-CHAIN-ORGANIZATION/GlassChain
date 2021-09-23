@@ -47,6 +47,7 @@ func NewType(cfg *types.Chain33Config) *HashlockType {
 	return c
 }
 
+// GetName        
 func (hashlock *HashlockType) GetName() string {
 	return HashlockX
 }

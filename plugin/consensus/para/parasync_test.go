@@ -23,22 +23,29 @@ import (
 )
 
 const (
+	//TestPrivateKey     
 	TestPrivateKey = "6da92a632ab7deb67d38c0f6560bcfed28167998f6496db64c258d5e8393a81b"
-
+	//TestBlockTime      
 	TestBlockTime = 1514533390
+	//TestMaxCacheCount     DB     
 	TestMaxCacheCount = 100
+	//TestLoopCount       
 	TestMaxLoopCount = 3
 )
 
 var (
+	//testLoopCountAtom   queue   Message       
 	testLoopCountAtom int32
+	//actionReturnIndexAtom   getNextAction        
 	actionReturnIndexAtom int32
 )
 
+//     
 func initTestSyncBlock() {
 	//println("initSyncBlock")
 }
 
+//    para            
 func createParaTestInstance(t *testing.T, q queue.Queue) *client {
 	para := new(client)
 	para.subCfg = new(subConfig)
@@ -48,9 +55,11 @@ func createParaTestInstance(t *testing.T, q queue.Queue) *client {
 
 	para.InitClient(q.Client(), initTestSyncBlock)
 
+	//  rpc Client
 	grpcClient := &typesmocks.Chain33Client{}
 	para.grpcClient = grpcClient
 
+	//    
 	pk, err := hex.DecodeString(TestPrivateKey)
 	assert.Nil(t, err)
 	secp, err := crypto.New(types.GetSignName("", types.SECP256K1))
@@ -59,6 +68,7 @@ func createParaTestInstance(t *testing.T, q queue.Queue) *client {
 	assert.Nil(t, err)
 	para.minerPrivateKey = priKey
 
+	//   BlockSyncClient
 	para.blockSyncClient = &blockSyncClient{
 		paraClient:      para,
 		notifyChan:      make(chan bool),
@@ -73,6 +83,7 @@ func createParaTestInstance(t *testing.T, q queue.Queue) *client {
 	return para
 }
 
+//          
 func makeGenesisBlockInputTestData() *types.Block {
 	newBlock := &types.Block{}
 	newBlock.Height = 0
@@ -84,6 +95,7 @@ func makeGenesisBlockInputTestData() *types.Block {
 	return newBlock
 }
 
+//            
 func makeGenesisBlockReplyTestData(testLoopCount int32) interface{} {
 	switch testLoopCount {
 	case 0:
@@ -93,6 +105,9 @@ func makeGenesisBlockReplyTestData(testLoopCount int32) interface{} {
 	}
 }
 
+//  getNextAction              
+//index   getNextAction        ， return       
+//testLoopCount     
 func makeSyncReplyTestData(index int32, testLoopCount int32) (
 	interface{}, //*types.Block, //GetLastBlock reply
 	interface{}, //*types.LocalReplyValue, //GetLastLocalHeight reply
@@ -166,9 +181,10 @@ func makeSyncReplyTestData(index int32, testLoopCount int32) (
 	}
 }
 
+//      Get Reply    
 func makeCleanDataGetReplyTestData(clearLocalDBCallCount int32, testLoopCount int32) interface{} {
 	switch clearLocalDBCallCount {
-	case 1: 
+	case 1: //testinitFirstLocalHeightIfNeed    
 		switch testLoopCount {
 		case 0:
 			return &types.LocalReplyValue{Values: [][]byte{types.Encode(&types.Int64{Data: 1})}}
@@ -176,14 +192,14 @@ func makeCleanDataGetReplyTestData(clearLocalDBCallCount int32, testLoopCount in
 			return &types.LocalReplyValue{Values: [][]byte{types.Encode(&types.Int64{Data: -1})}}
 		}
 
-	case 2: 
+	case 2: //testclearLocalOldBlocks    
 		switch testLoopCount {
 		case 0:
 			return &types.LocalReplyValue{Values: [][]byte{types.Encode(&types.Int64{Data: 1 + 2*TestMaxCacheCount})}}
 		default:
 			return &types.LocalReplyValue{Values: [][]byte{types.Encode(&types.Int64{Data: 1 + 2*TestMaxCacheCount - 50})}}
 		}
-	case 3: 
+	case 3: //testclearLocalOldBlocks    
 		switch testLoopCount {
 		case 0:
 			return &types.LocalReplyValue{Values: [][]byte{types.Encode(&types.Int64{Data: 1})}}
@@ -197,6 +213,7 @@ func makeCleanDataGetReplyTestData(clearLocalDBCallCount int32, testLoopCount in
 	}
 }
 
+//      Set Reply    
 func makeCleanDataSetReplyTestData(testLoopCount int32) interface{} {
 	reply := &types.Reply{}
 	reply.IsOk = testLoopCount == 0
@@ -204,15 +221,19 @@ func makeCleanDataSetReplyTestData(testLoopCount int32) interface{} {
 	return reply
 }
 
+//mock queue Message   
 func mockMessageReply(q queue.Queue) {
 
 	blockChainKey := "blockchain"
 	cli := q.Client()
 	cli.Sub(blockChainKey)
+	//    Call  ,  loop  ；quitEndCount        
 	//quitCount := int32(0)
 	//quitEndCount := int32(111) //TODO: Need a nice loop quit way
+	//           EventGetValueByKey       
 	useLocalReply := false
 	usrLocalReplyStart := true
+	//           EventGetValueByKey       
 	clearLocalDBCallCount := int32(0)
 
 	for msg := range cli.Recv() {
@@ -222,7 +243,8 @@ func mockMessageReply(q queue.Queue) {
 
 		switch {
 		case getActionReturnIndex > 0:
-				lastBlockReply,
+			//mock          ,testsyncBlocksIfNeed    
+			lastBlockReply,
 				lastLocalReply,
 				localReply,
 				writeBlockReply,
@@ -277,23 +299,24 @@ func mockMessageReply(q queue.Queue) {
 			}
 		default:
 			switch msg.Ty {
-			case types.EventAddParaChainBlockDetail: 
+			case types.EventAddParaChainBlockDetail: //mock          ,testCreateGenesisBlock
 				//quitCount++
 
 				reply := makeGenesisBlockReplyTestData(testLoopCount)
 				msg.Reply(cli.NewMessage(blockChainKey, types.EventReply, reply))
 
-			case types.EventGetValueByKey: 
+			case types.EventGetValueByKey: //mock        
 				//quitCount++
 
 				clearLocalDBCallCount++
 				reply := makeCleanDataGetReplyTestData(clearLocalDBCallCount, testLoopCount)
 				msg.Reply(cli.NewMessage(blockChainKey, types.EventLocalReplyValue, reply))
 				if clearLocalDBCallCount == 3 {
+					//      ，         
 					clearLocalDBCallCount = 0
 				}
 
-			case types.EventSetValueByKey: 
+			case types.EventSetValueByKey: //mock        ,testclearLocalOldBlocks    
 				//quitCount++
 
 				reply := makeCleanDataSetReplyTestData(testLoopCount)
@@ -311,6 +334,7 @@ func mockMessageReply(q queue.Queue) {
 	}
 }
 
+//        
 func testCreateGenesisBlock(t *testing.T, para *client, testLoopCount int32) {
 	genesisBlock := makeGenesisBlockInputTestData()
 	err := para.blockSyncClient.createGenesisBlock(genesisBlock)
@@ -324,6 +348,7 @@ func testCreateGenesisBlock(t *testing.T, para *client, testLoopCount int32) {
 
 }
 
+//    localdb    
 func testClearLocalOldBlocks(t *testing.T, para *client, testLoopCount int32) {
 	err := para.blockSyncClient.clearLocalOldBlocks()
 
@@ -337,6 +362,7 @@ func testClearLocalOldBlocks(t *testing.T, para *client, testLoopCount int32) {
 	}
 }
 
+//         
 func testInitFirstLocalHeightIfNeed(t *testing.T, para *client, testLoopCount int32) {
 	err := para.blockSyncClient.initFirstLocalHeightIfNeed()
 
@@ -348,6 +374,7 @@ func testInitFirstLocalHeightIfNeed(t *testing.T, para *client, testLoopCount in
 	}
 }
 
+//          
 func testSyncBlocksIfNeed(t *testing.T, para *client, testLoopCount int32) {
 	errorCount := int32(0)
 	for i := int32(1); i <= 10; i++ {
@@ -356,7 +383,7 @@ func testSyncBlocksIfNeed(t *testing.T, para *client, testLoopCount int32) {
 		if err != nil {
 			errorCount++
 		}
-		assert.Equalf(t, isSynced, i == 3 || i == 6, "i=%d", i)
+		assert.Equal(t, isSynced, i == 3 || i == 6)
 	}
 
 	switch testLoopCount {
@@ -369,6 +396,7 @@ func testSyncBlocksIfNeed(t *testing.T, para *client, testLoopCount int32) {
 	atomic.StoreInt32(&actionReturnIndexAtom, 0)
 }
 
+//  SyncHasCaughtUp
 func testSyncHasCaughtUp(t *testing.T, para *client, testLoopCount int32) {
 	oldValue := para.blockSyncClient.syncHasCaughtUp()
 	para.blockSyncClient.setSyncCaughtUp(true)
@@ -378,6 +406,7 @@ func testSyncHasCaughtUp(t *testing.T, para *client, testLoopCount int32) {
 	assert.Equal(t, true, isSyncHasCaughtUp)
 }
 
+//  getBlockSyncState
 func testGetBlockSyncState(t *testing.T, para *client, testLoopCount int32) {
 	oldValue := para.blockSyncClient.getBlockSyncState()
 	para.blockSyncClient.setBlockSyncState(blockSyncStateFinished)
@@ -387,6 +416,7 @@ func testGetBlockSyncState(t *testing.T, para *client, testLoopCount int32) {
 	assert.Equal(t, true, syncState == blockSyncStateFinished)
 }
 
+//        
 func execTest(t *testing.T, para *client, testLoopCount int32) {
 	atomic.StoreInt32(&actionReturnIndexAtom, 0)
 	atomic.StoreInt32(&testLoopCountAtom, testLoopCount)
@@ -400,6 +430,7 @@ func execTest(t *testing.T, para *client, testLoopCount int32) {
 	testGetBlockSyncState(t, para, testLoopCount)
 }
 
+//    
 func TestSyncBlocks(t *testing.T) {
 	cfg := types.NewChain33Config(testnode.DefaultConfig)
 	q := queue.New("channel")
@@ -408,6 +439,7 @@ func TestSyncBlocks(t *testing.T) {
 	para := createParaTestInstance(t, q)
 	go q.Start()
 	go mockMessageReply(q)
+	//       ，               ,           
 	for i := int32(0); i <= TestMaxLoopCount-1; i++ {
 		execTest(t, para, i)
 	}

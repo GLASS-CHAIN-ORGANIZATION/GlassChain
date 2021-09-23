@@ -12,8 +12,6 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/pkg/errors"
-
 	"github.com/33cn/chain33/client"
 	"github.com/33cn/chain33/common"
 	"github.com/33cn/chain33/common/address"
@@ -127,7 +125,7 @@ func (policy *ticketPolicy) Init(walletBiz wcom.WalletOperate, sub []byte) {
 	}
 	policy.initMingTicketTicker(wait)
 	walletBiz.RegisterMineStatusReporter(policy)
-	// 
+	//       
 	walletBiz.GetWaitGroup().Add(1)
 	go policy.autoMining()
 }
@@ -228,12 +226,12 @@ func (policy *ticketPolicy) SignTransaction(key crypto.PrivKey, req *types.ReqSi
 
 // OnWalletLocked process lock event
 func (policy *ticketPolicy) OnWalletLocked() {
-	//  
+	//      ，     
 	atomic.CompareAndSwapInt32(&policy.isTicketLocked, 0, 1)
 	FlushTicket(policy.getAPI())
 }
 
-/  
+//      ，                   
 func (policy *ticketPolicy) resetTimeout(Timeout int64) {
 	if policy.minertimeout == nil {
 		policy.minertimeout = time.AfterFunc(time.Second*time.Duration(Timeout), func() {
@@ -253,7 +251,7 @@ func (policy *ticketPolicy) OnWalletUnlocked(param *types.WalletUnLock) {
 			policy.resetTimeout(param.Timeout)
 		}
 	}
-	//   
+	//      ，    ，    
 	FlushTicket(policy.getAPI())
 }
 
@@ -261,7 +259,7 @@ func (policy *ticketPolicy) OnWalletUnlocked(param *types.WalletUnLock) {
 func (policy *ticketPolicy) OnCreateNewAccount(acc *types.Account) {
 }
 
-// OnImportPrivateKey ke flush ticket
+// OnImportPrivateKey   key   flush ticket
 func (policy *ticketPolicy) OnImportPrivateKey(acc *types.Account) {
 	FlushTicket(policy.getAPI())
 }
@@ -269,7 +267,7 @@ func (policy *ticketPolicy) OnImportPrivateKey(acc *types.Account) {
 // OnAddBlockFinish process finish block
 func (policy *ticketPolicy) OnAddBlockFinish(block *types.BlockDetail) {
 	if policy.needFlush {
-		//  ticke  
+		//     ，  ticket     ，         
 		//policy.flushTicket()
 	}
 	policy.needFlush = false
@@ -314,7 +312,7 @@ func (policy *ticketPolicy) forceCloseTicket(height int64, minerAddr string) (*t
 	return policy.forceCloseAllTicket(height)
 }
 
-/ minerAdd ticke returnAddr returnAdd close ticket mine 
+//  minerAddr       ticket returnAddr，  returnAddr   close ticket，  miner       
 func (policy *ticketPolicy) forceCloseTicketByReturnAddr(height int64, minerAddr string) (*types.ReplyHashes, error) {
 	tListMiner, err := policy.getForceCloseTickets(minerAddr)
 	if err != nil {
@@ -327,7 +325,7 @@ func (policy *ticketPolicy) forceCloseTicketByReturnAddr(height int64, minerAddr
 
 	keys, err := policy.getWalletOperate().GetAllPrivKeys()
 	if err != nil {
-		return nil, errors.Wrap(err, "GetAllPrivKeys")
+		return nil, err
 	}
 
 	var hashes types.ReplyHashes
@@ -392,19 +390,15 @@ func (policy *ticketPolicy) getTickets(addr string, status int32) ([]*ty.Ticket,
 
 func (policy *ticketPolicy) getForceCloseTickets(addr string) ([]*ty.Ticket, error) {
 	if addr == "" {
-		return nil, errors.Wrapf(types.ErrNotFound, "addr is nil")
+		return nil, nil
 	}
 	tlist1, err1 := policy.getTickets(addr, 1)
 	if err1 != nil && err1 != types.ErrNotFound {
-		return nil, errors.Wrap(err1, "status=1")
+		return nil, err1
 	}
 	tlist2, err2 := policy.getTickets(addr, 2)
 	if err2 != nil && err2 != types.ErrNotFound {
-		return nil, errors.Wrap(err2, "status=2")
-	}
-
-	if len(tlist1)+len(tlist2) <= 0 {
-		return nil, errors.Wrapf(types.ErrNotFound, "addr=%s no tickets in status=1&2", addr)
+		return nil, err1
 	}
 
 	return append(tlist1, tlist2...), nil
@@ -439,9 +433,9 @@ func (policy *ticketPolicy) forceCloseTicketList(height int64, priv crypto.PrivK
 	return nil, nil
 }
 
-/ rpc close 
+//  rpc   close   
 func (policy *ticketPolicy) closeTickets(priv crypto.PrivKey, ids []string) ([]byte, error) {
-	/ close 20 
+	//    close 200 
 	end := 200
 	if end > len(ids) {
 		end = len(ids)
@@ -465,7 +459,7 @@ func (policy *ticketPolicy) getTicketsByStatus(status int32) ([]*ty.Ticket, [][]
 	if !ok && err != types.ErrOnlyTicketUnLocked {
 		return nil, nil, err
 	}
-	/ -- 
+	//         -->        
 	var tickets []*ty.Ticket
 	var privs [][]byte
 	for _, acc := range accounts {
@@ -562,8 +556,7 @@ func (policy *ticketPolicy) closeTicket(height int64) (int, error) {
 func (policy *ticketPolicy) processFee(priv crypto.PrivKey) error {
 	addr := address.PubKeyToAddress(priv.PubKey().Bytes()).String()
 	operater := policy.getWalletOperate()
-	cfg := policy.getWalletOperate().GetAPI().GetConfig()
-	acc1, err := operater.GetBalance(addr, cfg.GetCoinExec())
+	acc1, err := operater.GetBalance(addr, "coins")
 	if err != nil {
 		return err
 	}
@@ -572,10 +565,9 @@ func (policy *ticketPolicy) processFee(priv crypto.PrivKey) error {
 		return err
 	}
 	toaddr := address.ExecAddress(ty.TicketX)
-	/ acc2  withdraw 
-	coinPrecision := cfg.GetCoinPrecision()
-	if (acc1.Balance < (coinPrecision / 2)) && (acc2.Balance > coinPrecision) {
-		_, err := operater.SendToAddress(priv, toaddr, -coinPrecision, "ticket->coins", false, "")
+	//  acc2      ，  withdraw        
+	if (acc1.Balance < (types.Coin / 2)) && (acc2.Balance > types.Coin) {
+		_, err := operater.SendToAddress(priv, toaddr, -types.Coin, "ticket->coins", false, "")
 		if err != nil {
 			return err
 		}
@@ -583,7 +575,7 @@ func (policy *ticketPolicy) processFee(priv crypto.PrivKey) error {
 	return nil
 }
 
-/ 
+//     
 func (policy *ticketPolicy) processFees() error {
 	keys, err := policy.getWalletOperate().GetAllPrivKeys()
 	if err != nil {
@@ -640,7 +632,7 @@ func (policy *ticketPolicy) buyTicketOne(height int64, priv crypto.PrivKey) ([]b
 	//ticket balance and coins balance
 	addr := address.PubKeyToAddress(priv.PubKey().Bytes()).String()
 	operater := policy.getWalletOperate()
-	acc1, err := operater.GetBalance(addr, policy.getWalletOperate().GetAPI().GetConfig().GetCoinExec())
+	acc1, err := operater.GetBalance(addr, "coins")
 	if err != nil {
 		return nil, 0, err
 	}
@@ -648,18 +640,18 @@ func (policy *ticketPolicy) buyTicketOne(height int64, priv crypto.PrivKey) ([]b
 	if err != nil {
 		return nil, 0, err
 	}
-	/   
-	/  。
+	//         ，        ，    
+	//         ，         。
 	chain33Cfg := policy.walletOperate.GetAPI().GetConfig()
 	cfg := ty.GetTicketMinerParam(chain33Cfg, height)
-	fee := chain33Cfg.GetCoinPrecision()
+	fee := types.Coin
 	if acc1.Balance+acc2.Balance-2*fee >= cfg.TicketPrice {
-		//    
+		//       +    ，      ，        
 		if (acc1.Balance+acc2.Balance-2*fee)/cfg.TicketPrice > acc2.Balance/cfg.TicketPrice {
-			/   ticket
+			//   。     ticket
 			toaddr := address.ExecAddress(ty.TicketX)
 			amount := acc1.Balance - 2*fee
-			/ 0 
+			//    0，      
 			var hash *types.ReplyHash
 			if amount > 0 {
 				bizlog.Info("buyTicketOne.send", "toaddr", toaddr, "amount", amount)
@@ -749,7 +741,7 @@ func checkMinerWhiteList(addr string) bool {
 
 func (policy *ticketPolicy) buyMinerAddrTicketOne(height int64, priv crypto.PrivKey) ([][]byte, int, error) {
 	addr := address.PubKeyToAddress(priv.PubKey().Bytes()).String()
-	/ coldaddr
+	//       coldaddr
 	addrs, err := policy.getMinerColdAddr(addr)
 	if err != nil {
 		return nil, 0, err
@@ -830,23 +822,23 @@ func (policy *ticketPolicy) withdrawFromTicket() (hashes [][]byte, err error) {
 	return hashes, nil
 }
 
-/  --> 1 
-/ ：
-//1. ticke 
-//2.   ticket
-//3. mineraddress    ）  ticket 
+//     --> 10 
+//    ：
+//1.       ticket  
+//2.     1      ，    ticket
+//3.   mineraddress            （  1 ），    1      ticket   
 //
-/ ：
-//1. ticke 
-//2. ticket 
-//3. ticket 
+//    ：
+//1.       ticket  
+//2.   ticket      
+//3.   ticket     
 func (policy *ticketPolicy) autoMining() {
 	bizlog.Info("Begin auto mining")
 	defer bizlog.Info("End auto mining")
 	operater := policy.getWalletOperate()
 	defer operater.GetWaitGroup().Done()
 
-	// ticke ticke 
+	//   ticket   ticket        
 	cfg := policy.walletOperate.GetAPI().GetConfig()
 	q := types.Conf(cfg, "config.consensus")
 	if q != nil {
@@ -870,7 +862,7 @@ func (policy *ticketPolicy) autoMining() {
 				bizlog.Error("wallet IsCaughtUp false")
 				break
 			}
-			/ 
+			//        
 			height := operater.GetBlockHeight()
 			if height <= lastHeight {
 				bizlog.Error("wallet Height not inc", "height", height, "lastHeight", lastHeight)

@@ -22,10 +22,10 @@ import (
 const (
 	pruningStateStart  = 1
 	pruningStateEnd    = 0
-	onceScanCount      = 10000 // 
-	onceCount          = 1000  // 
+	onceScanCount      = 10000 //       
+	onceCount          = 1000  //     
 	levelPruningHeight = 100 * 10000
-	defaultPruneHeight = 10000 // 1000 
+	defaultPruneHeight = 10000 //   10000    
 )
 
 var (
@@ -34,7 +34,7 @@ var (
 )
 
 var (
-	/ common/d mvc 
+	// common/db  mvcc         
 	mvccPrefix = []byte(".-mvcc-.")
 	//mvccMeta               = append(mvccPrefix, []byte("m.")...)
 	mvccData = append(mvccPrefix, []byte("d.")...)
@@ -146,7 +146,7 @@ func (mvccs *KVMVCCStore) MemSet(datas *types.StoreSet, hash []byte, sync bool) 
 	}
 	mvccs.kvsetmap[string(hash)] = kvset
 	mvccs.sync = sync
-	// 
+	//     
 	if mvccs.kvmvccCfg != nil && mvccs.kvmvccCfg.EnableMVCCPrune &&
 		!isPruning() && mvccs.kvmvccCfg.PruneHeight != 0 &&
 		datas.Height%int64(mvccs.kvmvccCfg.PruneHeight) == 0 &&
@@ -218,7 +218,7 @@ func (mvccs *KVMVCCStore) IterateRangeByStateHash(statehash []byte, start []byte
 	if !mvccs.kvmvccCfg.EnableMVCCIter {
 		panic("call IterateRangeByStateHash when disable mvcc iter")
 	}
-	/ k  statehas statehash 
+	//  kv          ，  statehash        statehash，        
 	maxVersion, err := mvccs.mvcc.GetMaxVersion()
 	if err != nil {
 		kmlog.Error("KVMVCCStore IterateRangeByStateHash can't get max version, ignore the call.", "err", err)
@@ -295,13 +295,13 @@ func (mvccs *KVMVCCStore) saveKVSets(kvset []*types.KeyValue, sync bool) {
 	dbm.MustWrite(storeBatch)
 }
 
-//GetMaxVersion GetMaxVersion 
+//GetMaxVersion GetMaxVersion         
 func (mvccs *KVMVCCStore) GetMaxVersion() (int64, error) {
 	return mvccs.mvcc.GetMaxVersion()
 }
 
 func (mvccs *KVMVCCStore) checkVersion(height int64) ([]*types.KeyValue, error) {
-	/ heigh versio  
+	//        height    version   ，          
 	maxVersion, err := mvccs.mvcc.GetMaxVersion()
 	if err != nil {
 		if err != types.ErrNotFound {
@@ -350,7 +350,7 @@ func calcHash(datas proto.Message) []byte {
 //SetRdm ...
 func (mvccs *KVMVCCStore) SetRdm(datas *types.StoreSet, mavlHash []byte, sync bool) ([]byte, error) {
 	mvccHash := calcHash(datas)
-	// has 
+	//      hash  
 	var preMvccHash []byte
 	var err error
 	if datas.Height > 0 {
@@ -390,7 +390,7 @@ func (mvccs *KVMVCCStore) MemSetRdm(datas *types.StoreSet, mavlHash []byte, sync
 	//kmlog.Debug("KVMVCCStore MemSet AddMVCC", "prestatehash", common.ToHex(datas.StateHash), "hash", common.ToHex(hash), "height", datas.Height)
 	mvcchash := calcHash(datas)
 
-	// has 
+	//      hash  
 	var preMvccHash []byte
 	if datas.Height > 0 {
 		preMvccHash, err = mvccs.GetHashRdm(datas.StateHash, datas.Height-1)
@@ -410,7 +410,7 @@ func (mvccs *KVMVCCStore) MemSetRdm(datas *types.StoreSet, mavlHash []byte, sync
 
 	hash := mvcchash
 	if mavlHash != nil {
-		// mavlHas nil mvcchash
+		//   mavlHash nil,   mvcchash
 		hash = mavlHash
 		// add rdm
 		kv := &types.KeyValue{Key: calcRdmKey(mavlHash, datas.Height), Value: mvcchash}
@@ -419,7 +419,7 @@ func (mvccs *KVMVCCStore) MemSetRdm(datas *types.StoreSet, mavlHash []byte, sync
 	mvccs.kvsetmap[string(hash)] = kvset
 	mvccs.sync = sync
 
-	// 
+	//     
 	if mvccs.kvmvccCfg != nil && mvccs.kvmvccCfg.EnableMVCCPrune &&
 		!isPruning() && mvccs.kvmvccCfg.PruneHeight != 0 &&
 		datas.Height%int64(mvccs.kvmvccCfg.PruneHeight) == 0 &&
@@ -454,7 +454,7 @@ func calcRdmKey(hash []byte, height int64) []byte {
 	return key
 }
 
-/ -------------------------------------------*/
+/*  -------------------------------------------*/
 
 func pruning(db dbm.DB, height int64, KVmvccCfg *KVMCCCConfig) {
 	defer wg.Done()
@@ -479,7 +479,7 @@ func pruningFirst(db dbm.DB, curHeight int64, KVmvccCfg *KVMCCCConfig) {
 	batch := db.NewBatch(true)
 	for it.Rewind(); it.Valid(); it.Next() {
 		if quit {
-			/ 
+			//    
 			return
 		}
 		if mp == nil {
@@ -515,10 +515,10 @@ func deleteOldKV(mp map[string][]int64, curHeight int64, batch dbm.Batch, KVmvcc
 	}
 	batch.Reset()
 	for key, vals := range mp {
-		if len(vals) > 1 && vals[1] != vals[0] { / 
-			for _, val := range vals[1:] { / 
+		if len(vals) > 1 && vals[1] != vals[0] { //              
+			for _, val := range vals[1:] { //        
 				if curHeight >= val+int64(KVmvccCfg.PruneHeight) {
-					batch.Delete(genKeyVersion([]byte(key), val)) // key
+					batch.Delete(genKeyVersion([]byte(key), val)) //      key
 					if batch.ValueSize() > batchDataSize {
 						dbm.MustWrite(batch)
 						batch.Reset()

@@ -32,7 +32,10 @@ func InitExecutor(cfg *types.Chain33Config) {
 	types.RegistorExecutor(GameX, NewType(cfg))
 }
 
-
+//getRealExecName
+//  paraName == "",       types.ExecName("game")
+//     paraName ,      paraName
+//    ，              
 func getRealExecName(cfg *types.Chain33Config, paraName string) string {
 	return cfg.ExecName(paraName + GameX)
 }
@@ -50,6 +53,7 @@ type GameType struct {
 	types.ExecTypeBase
 }
 
+// GetName        
 func (gt *GameType) GetName() string {
 	return GameX
 }

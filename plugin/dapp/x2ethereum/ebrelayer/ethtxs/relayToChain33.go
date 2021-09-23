@@ -60,7 +60,7 @@ func RelayLockToChain33(privateKey chain33Crypto.PrivKey, claim *ebrelayerTypes.
 			return "", err
 		}
 	}
-	/  validato chain3 chain3 
+	//    ，   validator   chain33                chain33       
 	tx.Sign(chain33Types.SECP256K1, privateKey)
 
 	txData := chain33Types.Encode(&tx)
@@ -117,7 +117,7 @@ func RelayBurnToChain33(privateKey chain33Crypto.PrivKey, claim *ebrelayerTypes.
 			return "", err
 		}
 	}
-	/  validato chain3 chain3 
+	//    ，   validator   chain33                chain33       
 	tx.Sign(chain33Types.SECP256K1, privateKey)
 
 	txData := chain33Types.Encode(&tx)

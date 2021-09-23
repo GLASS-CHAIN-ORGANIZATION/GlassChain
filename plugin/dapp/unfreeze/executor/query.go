@@ -13,28 +13,28 @@ import (
 	pty "github.com/33cn/plugin/plugin/dapp/unfreeze/types"
 )
 
-// Query_GetUnfreezeWithdraw 
+// Query_GetUnfreezeWithdraw         
 func (u *Unfreeze) Query_GetUnfreezeWithdraw(in *types.ReqString) (types.Message, error) {
 	cfg := u.GetAPI().GetConfig()
 	return QueryWithdraw(cfg, u.GetStateDB(), in.GetData())
 }
 
-// Query_GetUnfreeze 
+// Query_GetUnfreeze       
 func (u *Unfreeze) Query_GetUnfreeze(in *types.ReqString) (types.Message, error) {
 	return QueryUnfreeze(u.GetStateDB(), in.GetData())
 }
 
-// Query_ListUnfreezeByCreator 
+// Query_ListUnfreezeByCreator     
 func (u *Unfreeze) Query_ListUnfreezeByCreator(in *pty.ReqUnfreezes) (types.Message, error) {
 	return ListUnfreezeByCreator(u.GetLocalDB(), in)
 }
 
-// Query_ListUnfreezeByBeneficiary 
+// Query_ListUnfreezeByBeneficiary     
 func (u *Unfreeze) Query_ListUnfreezeByBeneficiary(in *pty.ReqUnfreezes) (types.Message, error) {
 	return ListUnfreezeByBeneficiary(u.GetLocalDB(), in)
 }
 
-// QueryWithdraw 
+// QueryWithdraw        
 func QueryWithdraw(cfg *types.Chain33Config, stateDB dbm.KV, id string) (types.Message, error) {
 	id = unfreezeIDFromHex(id)
 	unfreeze, err := loadUnfreeze(id, stateDB)
@@ -66,7 +66,7 @@ func getWithdrawAvailable(cfg *types.Chain33Config, unfreeze *pty.Unfreeze, calc
 	return amount, nil
 }
 
-// QueryUnfreeze 
+// QueryUnfreeze       
 func QueryUnfreeze(stateDB dbm.KV, id string) (types.Message, error) {
 	id = unfreezeIDFromHex(id)
 	unfreeze, err := loadUnfreeze(id, stateDB)
@@ -78,7 +78,7 @@ func QueryUnfreeze(stateDB dbm.KV, id string) (types.Message, error) {
 	return unfreeze, nil
 }
 
-// ListUnfreezeByCreator 
+// ListUnfreezeByCreator       
 func ListUnfreezeByCreator(ldb dbm.KVDB, req *pty.ReqUnfreezes) (types.Message, error) {
 	if len(req.Initiator) == 0 {
 		return nil, types.ErrInvalidParam
@@ -99,7 +99,7 @@ func ListUnfreezeByCreator(ldb dbm.KVDB, req *pty.ReqUnfreezes) (types.Message, 
 	return fmtLocalUnfreeze(rows)
 }
 
-// ListUnfreezeByBeneficiary 
+// ListUnfreezeByBeneficiary       
 func ListUnfreezeByBeneficiary(ldb dbm.KVDB, req *pty.ReqUnfreezes) (types.Message, error) {
 	if len(req.Beneficiary) == 0 {
 		return nil, types.ErrInvalidParam

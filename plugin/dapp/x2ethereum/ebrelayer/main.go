@@ -4,17 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"io"
-	"net"
-	"net/http"
-	"net/rpc"
-	"net/rpc/jsonrpc"
-	"os"
-	"os/signal"
-	"path/filepath"
-	"sync"
-	"syscall"
-
 	dbm "github.com/33cn/chain33/common/db"
 	logf "github.com/33cn/chain33/common/log"
 	"github.com/33cn/chain33/common/log/log15"
@@ -26,6 +15,16 @@ import (
 	tml "github.com/BurntSushi/toml"
 	"github.com/btcsuite/btcd/limits"
 	"github.com/prometheus/common/log"
+	"io"
+	"net"
+	"net/http"
+	"net/rpc"
+	"net/rpc/jsonrpc"
+	"os"
+	"os/signal"
+	"path/filepath"
+	"sync"
+	"syscall"
 )
 
 var (
@@ -126,7 +125,7 @@ func IsIPWhiteListEmpty() bool {
 	return len(IPWhiteListMap) == 0
 }
 
-//IsInIPWhitelist ipAdd i 
+//IsInIPWhitelist   ipAddr   ip      
 func IsInIPWhitelist(ipAddrPort string) bool {
 	ipAddr, _, err := net.SplitHostPort(ipAddrPort)
 	if err != nil {
@@ -183,7 +182,7 @@ func (c *HTTPConn) Close() error { return nil }
 func startRPCServer(address string, api interface{}) {
 	listener, err := net.Listen("tcp", address)
 	if err != nil {
-		fmt.Println(  ")
+		fmt.Println("    ，         ")
 		panic(err)
 	}
 	srv := &RPCServer{rpc.NewServer()}

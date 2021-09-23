@@ -7,12 +7,12 @@ import (
 )
 
 /*
- * 
- * actio lo  
- * actio lo i nam 
+ *         
+ *   action      log  ，          
+ *    action log   id   name      
  */
 
-// actio i name 
+// action  id name，           
 const (
 	TyUnknowAction = iota
 	TyContentStorageAction
@@ -33,7 +33,7 @@ const (
 	FuncNameBatchQueryStorage = "BatchQueryStorage"
 )
 
-// lo i 
+// log  id 
 const (
 	TyUnknownLog = iota
 	TyContentStorageLog
@@ -55,9 +55,9 @@ var (
 	ForkStorageLocalDB = "ForkStorageLocalDB"
 )
 var (
-	//StorageX 
+	//StorageX        
 	StorageX = "storage"
-	/ actionMap
+	//  actionMap
 	actionMap = map[string]int32{
 		NameContentStorageAction:      TyContentStorageAction,
 		NameHashStorageAction:         TyHashStorageAction,
@@ -66,7 +66,7 @@ var (
 		NameEncryptShareStorageAction: TyEncryptShareStorageAction,
 		NameEncryptAddAction:          TyEncryptAddAction,
 	}
-	/ lo i lo  lo 
+	//  log id   log     ，       log  
 	logMap = map[int64]*types.LogInfo{
 		TyContentStorageLog:      {Ty: reflect.TypeOf(Storage{}), Name: "LogContentStorage"},
 		TyHashStorageLog:         {Ty: reflect.TypeOf(Storage{}), Name: "LogHashStorage"},
@@ -80,7 +80,7 @@ var (
 // init defines a register function
 func init() {
 	types.AllowUserExec = append(types.AllowUserExec, []byte(StorageX))
-	/ 
+	//        
 	types.RegFork(StorageX, InitFork)
 	types.RegExec(StorageX, InitExecutor)
 }
@@ -109,17 +109,17 @@ func NewType(cfg *types.Chain33Config) *StorageType {
 	return c
 }
 
-// GetPayload actio 
+// GetPayload     action  
 func (s *StorageType) GetPayload() types.Message {
 	return &StorageAction{}
 }
 
-// GetTypeMap actio i nam 
+// GetTypeMap     action id name  
 func (s *StorageType) GetTypeMap() map[string]int32 {
 	return actionMap
 }
 
-// GetLogMap lo 
+// GetLogMap     log    
 func (s *StorageType) GetLogMap() map[int64]*types.LogInfo {
 	return logMap
 }

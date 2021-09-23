@@ -9,12 +9,12 @@ import (
 	pkt "github.com/33cn/plugin/plugin/dapp/pokerbull/types"
 )
 
-// Query_QueryGameListByIDs i 
+// Query_QueryGameListByIDs   id      
 func (g *PokerBull) Query_QueryGameListByIDs(in *pkt.QueryPBGameInfos) (types.Message, error) {
 	return Infos(g.GetStateDB(), in)
 }
 
-// Query_QueryGameByID i 
+// Query_QueryGameByID   id    
 func (g *PokerBull) Query_QueryGameByID(in *pkt.QueryPBGameInfo) (types.Message, error) {
 	game, err := readGame(g.GetStateDB(), in.GetGameId())
 	if err != nil {
@@ -23,7 +23,7 @@ func (g *PokerBull) Query_QueryGameByID(in *pkt.QueryPBGameInfo) (types.Message,
 	return &pkt.ReplyPBGame{Game: game}, nil
 }
 
-// Query_QueryGameByAddr 
+// Query_QueryGameByAddr         
 func (g *PokerBull) Query_QueryGameByAddr(in *pkt.QueryPBGameInfo) (types.Message, error) {
 	gameIds, err := getGameListByAddr(g.GetLocalDB(), in.Addr, in.Index)
 	if err != nil {
@@ -32,7 +32,7 @@ func (g *PokerBull) Query_QueryGameByAddr(in *pkt.QueryPBGameInfo) (types.Messag
 	return gameIds, nil
 }
 
-// Query_QueryGameByStatus 
+// Query_QueryGameByStatus         
 func (g *PokerBull) Query_QueryGameByStatus(in *pkt.QueryPBGameInfo) (types.Message, error) {
 	gameIds, err := getGameListByStatus(g.GetLocalDB(), in.Status, in.Index)
 	if err != nil {
@@ -42,7 +42,7 @@ func (g *PokerBull) Query_QueryGameByStatus(in *pkt.QueryPBGameInfo) (types.Mess
 	return gameIds, nil
 }
 
-// Query_QueryGameByRound 
+// Query_QueryGameByRound           
 func (g *PokerBull) Query_QueryGameByRound(in *pkt.QueryPBGameByRound) (types.Message, error) {
 	game, err := readGame(g.GetStateDB(), in.GetGameId())
 	if err != nil {
@@ -75,8 +75,6 @@ func (g *PokerBull) Query_QueryGameByRound(in *pkt.QueryPBGameByRound) (types.Me
 		result = game.Results[in.Round-1]
 	}
 
-	cfg := g.GetAPI().GetConfig()
-	winnerReturn := int64((1 - (pkt.DeveloperFee + pkt.PlatformFee)) * float64(cfg.GetCoinPrecision()))
 	gameInfo := &pkt.ReplyPBGameByRound{
 		GameId:    game.GameId,
 		Status:    game.Status,
@@ -84,7 +82,7 @@ func (g *PokerBull) Query_QueryGameByRound(in *pkt.QueryPBGameByRound) (types.Me
 		IsWaiting: game.IsWaiting,
 		Value:     game.Value,
 		Players:   roundPlayers,
-		Return:    (game.Value / cfg.GetCoinPrecision()) * winnerReturn,
+		Return:    (game.Value / types.Coin) * pkt.WinnerReturn,
 	}
 
 	return gameInfo, nil

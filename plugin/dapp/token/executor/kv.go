@@ -50,7 +50,7 @@ func calcTokenStatusTokenKeyPrefixLocal(status int32, token string) []byte {
 	return []byte(fmt.Sprintf(tokenPreCreatedSTONewLocal+"%d-%s-", status, token))
 }
 
-/ 
+//          
 func calcAddrKey(token string, addr string) []byte {
 	return []byte(fmt.Sprintf("LODB-token-%s-Addr:%s", token, addr))
 }

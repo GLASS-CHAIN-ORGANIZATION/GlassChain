@@ -16,6 +16,7 @@ import (
 	mty "github.com/33cn/plugin/plugin/dapp/multisig/types"
 )
 
+//action    
 type action struct {
 	coinsAccount *account.DB
 	db           dbm.KV
@@ -36,6 +37,7 @@ func newAction(t *MultiSig, tx *types.Transaction, index int32) *action {
 		t.GetBlockTime(), t.GetHeight(), index, dapp.ExecAddress(string(tx.Execer)), t.GetAPI()}
 }
 
+//MultiSigAccCreate         
 func (a *action) MultiSigAccCreate(accountCreate *mty.MultiSigAccCreate) (*types.Receipt, error) {
 	var logs []*types.ReceiptLog
 	var kv []*types.KeyValue
@@ -43,10 +45,11 @@ func (a *action) MultiSigAccCreate(accountCreate *mty.MultiSigAccCreate) (*types
 	var ownerCount int
 	var dailyLimit mty.DailyLimit
 
+	//    
 	if accountCreate == nil {
 		return nil, types.ErrInvalidParam
 	}
-
+	//   requiredweight          owner    
 	for _, owner := range accountCreate.Owners {
 		if owner != nil {
 			totalweight += owner.Weight
@@ -58,10 +61,11 @@ func (a *action) MultiSigAccCreate(accountCreate *mty.MultiSigAccCreate) (*types
 		return nil, mty.ErrRequiredweight
 	}
 
+	//         owner
 	if ownerCount < mty.MinOwnersInit {
 		return nil, mty.ErrOwnerLessThanTwo
 	}
-
+	//owner         
 	if ownerCount > mty.MaxOwnersCount {
 		return nil, mty.ErrMaxOwnerCount
 	}
@@ -72,6 +76,7 @@ func (a *action) MultiSigAccCreate(accountCreate *mty.MultiSigAccCreate) (*types
 	multiSigAccount.TxCount = 0
 	multiSigAccount.RequiredWeight = accountCreate.RequiredWeight
 
+	//           
 	if accountCreate.DailyLimit != nil {
 		symbol := accountCreate.DailyLimit.Symbol
 		execer := accountCreate.DailyLimit.Execer
@@ -86,9 +91,9 @@ func (a *action) MultiSigAccCreate(accountCreate *mty.MultiSigAccCreate) (*types
 		dailyLimit.LastDay = a.blocktime //types.Now().Unix()
 		multiSigAccount.DailyLimits = append(multiSigAccount.DailyLimits, &dailyLimit)
 	}
-
+	//       txhash              NewAddrFromString
 	addr := address.MultiSignAddress(a.txhash)
-
+	//      
 	multiSig, err := getMultiSigAccFromDb(a.db, addr)
 	if err == nil && multiSig != nil {
 		return nil, mty.ErrAccountHasExist
@@ -106,13 +111,14 @@ func (a *action) MultiSigAccCreate(accountCreate *mty.MultiSigAccCreate) (*types
 	return &types.Receipt{Ty: types.ExecOk, KV: kv, Logs: logs}, nil
 }
 
-
+//MultiSigAccOperate            ：weight           
+//  requiredweight           owner    
 func (a *action) MultiSigAccOperate(AccountOperate *mty.MultiSigAccOperate) (*types.Receipt, error) {
 
 	if AccountOperate == nil {
 		return nil, types.ErrInvalidParam
 	}
-
+	//   statedb   MultiSigAccAddr     
 	multiSigAccAddr := AccountOperate.MultiSigAccAddr
 	multiSigAccount, err := getMultiSigAccFromDb(a.db, multiSigAccAddr)
 	if err != nil {
@@ -125,12 +131,14 @@ func (a *action) MultiSigAccOperate(AccountOperate *mty.MultiSigAccOperate) (*ty
 		return nil, types.ErrAccountNotExist
 	}
 
+	//              owner
 	owneraddr := a.fromaddr
 	ownerWeight, isowner := isOwner(multiSigAccount, owneraddr)
 	if !isowner {
 		return nil, mty.ErrIsNotOwner
 	}
 
+	//dailylimit             assets      
 	if !AccountOperate.OperateFlag {
 		execer := AccountOperate.DailyLimit.Execer
 		symbol := AccountOperate.DailyLimit.Symbol
@@ -139,6 +147,7 @@ func (a *action) MultiSigAccOperate(AccountOperate *mty.MultiSigAccOperate) (*ty
 			return nil, err
 		}
 	}
+	//    txid,          Txs   
 	txID := multiSigAccount.TxCount
 	newMultiSigTx := &mty.MultiSigTx{}
 	newMultiSigTx.Txid = txID
@@ -152,10 +161,12 @@ func (a *action) MultiSigAccOperate(AccountOperate *mty.MultiSigAccOperate) (*ty
 	return a.executeAccOperateTx(multiSigAccount, newMultiSigTx, AccountOperate, confirmOwner, true)
 }
 
+//MultiSigOwnerOperate       owner     ：owner add/del/replace 
+// del replace owner          owner       requiredweight 
 func (a *action) MultiSigOwnerOperate(AccOwnerOperate *mty.MultiSigOwnerOperate) (*types.Receipt, error) {
 	multiSigAccAddr := AccOwnerOperate.MultiSigAccAddr
 
-
+	//   statedb   MultiSigAccAddr     
 	multiSigAccount, err := getMultiSigAccFromDb(a.db, multiSigAccAddr)
 	if err != nil {
 		multisiglog.Error("MultiSigAccountOperate", "MultiSigAccAddr", multiSigAccAddr, "err", err)
@@ -166,12 +177,14 @@ func (a *action) MultiSigOwnerOperate(AccOwnerOperate *mty.MultiSigOwnerOperate)
 		return nil, types.ErrAccountNotExist
 	}
 
+	//              owner
 	owneraddr := a.fromaddr
 	ownerWeight, isowner := isOwner(multiSigAccount, owneraddr)
 	if !isowner {
 		return nil, mty.ErrIsNotOwner
 	}
 
+	//    txid,          Txs   
 	txID := multiSigAccount.TxCount
 	newMultiSigTx := &mty.MultiSigTx{}
 	newMultiSigTx.Txid = txID
@@ -185,10 +198,12 @@ func (a *action) MultiSigOwnerOperate(AccOwnerOperate *mty.MultiSigOwnerOperate)
 	return a.executeOwnerOperateTx(multiSigAccount, newMultiSigTx, AccOwnerOperate, confirmOwner, true)
 }
 
-
+//MultiSigExecTransferFrom                  ，         ，  ExecTransferFrozen    
+//                
+//                ，multiSigAddr--->Addr
 func (a *action) MultiSigExecTransferFrom(multiSigAccTransfer *mty.MultiSigExecTransferFrom) (*types.Receipt, error) {
 
-
+	//   statedb   MultiSigAccAddr     
 	multiSigAccAddr := multiSigAccTransfer.From
 	multiSigAcc, err := getMultiSigAccFromDb(a.db, multiSigAccAddr)
 	if err != nil {
@@ -196,23 +211,26 @@ func (a *action) MultiSigExecTransferFrom(multiSigAccTransfer *mty.MultiSigExecT
 		return nil, err
 	}
 
+	// to               
 	multiSigAccTo, err := getMultiSigAccFromDb(a.db, multiSigAccTransfer.To)
 	if multiSigAccTo != nil && err == nil {
 		multisiglog.Error("MultiSigExecTransferFrom", "multiSigAccTo", multiSigAccTo, "ToAddr", multiSigAccTransfer.To)
 		return nil, mty.ErrAddrNotSupport
 	}
 
+	//              owner
 	owneraddr := a.fromaddr
 	ownerWeight, isowner := isOwner(multiSigAcc, owneraddr)
 	if !isowner {
 		return nil, mty.ErrIsNotOwner
 	}
 
+	//assete       
 	err = mty.IsAssetsInvalid(multiSigAccTransfer.Execname, multiSigAccTransfer.Symbol)
 	if err != nil {
 		return nil, err
 	}
-
+	//    txid,          Txs   
 	txID := multiSigAcc.TxCount
 	newMultiSigTx := &mty.MultiSigTx{}
 	newMultiSigTx.Txid = txID
@@ -223,26 +241,33 @@ func (a *action) MultiSigExecTransferFrom(multiSigAccTransfer *mty.MultiSigExecT
 	confirmOwner := &mty.Owner{OwnerAddr: owneraddr, Weight: ownerWeight}
 	newMultiSigTx.ConfirmedOwner = append(newMultiSigTx.ConfirmedOwner, confirmOwner)
 
+	//        
 	return a.executeTransferTx(multiSigAcc, newMultiSigTx, multiSigAccTransfer, confirmOwner, mty.IsSubmit)
 }
 
+//MultiSigExecTransferTo             Execname.Symbol           ，from:Addr --->to:multiSigAddr
+// from    tx       ，payload from       TransferTo   
 func (a *action) MultiSigExecTransferTo(execTransfer *mty.MultiSigExecTransferTo) (*types.Receipt, error) {
 
+	//from                
 	multiSigAccFrom, err := getMultiSigAccFromDb(a.db, a.fromaddr)
 	if multiSigAccFrom != nil && err == nil {
 		multisiglog.Error("MultiSigExecTransferTo", "multiSigAccFrom", multiSigAccFrom, "From", a.fromaddr)
 		return nil, mty.ErrAddrNotSupport
 	}
+	// to              
 	multiSigAccTo, err := getMultiSigAccFromDb(a.db, execTransfer.To)
 	if multiSigAccTo == nil || err != nil {
 		multisiglog.Error("MultiSigExecTransferTo", "ToAddr", execTransfer.To)
 		return nil, mty.ErrAddrNotSupport
 	}
+	//assete       
 	err = mty.IsAssetsInvalid(execTransfer.Execname, execTransfer.Symbol)
 	if err != nil {
 		return nil, err
 	}
 
+	//          balance          balance 
 	symbol := getRealSymbol(execTransfer.Symbol)
 	cfg := a.api.GetConfig()
 	newAccountDB, err := account.NewAccountDB(cfg, execTransfer.Execname, symbol, a.db)
@@ -256,6 +281,7 @@ func (a *action) MultiSigExecTransferTo(execTransfer *mty.MultiSigExecTransferTo
 			"amount", execTransfer.Amount, "Execer", execTransfer.Execname, "Symbol", execTransfer.Symbol, "error", err)
 		return nil, err
 	}
+	//         balance    
 	receiptExecFrozen, err := newAccountDB.ExecFrozen(execTransfer.To, a.execaddr, execTransfer.Amount)
 	if err != nil {
 		multisiglog.Error("MultiSigExecTransfer:ExecFrozen", "addr", execTransfer.To, "execaddr", a.execaddr,
@@ -273,62 +299,71 @@ func (a *action) MultiSigExecTransferTo(execTransfer *mty.MultiSigExecTransferTo
 	return &types.Receipt{Ty: types.ExecOk, KV: kv, Logs: logs}, nil
 }
 
+//MultiSigConfirmTx        MultiSigAcc  Transfer        
+//              ，         ，  ExecTransferFrozen    
+//             owner
+//      ，              ，         owner
 func (a *action) MultiSigConfirmTx(ConfirmTx *mty.MultiSigConfirmTx) (*types.Receipt, error) {
 
+	//   statedb   MultiSigAccAddr     
 	multiSigAccAddr := ConfirmTx.MultiSigAccAddr
 	multiSigAcc, err := getMultiSigAccFromDb(a.db, multiSigAccAddr)
 	if err != nil {
 		multisiglog.Error("MultiSigConfirmTx:getMultiSigAccFromDb", "MultiSigAccAddr", multiSigAccAddr, "err", err)
 		return nil, err
 	}
-
+	//              owner
 	owneraddr := a.fromaddr
 	ownerWeight, isowner := isOwner(multiSigAcc, owneraddr)
 	if !isowner {
 		multisiglog.Error("MultiSigConfirmTx: is not Owner", "MultiSigAccAddr", multiSigAccAddr, "txFrom", owneraddr, "err", err)
 		return nil, mty.ErrIsNotOwner
 	}
-
+	//TxId      
 	if ConfirmTx.TxId > multiSigAcc.TxCount {
 		multisiglog.Error("MultiSigConfirmTx: Invalid Txid", "MultiSigAccTxCount", multiSigAcc.TxCount, "Confirm TxId", ConfirmTx.TxId, "err", err)
 		return nil, mty.ErrInvalidTxid
 	}
-
+	//         txid       
 	multiSigTx, err := getMultiSigAccTxFromDb(a.db, multiSigAccAddr, ConfirmTx.TxId)
 	if err != nil {
 		multisiglog.Error("MultiSigConfirmTx:getMultiSigAccTxFromDb", "multiSigAccAddr", multiSigAccAddr, "Confirm TxId", ConfirmTx.TxId, "err", err)
 		return nil, mty.ErrTxidNotExist
 	}
-
+	//              /  
 	if multiSigTx.Executed {
 		return nil, mty.ErrTxHasExecuted
 	}
-
+	// owneraddr        txid     
 	findindex, exist := isOwnerConfirmedTx(multiSigTx, owneraddr)
 
+	//               
 	if exist && ConfirmTx.ConfirmOrRevoke {
 		return nil, mty.ErrDupConfirmed
 	}
+	//                 
 	if !exist && !ConfirmTx.ConfirmOrRevoke {
 		return nil, mty.ErrConfirmNotExist
 	}
 
 	owner := &mty.Owner{OwnerAddr: owneraddr, Weight: ownerWeight}
 
+	//          ， owneraddr               
 	if exist && !ConfirmTx.ConfirmOrRevoke {
 		multiSigTx.ConfirmedOwner = append(multiSigTx.ConfirmedOwner[0:findindex], multiSigTx.ConfirmedOwner[findindex+1:]...)
 	} else if !exist && ConfirmTx.ConfirmOrRevoke {
-
+		//   owner      multiSigTx      
 		multiSigTx.ConfirmedOwner = append(multiSigTx.ConfirmedOwner, owner)
 	}
 
 	multiSigTxOwner := &mty.MultiSigTxOwner{MultiSigAddr: multiSigAccAddr, Txid: ConfirmTx.TxId, ConfirmedOwner: owner}
 	isConfirm := isConfirmed(multiSigAcc.RequiredWeight, multiSigTx)
 
+	//               ，  MultiSigConfirmTx receiptLog
 	if !isConfirm || !ConfirmTx.ConfirmOrRevoke {
 		return a.confirmTransaction(multiSigTx, multiSigTxOwner, ConfirmTx.ConfirmOrRevoke)
 	}
-
+	//  txhash        
 	tx, err := getTxByHash(a.api, multiSigTx.TxHash)
 	if err != nil {
 		return nil, err
@@ -338,6 +373,7 @@ func (a *action) MultiSigConfirmTx(ConfirmTx *mty.MultiSigConfirmTx) (*types.Rec
 		return nil, err
 	}
 
+	//                  ，     owner/account       
 	if multiSigTx.TxType == mty.OwnerOperate && payload != nil {
 		transfer := payload.GetMultiSigOwnerOperate()
 		return a.executeOwnerOperateTx(multiSigAcc, multiSigTx, transfer, owner, false)
@@ -352,6 +388,7 @@ func (a *action) MultiSigConfirmTx(ConfirmTx *mty.MultiSigConfirmTx) (*types.Rec
 	return nil, mty.ErrTxTypeNoMatch
 }
 
+//             ,    KeyValue  ReceiptLog  
 func (a *action) multiSigWeightModify(multiSigAccAddr string, newRequiredWeight uint64) (*types.KeyValue, *types.ReceiptLog, error) {
 
 	multiSigAccount, err := getMultiSigAccFromDb(a.db, multiSigAccAddr)
@@ -365,6 +402,7 @@ func (a *action) multiSigWeightModify(multiSigAccAddr string, newRequiredWeight 
 		return nil, nil, types.ErrAccountNotExist
 	}
 
+	//      owner     ，    newRequiredWeight    owner     
 	var totalweight uint64
 	receiptLog := &types.ReceiptLog{}
 	for _, owner := range multiSigAccount.Owners {
@@ -375,9 +413,11 @@ func (a *action) multiSigWeightModify(multiSigAccAddr string, newRequiredWeight 
 	if newRequiredWeight > totalweight {
 		return nil, nil, mty.ErrRequiredweight
 	}
+	//  RequiredWeight  
 	prevWeight := multiSigAccount.RequiredWeight
 	multiSigAccount.RequiredWeight = newRequiredWeight
 
+	//  receiptLog
 	receiptWeight := &mty.ReceiptWeightModify{}
 	receiptWeight.MultiSigAddr = multiSigAccount.MultiSigAddr
 	receiptWeight.PrevWeight = prevWeight
@@ -390,6 +430,7 @@ func (a *action) multiSigWeightModify(multiSigAccAddr string, newRequiredWeight 
 	return kv, receiptLog, nil
 }
 
+//                   ,
 func (a *action) multiSigDailyLimitOperate(multiSigAccAddr string, dailylimit *mty.SymbolDailyLimit) (*types.KeyValue, *types.ReceiptLog, error) {
 
 	multiSigAccount, err := getMultiSigAccFromDb(a.db, multiSigAccAddr)
@@ -415,7 +456,7 @@ func (a *action) multiSigDailyLimitOperate(multiSigAccAddr string, dailylimit *m
 	newDailyLimit := dailylimit.DailyLimit
 
 	prevDailyLimit := &mty.DailyLimit{Symbol: newSymbol, Execer: newExecer, DailyLimit: 0, SpentToday: 0, LastDay: 0}
-
+	//           symbol    ,       
 	for index, dailyLimit := range multiSigAccount.DailyLimits {
 		if dailyLimit.Symbol == newSymbol && dailyLimit.Execer == newExecer {
 			prevDailyLimit.DailyLimit = dailyLimit.DailyLimit
@@ -456,14 +497,17 @@ func (a *action) multiSigDailyLimitOperate(multiSigAccAddr string, dailylimit *m
 	return kv, receiptLog, nil
 }
 
+//         ,    KeyValue  ReceiptLog  
 func (a *action) multiSigOwnerAdd(multiSigAccAddr string, AccOwnerOperate *mty.MultiSigOwnerOperate) (*types.KeyValue, *types.ReceiptLog, error) {
 
+	//  newowner    owner 
 	var newOwner mty.Owner
 	newOwner.OwnerAddr = AccOwnerOperate.NewOwner
 	newOwner.Weight = AccOwnerOperate.NewWeight
 	return a.receiptOwnerAddOrDel(multiSigAccAddr, &newOwner, true)
 }
 
+//         ,    KeyValue  ReceiptLog  
 func (a *action) multiSigOwnerDel(multiSigAccAddr string, AccOwnerOperate *mty.MultiSigOwnerOperate) (*types.KeyValue, *types.ReceiptLog, error) {
 	var owner mty.Owner
 	owner.OwnerAddr = AccOwnerOperate.OldOwner
@@ -471,6 +515,7 @@ func (a *action) multiSigOwnerDel(multiSigAccAddr string, AccOwnerOperate *mty.M
 	return a.receiptOwnerAddOrDel(multiSigAccAddr, &owner, false)
 }
 
+//  add/del owner receipt  
 func (a *action) receiptOwnerAddOrDel(multiSigAccAddr string, owner *mty.Owner, addOrDel bool) (*types.KeyValue, *types.ReceiptLog, error) {
 	receiptLog := &types.ReceiptLog{}
 
@@ -500,9 +545,11 @@ func (a *action) receiptOwnerAddOrDel(multiSigAccAddr string, owner *mty.Owner, 
 		if !exist {
 			return nil, nil, mty.ErrOwnerNotExist
 		}
+		//            owners         reqweight
 		if totalWeight-oldweight < multiSigAcc.RequiredWeight {
 			return nil, nil, mty.ErrTotalWeightNotEnough
 		}
+		//       owner
 		if totalowner <= 1 {
 			return nil, nil, mty.ErrOnlyOneOwner
 		}
@@ -511,6 +558,7 @@ func (a *action) receiptOwnerAddOrDel(multiSigAccAddr string, owner *mty.Owner, 
 		multiSigAcc.Owners = delOwner(multiSigAcc.Owners, index)
 	}
 
+	//  receiptLog
 	receiptOwner := &mty.ReceiptOwnerAddOrDel{}
 	receiptOwner.MultiSigAddr = multiSigAcc.MultiSigAddr
 	receiptOwner.Owner = owner
@@ -522,6 +570,7 @@ func (a *action) receiptOwnerAddOrDel(multiSigAccAddr string, owner *mty.Owner, 
 	return keyValue, receiptLog, nil
 }
 
+//      owner   ,    KeyValue  ReceiptLog  
 func (a *action) multiSigOwnerModify(multiSigAccAddr string, AccOwnerOperate *mty.MultiSigOwnerOperate) (*types.KeyValue, *types.ReceiptLog, error) {
 
 	prev := &mty.Owner{OwnerAddr: AccOwnerOperate.OldOwner, Weight: 0}
@@ -529,6 +578,7 @@ func (a *action) multiSigOwnerModify(multiSigAccAddr string, AccOwnerOperate *mt
 	return a.receiptOwnerModOrRep(multiSigAccAddr, prev, cur, true)
 }
 
+//      owner   ,    KeyValue  ReceiptLog  
 func (a *action) multiSigOwnerReplace(multiSigAccAddr string, AccOwnerOperate *mty.MultiSigOwnerOperate) (*types.KeyValue, *types.ReceiptLog, error) {
 
 	prev := &mty.Owner{OwnerAddr: AccOwnerOperate.OldOwner, Weight: 0}
@@ -536,6 +586,7 @@ func (a *action) multiSigOwnerReplace(multiSigAccAddr string, AccOwnerOperate *m
 	return a.receiptOwnerModOrRep(multiSigAccAddr, prev, cur, false)
 }
 
+//    /  owner receipt  
 func (a *action) receiptOwnerModOrRep(multiSigAccAddr string, prev *mty.Owner, cur *mty.Owner, modOrRep bool) (*types.KeyValue, *types.ReceiptLog, error) {
 	receiptLog := &types.ReceiptLog{}
 
@@ -554,6 +605,7 @@ func (a *action) receiptOwnerModOrRep(multiSigAccAddr string, prev *mty.Owner, c
 		if !exist {
 			return nil, nil, mty.ErrOwnerNotExist
 		}
+		//            owners         reqweight
 		if totalWeight-oldweight+cur.Weight < multiSigAcc.RequiredWeight {
 			return nil, nil, mty.ErrTotalWeightNotEnough
 		}
@@ -564,6 +616,7 @@ func (a *action) receiptOwnerModOrRep(multiSigAccAddr string, prev *mty.Owner, c
 		if !exist {
 			return nil, nil, mty.ErrOwnerNotExist
 		}
+		//   newowner     
 		_, _, _, _, find := getOwnerInfoByAddr(multiSigAcc, cur.OwnerAddr)
 		if find {
 			return nil, nil, mty.ErrNewOwnerExist
@@ -573,6 +626,7 @@ func (a *action) receiptOwnerModOrRep(multiSigAccAddr string, prev *mty.Owner, c
 		multiSigAcc.Owners[index].OwnerAddr = cur.OwnerAddr
 		receiptLog.Ty = mty.TyLogMultiSigOwnerReplace
 	}
+	//  receiptLog
 	receiptAddOwner := &mty.ReceiptOwnerModOrRep{}
 	receiptAddOwner.MultiSigAddr = multiSigAcc.MultiSigAddr
 	receiptAddOwner.PrevOwner = prev
@@ -585,6 +639,7 @@ func (a *action) receiptOwnerModOrRep(multiSigAccAddr string, prev *mty.Owner, c
 	return keyValue, receiptLog, nil
 }
 
+//  AccExecTransfer receipt  ,              ，            
 func (a *action) receiptDailyLimitUpdate(multiSigAccAddr string, findindex int, curdailyLimit *mty.DailyLimit) (*types.KeyValue, *types.ReceiptLog, error) {
 
 	multiSigAcc, err := getMultiSigAccFromDb(a.db, multiSigAccAddr)
@@ -599,6 +654,7 @@ func (a *action) receiptDailyLimitUpdate(multiSigAccAddr string, findindex int, 
 	}
 	receiptLog := &types.ReceiptLog{}
 
+	//  receiptLog
 	receipt := &mty.ReceiptAccDailyLimitUpdate{}
 	receipt.MultiSigAddr = multiSigAcc.MultiSigAddr
 	receipt.PrevDailyLimit = multiSigAcc.DailyLimits[findindex]
@@ -606,6 +662,7 @@ func (a *action) receiptDailyLimitUpdate(multiSigAccAddr string, findindex int, 
 	receiptLog.Ty = mty.TyLogDailyLimitUpdate
 	receiptLog.Log = types.Encode(receipt)
 
+	//  DailyLimit
 	multiSigAcc.DailyLimits[findindex].SpentToday = curdailyLimit.SpentToday
 	multiSigAcc.DailyLimits[findindex].LastDay = curdailyLimit.LastDay
 
@@ -614,6 +671,7 @@ func (a *action) receiptDailyLimitUpdate(multiSigAccAddr string, findindex int, 
 	return keyValue, receiptLog, nil
 }
 
+//                  receipt  
 func (a *action) receiptTxCountUpdate(multiSigAccAddr string) (*types.KeyValue, *types.ReceiptLog, error) {
 
 	multiSigAcc, err := getMultiSigAccFromDb(a.db, multiSigAccAddr)
@@ -629,6 +687,7 @@ func (a *action) receiptTxCountUpdate(multiSigAccAddr string) (*types.KeyValue, 
 
 	receiptLog := &types.ReceiptLog{}
 
+	//  receiptLog
 	multiSigAcc.TxCount++
 
 	receiptLogTxCount := &mty.ReceiptTxCountUpdate{
@@ -644,9 +703,11 @@ func (a *action) receiptTxCountUpdate(multiSigAccAddr string) (*types.KeyValue, 
 	return keyValue, receiptLog, nil
 }
 
+//  MultiSigAccTx receipt  
 func (a *action) receiptMultiSigTx(multiSigTx *mty.MultiSigTx, owner *mty.Owner, prevExecutes, subOrConfirm bool) (*types.KeyValue, *types.ReceiptLog) {
 	receiptLog := &types.ReceiptLog{}
 
+	//  receiptLog
 	receiptLogTx := &mty.ReceiptMultiSigTx{}
 	multiSigTxOwner := &mty.MultiSigTxOwner{MultiSigAddr: multiSigTx.MultiSigAddr, Txid: multiSigTx.Txid, ConfirmedOwner: owner}
 
@@ -667,8 +728,10 @@ func (a *action) receiptMultiSigTx(multiSigTx *mty.MultiSigTx, owner *mty.Owner,
 	return keyValue, receiptLog
 }
 
+//         ：  submitTx confirmtx  。
 func (a *action) executeTransferTx(multiSigAcc *mty.MultiSig, newMultiSigTx *mty.MultiSigTx, transfer *mty.MultiSigExecTransferFrom, confOwner *mty.Owner, subOrConfirm bool) (*types.Receipt, error) {
 
+	//             
 	var findindex int
 	curDailyLimit := &mty.DailyLimit{Symbol: transfer.Symbol, Execer: transfer.Execname, DailyLimit: 0, SpentToday: 0, LastDay: 0}
 	for Index, dailyLimit := range multiSigAcc.DailyLimits {
@@ -680,14 +743,17 @@ func (a *action) executeTransferTx(multiSigAcc *mty.MultiSig, newMultiSigTx *mty
 			break
 		}
 	}
+	//     0     
 	if curDailyLimit.DailyLimit == 0 {
 		return nil, mty.ErrDailyLimitIsZero
 	}
 
+	//                ，         
 	amount := transfer.Amount
 	confirmed := isConfirmed(multiSigAcc.RequiredWeight, newMultiSigTx)
 	underLimit, newlastday := isUnderLimit(a.blocktime, uint64(amount), curDailyLimit)
 
+	//      lastday spenttoday  
 	if newlastday != 0 {
 		curDailyLimit.LastDay = newlastday
 		curDailyLimit.SpentToday = 0
@@ -698,8 +764,10 @@ func (a *action) executeTransferTx(multiSigAcc *mty.MultiSig, newMultiSigTx *mty
 	var logs []*types.ReceiptLog
 	var kv []*types.KeyValue
 
+	//            ，       ，          ，       ，             tx       
 	if confirmed || underLimit {
 
+		//     ，              ， multiSig     
 		symbol := getRealSymbol(transfer.Symbol)
 		cfg := a.api.GetConfig()
 		execerAccDB, err := account.NewAccountDB(cfg, transfer.Execname, symbol, a.db)
@@ -717,13 +785,16 @@ func (a *action) executeTransferTx(multiSigAcc *mty.MultiSig, newMultiSigTx *mty
 		logs = append(logs, receiptFromMultiSigAcc.Logs...)
 		kv = append(kv, receiptFromMultiSigAcc.KV...)
 
+		//          
 		newMultiSigTx.Executed = true
 
+		//        ,                    
 		if !confirmed && subOrConfirm {
 			curDailyLimit.SpentToday += uint64(amount)
 		}
 	}
 
+	//  multiSigAcc  :txcount    submit  
 	if subOrConfirm {
 		keyvalue, receiptlog, err := a.receiptTxCountUpdate(multiSigAcc.MultiSigAddr)
 		if err != nil {
@@ -733,10 +804,12 @@ func (a *action) executeTransferTx(multiSigAcc *mty.MultiSig, newMultiSigTx *mty
 		logs = append(logs, receiptlog)
 	}
 
+	//  multiSigAcc  :                
 	keyvalue, receiptlog, err := a.receiptDailyLimitUpdate(multiSigAcc.MultiSigAddr, findindex, curDailyLimit)
 	if err != nil {
 		multisiglog.Error("executeTransaction:receiptDailyLimitUpdate", "error", err)
 	}
+	//  newMultiSigTx   ：MultiSigTx      owner，            
 	keyvaluetx, receiptlogtx := a.receiptMultiSigTx(newMultiSigTx, confOwner, prevExecuted, subOrConfirm)
 
 	logs = append(logs, receiptlog)
@@ -754,8 +827,10 @@ func (a *action) executeTransferTx(multiSigAcc *mty.MultiSig, newMultiSigTx *mty
 	}, nil
 }
 
+//              ：  submitTx confirmtx  。
 func (a *action) executeAccOperateTx(multiSigAcc *mty.MultiSig, newMultiSigTx *mty.MultiSigTx, accountOperate *mty.MultiSigAccOperate, confOwner *mty.Owner, subOrConfirm bool) (*types.Receipt, error) {
 
+	//           
 	confirmed := isConfirmed(multiSigAcc.RequiredWeight, newMultiSigTx)
 	prevExecuted := newMultiSigTx.Executed
 
@@ -766,14 +841,16 @@ func (a *action) executeAccOperateTx(multiSigAcc *mty.MultiSig, newMultiSigTx *m
 	var accAttrReceiptLog *types.ReceiptLog
 	var err error
 
+	//           ，             tx       
 	if confirmed {
+		//    RequiredWeight   
 		if accountOperate.OperateFlag {
 			accAttrkv, accAttrReceiptLog, err = a.multiSigWeightModify(multiSigAcc.MultiSigAddr, accountOperate.NewRequiredWeight)
 			if err != nil {
 				multisiglog.Error("executeAccOperateTx", "multiSigWeightModify", err)
 				return nil, err
 			}
-		} else { 
+		} else { //         
 			accAttrkv, accAttrReceiptLog, err = a.multiSigDailyLimitOperate(multiSigAcc.MultiSigAddr, accountOperate.DailyLimit)
 			if err != nil {
 				multisiglog.Error("executeAccOperateTx", "multiSigDailyLimitOperate", err)
@@ -782,10 +859,11 @@ func (a *action) executeAccOperateTx(multiSigAcc *mty.MultiSig, newMultiSigTx *m
 		}
 		logs = append(logs, accAttrReceiptLog)
 		kv = append(kv, accAttrkv)
-
+		//          
 		newMultiSigTx.Executed = true
 	}
 
+	//  multiSigAcc  :txcount    submit  
 	if subOrConfirm {
 		keyvalue, receiptlog, err := a.receiptTxCountUpdate(multiSigAcc.MultiSigAddr)
 		if err != nil {
@@ -794,6 +872,7 @@ func (a *action) executeAccOperateTx(multiSigAcc *mty.MultiSig, newMultiSigTx *m
 		kv = append(kv, keyvalue)
 		logs = append(logs, receiptlog)
 	}
+	//  newMultiSigTx   ：MultiSigTx      owner，            
 	keyvaluetx, receiptlogtx := a.receiptMultiSigTx(newMultiSigTx, confOwner, prevExecuted, subOrConfirm)
 	logs = append(logs, receiptlogtx)
 	kv = append(kv, keyvaluetx)
@@ -804,6 +883,7 @@ func (a *action) executeAccOperateTx(multiSigAcc *mty.MultiSig, newMultiSigTx *m
 	}, nil
 }
 
+//       owner     ：  submitTx confirmtx  。
 func (a *action) executeOwnerOperateTx(multiSigAccount *mty.MultiSig, newMultiSigTx *mty.MultiSigTx, accountOperate *mty.MultiSigOwnerOperate, confOwner *mty.Owner, subOrConfirm bool) (*types.Receipt, error) {
 	var logs []*types.ReceiptLog
 	var kv []*types.KeyValue
@@ -811,12 +891,13 @@ func (a *action) executeOwnerOperateTx(multiSigAccount *mty.MultiSig, newMultiSi
 	var multiSigkv *types.KeyValue
 	var receiptLog *types.ReceiptLog
 	var err error
-
+	//           
 	confirmed := isConfirmed(multiSigAccount.RequiredWeight, newMultiSigTx)
 	prevExecuted := newMultiSigTx.Executed
 
 	flag := accountOperate.OperateFlag
 
+	//           ，             tx       
 	if confirmed {
 		//add
 		if mty.OwnerAdd == flag {
@@ -851,9 +932,11 @@ func (a *action) executeOwnerOperateTx(multiSigAccount *mty.MultiSig, newMultiSi
 		logs = append(logs, receiptLog)
 		kv = append(kv, multiSigkv)
 
+		//          
 		newMultiSigTx.Executed = true
 	}
 
+	//  multiSigAcc  :txcount    submit  
 	if subOrConfirm {
 		keyvalue, receiptlog, err := a.receiptTxCountUpdate(multiSigAccount.MultiSigAddr)
 		if err != nil {
@@ -862,7 +945,7 @@ func (a *action) executeOwnerOperateTx(multiSigAccount *mty.MultiSig, newMultiSi
 		kv = append(kv, keyvalue)
 		logs = append(logs, receiptlog)
 	}
-
+	//  newMultiSigTx   ：MultiSigTx      owner，            
 	keyvaluetx, receiptlogtx := a.receiptMultiSigTx(newMultiSigTx, confOwner, prevExecuted, subOrConfirm)
 	logs = append(logs, receiptlogtx)
 	kv = append(kv, keyvaluetx)
@@ -877,6 +960,7 @@ func (a *action) executeOwnerOperateTx(multiSigAccount *mty.MultiSig, newMultiSi
 	}, nil
 }
 
+//       receiptLog
 func (a *action) confirmTransaction(multiSigTx *mty.MultiSigTx, multiSigTxOwner *mty.MultiSigTxOwner, ConfirmOrRevoke bool) (*types.Receipt, error) {
 	receiptLog := &types.ReceiptLog{}
 
@@ -888,6 +972,7 @@ func (a *action) confirmTransaction(multiSigTx *mty.MultiSigTx, multiSigTxOwner 
 	}
 	receiptLog.Log = types.Encode(receiptLogUnConfirmTx)
 
+	//  MultiSigAccTx
 	key, value := setMultiSigAccTxToDb(a.db, multiSigTx)
 	kv := &types.KeyValue{Key: key, Value: value}
 

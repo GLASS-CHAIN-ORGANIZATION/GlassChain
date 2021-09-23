@@ -143,8 +143,8 @@ func (e *Paracross) ExecDelLocal_NodeGroupConfig(payload *pt.ParaNodeGroupConfig
 func (e *Paracross) ExecDelLocal_AssetTransfer(payload *types.AssetsTransfer, tx *types.Transaction, receiptData *types.ReceiptData, index int) (*types.LocalDBSet, error) {
 	var set types.LocalDBSet
 
-	//  ，
-	//   commit done ， t 
+	//        ，
+	//      commit done    ，            tx  
 	r, err := e.initLocalAssetTransfer(tx, true, nil)
 	if err != nil {
 		return nil, err

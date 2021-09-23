@@ -24,6 +24,7 @@ var changeOpt = &table.Option{
 	Index:   []string{"addr", "status", "addr_status"},
 }
 
+//NewChangeTable    
 func NewChangeTable(kvdb db.KV) *table.Table {
 	rowmeta := NewChangeRow()
 	table, err := table.NewTable(rowmeta, kvdb, changeOpt)
@@ -33,18 +34,22 @@ func NewChangeTable(kvdb db.KV) *table.Table {
 	return table
 }
 
+//ChangeRow table meta   
 type ChangeRow struct {
 	*auty.AutonomyProposalChange
 }
 
+//NewChangeRow     meta   
 func NewChangeRow() *ChangeRow {
 	return &ChangeRow{AutonomyProposalChange: &auty.AutonomyProposalChange{}}
 }
 
+//CreateRow      (  index             ,     heightindex)
 func (r *ChangeRow) CreateRow() *table.Row {
 	return &table.Row{Data: &auty.AutonomyProposalChange{}}
 }
 
+//SetPayload     
 func (r *ChangeRow) SetPayload(data types.Message) error {
 	if d, ok := data.(*auty.AutonomyProposalChange); ok {
 		r.AutonomyProposalChange = d
@@ -53,6 +58,7 @@ func (r *ChangeRow) SetPayload(data types.Message) error {
 	return types.ErrTypeAsset
 }
 
+//Get   indexName    indexValue
 func (r *ChangeRow) Get(key string) ([]byte, error) {
 	if key == "heightindex" {
 		return []byte(dapp.HeightIndexStr(r.Height, int64(r.Index))), nil

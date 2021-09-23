@@ -1,20 +1,19 @@
 syntax = "proto3";
 package types;
-option go_package = "../types";
 
 import "common.proto";
 
 message Ticket {
     string ticketId = 1;
-    // 0 ->  1 ->  2 ->  3-> 
+    // 0 ->     1 ->     2 ->      3->    
     int32 status = 2;
-    // genesis 
+    // genesis          
     bool isGenesis = 3;
-    / 
+    //    
     int64 createTime = 4;
-    / 
+    //    
     int64 minerTime = 5;
-    / 
+    //       
     int64  minerValue   = 8;
     string minerAddress = 6;
     // return wallet
@@ -40,11 +39,11 @@ message TicketMiner {
     int64  reward   = 2;
     string ticketId = 3;
     bytes  modify   = 4;
-    / 
+    //       
     bytes privHash = 5;
-    // VR hash
+    // VRF     hash
     bytes vrfHash = 6;
-    // VR proof
+    // VRF     proof
     bytes vrfProof = 7;
 }
 
@@ -66,15 +65,15 @@ message TicketBind {
 }
 
 message TicketOpen {
-    / ticket 
+    //     ticket   
     string minerAddress = 1;
-    / ticke 
+    //  ticket   
     int32 count = 2;
-    / 
+    //        
     string returnAddress = 3;
-    / 
+    //    
     int64 randSeed = 4;
-    / ticke 
+    //  ticket   
     repeated bytes pubHashes = 5;
 }
 
@@ -132,11 +131,11 @@ message ReplyBindMiner {
 }
 
 service ticket {
-    / 
+    //      
     rpc CreateBindMiner(ReqBindMiner) returns (ReplyBindMiner) {}
-    / 
+    //      
     rpc GetTicketCount(types.ReqNil) returns (Int64) {}
     // Miner
-    / 
+    //      
     rpc SetAutoMining(MinerFlag) returns (Reply) {}
 }

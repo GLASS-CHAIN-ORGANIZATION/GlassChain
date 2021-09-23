@@ -14,7 +14,7 @@ import (
 	"math/big"
 	"time"
 
-	ecdsa_util "github.com/33cn/chain33/system/crypto/secp256r1"
+	ecdsa_util "github.com/33cn/plugin/plugin/crypto/ecdsa"
 	"github.com/tjfoc/gmsm/sm2"
 )
 
@@ -109,6 +109,7 @@ func certFromX509Cert(cert *x509.Certificate) (certificate, error) {
 	return newCert, nil
 }
 
+// ParseECDSAPubKey2SM2PubKey  ECDSA     SM2  
 func ParseECDSAPubKey2SM2PubKey(key *ecdsa.PublicKey) *sm2.PublicKey {
 	sm2Key := &sm2.PublicKey{
 		Curve: key.Curve,

@@ -65,33 +65,33 @@ oracle_QueryOraclesByID() {
 }
 
 function run_test() {
-    # 
+    #      
     oracle_AddPublisher
-    # 
+    #          
     oracle_publish_transaction
-    # 
+    #          
     oracle_prePublishResult_transaction "$eventId"
-    # 
+    #       
     oracle_publishResult_transaction "$eventId"
-    # I 
+    #   ID    
     chain33_BlockWait 2 "${MAIN_HTTP}"
     oracle_QueryOraclesByID "$eventId"
 
-    # 
+    #          
     oracle_publish_transaction
-    # 
+    #       
     oracle_eventAbort_transaction "$eventId"
-    # I 
+    #   ID    
     chain33_BlockWait 2 "${MAIN_HTTP}"
     oracle_QueryOraclesByID "$eventId"
 
-    # 
+    #          
     oracle_publish_transaction
-    # 
+    #          
     oracle_prePublishResult_transaction "$eventId"
-    # 
+    #        
     oracle_resultAbort_transaction "$eventId"
-    # I 
+    #   ID    
     chain33_BlockWait 2 "${MAIN_HTTP}"
     oracle_QueryOraclesByID "$eventId"
 

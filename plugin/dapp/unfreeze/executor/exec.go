@@ -12,7 +12,7 @@ import (
 	pty "github.com/33cn/plugin/plugin/dapp/unfreeze/types"
 )
 
-// Exec_Create 
+// Exec_Create         
 func (u *Unfreeze) Exec_Create(payload *pty.UnfreezeCreate, tx *types.Transaction, index int) (*types.Receipt, error) {
 	if payload.AssetExec == "" || payload.AssetSymbol == "" || payload.TotalCount <= 0 || payload.Means == "" {
 		return nil, types.ErrInvalidParam
@@ -37,7 +37,8 @@ func (u *Unfreeze) Exec_Create(payload *pty.UnfreezeCreate, tx *types.Transactio
 			dapp.ExecAddress(string(tx.Execer)), "exec", payload.AssetExec, "symbol", payload.AssetSymbol)
 		return nil, err
 	}
-	receipt, err := acc.ExecFrozen(unfreeze.Initiator, dapp.ExecAddress(string(tx.Execer)), payload.TotalCount)
+
+	receipt, err := acc.ExecFrozen(unfreeze.Initiator, dapp.ExecAddress(payload.AssetExec), payload.TotalCount)
 	if err != nil {
 		uflog.Error("unfreeze create exec frozen", "addr", tx.From(), "execAddr", dapp.ExecAddress(string(tx.Execer)),
 			"ExecFrozen amount", payload.TotalCount, "exec", payload.AssetExec, "symbol", payload.AssetSymbol)
@@ -47,7 +48,7 @@ func (u *Unfreeze) Exec_Create(payload *pty.UnfreezeCreate, tx *types.Transactio
 	return mergeReceipt(receipt, receipt1)
 }
 
-// Exec_Withdraw 
+// Exec_Withdraw          
 func (u *Unfreeze) Exec_Withdraw(payload *pty.UnfreezeWithdraw, tx *types.Transaction, index int) (*types.Receipt, error) {
 	cfg := u.GetAPI().GetConfig()
 	if cfg.IsDappFork(u.GetHeight(), pty.UnfreezeX, pty.ForkUnfreezeIDX) {
@@ -87,7 +88,7 @@ func (u *Unfreeze) Exec_Withdraw(payload *pty.UnfreezeWithdraw, tx *types.Transa
 	return mergeReceipt(receipt, receipt1)
 }
 
-// Exec_Terminate 
+// Exec_Terminate         
 func (u *Unfreeze) Exec_Terminate(payload *pty.UnfreezeTerminate, tx *types.Transaction, index int) (*types.Receipt, error) {
 	cfg := u.GetAPI().GetConfig()
 	if cfg.IsDappFork(u.GetHeight(), pty.UnfreezeX, pty.ForkUnfreezeIDX) {
@@ -151,7 +152,7 @@ func (u *Unfreeze) newEntity(payload *pty.UnfreezeCreate, tx *types.Transaction)
 	return unfreeze, nil
 }
 
-// 
+//       
 func (u *Unfreeze) create(unfreeze *pty.Unfreeze) (*types.Receipt, error) {
 	k := []byte(unfreeze.UnfreezeID)
 	v := types.Encode(unfreeze)
@@ -180,7 +181,7 @@ func getUnfreezeLog(prev, cur *pty.Unfreeze, ty int32) *types.ReceiptLog {
 	return log
 }
 
-// 
+//      
 func (u *Unfreeze) withdraw(unfreeze *pty.Unfreeze) (int64, *types.Receipt, error) {
 	cfg := u.GetAPI().GetConfig()
 	means, err := newMeans(cfg, unfreeze.Means, u.GetHeight())
@@ -207,7 +208,7 @@ func (u *Unfreeze) withdraw(unfreeze *pty.Unfreeze) (int64, *types.Receipt, erro
 		Logs: []*types.ReceiptLog{receiptLog}}, nil
 }
 
-// 
+//       
 func (u *Unfreeze) terminator(unfreeze *pty.Unfreeze) (int64, *types.Receipt, error) {
 	if unfreeze.Remaining <= 0 {
 		return 0, nil, pty.ErrUnfreezeEmptied

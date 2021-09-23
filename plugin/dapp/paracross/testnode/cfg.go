@@ -4,29 +4,27 @@ package testnode
 var DefaultConfig = `
 Title="user.p.test."
 CoinSymbol="bty"
-ChainID=33
 # TestNet=true
 
-[crypto]
 [log]
-#  debug(dbug)/info/warn/error(eror)/crit
+#     ，  debug(dbug)/info/warn/error(eror)/crit
 loglevel = "debug"
 logConsoleLevel = "info"
-#   
+#      ，    ，                
 logFile = "logs/chain33.para.log"
-#   ）
+#           （  ： ）
 maxFileSize = 300
-# 
+#              
 maxBackups = 100
-#   ）
+#            （  ： ）
 maxAge = 28
-#  UT ）
+#              （    UTC  ）
 localTime = true
-#  gz）
+#           （     gz）
 compress = true
-# 
+#             
 callerFile = false
-# 
+#         
 callerFunction = false
 
 
@@ -55,7 +53,7 @@ grpcLogFile="grpc33.log"
 
 
 [rpc]
-# 
+#          
 jrpcBindAddr="localhost:8901"
 grpcBindAddr="localhost:8902"
 whitelist=["127.0.0.1"]
@@ -103,19 +101,19 @@ minerMode="normal"
 
 
 [consensus.sub.para]
- grp ip i  “101.37.227.226:8802,39.97.20.242:8802,47.107.15.126:8802,jiedian2.33.cn”
+#     grpc   ip，       ip    ， “101.37.227.226:8802,39.97.20.242:8802,47.107.15.126:8802,jiedian2.33.cn”
 ParaRemoteGrpcClient=""
- 
+#             
 startHeight=1
-  
+#      ，   
 writeBlockSeconds=2
-    
+#    ，             ，          ，       
 authAccount="1EbDHAXpoiewjPLX9uqoz38HsKqMXayZrF"
-   2
+#                    ，         ，   2
 waitBlocks4CommitMsg=2
-  block blockhas 
+#         ，          block，            blockhash   
 searchHashMatchedBlockDepth=10000
- 
+#      
 genesisAmount=100000000
 mainBlockHashForkHeight=1
 mainForkParacrossCommitTx=1

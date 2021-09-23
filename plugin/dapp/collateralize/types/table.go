@@ -16,6 +16,7 @@ var opt = &table.Option{
 	Index:   []string{"status", "addr", "addr_status"},
 }
 
+//NewCollateralizeTable    
 func NewCollateralizeTable(kvdb db.KV) *table.Table {
 	rowmeta := NewCollatetalizeRow()
 	table, err := table.NewTable(rowmeta, kvdb, opt)
@@ -25,18 +26,22 @@ func NewCollateralizeTable(kvdb db.KV) *table.Table {
 	return table
 }
 
+//CollatetalizeRow table meta   
 type CollatetalizeRow struct {
 	*ReceiptCollateralize
 }
 
+//NewCollatetalizeRow     meta   
 func NewCollatetalizeRow() *CollatetalizeRow {
 	return &CollatetalizeRow{ReceiptCollateralize: &ReceiptCollateralize{}}
 }
 
+//CreateRow      
 func (tx *CollatetalizeRow) CreateRow() *table.Row {
 	return &table.Row{Data: &ReceiptCollateralize{}}
 }
 
+//SetPayload     
 func (tx *CollatetalizeRow) SetPayload(data types.Message) error {
 	if txdata, ok := data.(*ReceiptCollateralize); ok {
 		tx.ReceiptCollateralize = txdata
@@ -45,6 +50,7 @@ func (tx *CollatetalizeRow) SetPayload(data types.Message) error {
 	return types.ErrTypeAsset
 }
 
+//Get   indexName    indexValue
 func (tx *CollatetalizeRow) Get(key string) ([]byte, error) {
 	if key == "collateralizeid" {
 		return []byte(tx.CollateralizeId), nil
@@ -65,6 +71,7 @@ var optRecord = &table.Option{
 	Index:   []string{"status", "addr", "addr_status", "id_status", "id_addr"},
 }
 
+// NewRecordTable      
 func NewRecordTable(kvdb db.KV) *table.Table {
 	rowmeta := NewRecordRow()
 	table, err := table.NewTable(rowmeta, kvdb, optRecord)
@@ -74,18 +81,22 @@ func NewRecordTable(kvdb db.KV) *table.Table {
 	return table
 }
 
+//CollateralizeRecordRow table meta   
 type CollateralizeRecordRow struct {
 	*ReceiptCollateralize
 }
 
+//NewRecordRow     meta   
 func NewRecordRow() *CollateralizeRecordRow {
 	return &CollateralizeRecordRow{ReceiptCollateralize: &ReceiptCollateralize{}}
 }
 
+//CreateRow      
 func (tx *CollateralizeRecordRow) CreateRow() *table.Row {
 	return &table.Row{Data: &ReceiptCollateralize{}}
 }
 
+//SetPayload     
 func (tx *CollateralizeRecordRow) SetPayload(data types.Message) error {
 	if txdata, ok := data.(*ReceiptCollateralize); ok {
 		tx.ReceiptCollateralize = txdata
@@ -94,6 +105,7 @@ func (tx *CollateralizeRecordRow) SetPayload(data types.Message) error {
 	return types.ErrTypeAsset
 }
 
+//Get   indexName    indexValue
 func (tx *CollateralizeRecordRow) Get(key string) ([]byte, error) {
 	if key == "borrowid" {
 		return []byte(tx.RecordId), nil

@@ -16,9 +16,9 @@ var logger = log.New("module", "execs.dposvote")
 var driverName = dty.DPosX
 
 var (
-	dposDelegateNum          int64 = 3 
-	dposBlockInterval        int64 = 3 
-	dposContinueBlockNum     int64 = 6 
+	dposDelegateNum          int64 = 3 //      ，     ，            
+	dposBlockInterval        int64 = 3 //    ，   3s
+	dposContinueBlockNum     int64 = 6 //         ，         
 	dposCycle                      = dposDelegateNum * dposBlockInterval * dposContinueBlockNum
 	dposPeriod                     = dposBlockInterval * dposContinueBlockNum
 	blockNumToUpdateDelegate int64 = 20000
@@ -58,6 +58,7 @@ func Init(name string, cfg *types.Chain33Config, sub []byte) {
 
 	drivers.Register(cfg, driverName, newDposVote, cfg.GetDappFork(driverName, "Enable"))
 
+	//       ，           cycle
 	dposDelegateNum = types.Conf(cfg, "config.consensus.sub.dpos").GInt("delegateNum")
 	dposBlockInterval = types.Conf(cfg, "config.consensus.sub.dpos").GInt("blockInterval")
 	dposContinueBlockNum = types.Conf(cfg, "config.consensus.sub.dpos").GInt("continueBlockNum")
@@ -75,6 +76,7 @@ func InitExecType() {
 	ety.InitFuncList(types.ListMethod(&DPos{}))
 }
 
+//DPos    ，  Dpos      、  ，VRF         
 type DPos struct {
 	drivers.DriverBase
 }
@@ -86,14 +88,17 @@ func newDposVote() drivers.Driver {
 	return t
 }
 
+//GetName   DPos      
 func GetName() string {
 	return newDposVote().GetName()
 }
 
+//ExecutorOrder Exec          ExecLocal
 func (g *DPos) ExecutorOrder() int64 {
 	return drivers.ExecLocalSameTime
 }
 
+//GetDriverName   DPos      
 func (g *DPos) GetDriverName() string {
 	return dty.DPosX
 }

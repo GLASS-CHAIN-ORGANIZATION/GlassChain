@@ -10,8 +10,8 @@ import (
 	mty "github.com/33cn/plugin/plugin/dapp/multisig/types"
 )
 
-//Query_MultiSigAccCount  
-/ ReplyMultiSigAccounts
+//Query_MultiSigAccCount            ，              
+//  ReplyMultiSigAccounts
 func (m *MultiSig) Query_MultiSigAccCount(in *types.ReqNil) (types.Message, error) {
 	db := m.GetLocalDB()
 	count, err := getMultiSigAccCount(db)
@@ -22,12 +22,12 @@ func (m *MultiSig) Query_MultiSigAccCount(in *types.ReqNil) (types.Message, erro
 	return &types.Int64{Data: count}, nil
 }
 
-//Query_MultiSigAccounts 
-/ ：
+//Query_MultiSigAccounts              
+//  ：
 //message ReqMultiSigAccs {
 //	int64	start	= 1;
 //	int64	end		= 2;
-/ ：
+//  ：
 //message ReplyMultiSigAccs {
 //    repeated string address = 1;
 func (m *MultiSig) Query_MultiSigAccounts(in *mty.ReqMultiSigAccs) (types.Message, error) {
@@ -57,11 +57,11 @@ func (m *MultiSig) Query_MultiSigAccounts(in *mty.ReqMultiSigAccs) (types.Messag
 	return accountAddrs, nil
 }
 
-//Query_MultiSigAccountInfo 
-/ ：
+//Query_MultiSigAccountInfo                
+//  ：
 //message ReqMultiSigAccountInfo {
 //	string MultiSigAccAddr = 1;
-/ ：
+//  ：
 //message MultiSig {
 //    string 							createAddr        	= 1;
 //    string 							multiSigAddr      	= 2;
@@ -89,11 +89,11 @@ func (m *MultiSig) Query_MultiSigAccountInfo(in *mty.ReqMultiSigAccInfo) (types.
 	return multiSigAcc, nil
 }
 
-//Query_MultiSigAccTxCount t 
-/ ：
+//Query_MultiSigAccTxCount             tx    
+//  ：
 //message ReqMultiSigAccountInfo {
 //	string MultiSigAccAddr = 1;
-/ ：
+//  ：
 //uint64
 func (m *MultiSig) Query_MultiSigAccTxCount(in *mty.ReqMultiSigAccInfo) (types.Message, error) {
 	if in == nil {
@@ -116,15 +116,15 @@ func (m *MultiSig) Query_MultiSigAccTxCount(in *mty.ReqMultiSigAccInfo) (types.M
 	return &mty.Uint64{Data: multiSigAcc.TxCount}, nil
 }
 
-//Query_MultiSigTxids txid ，pending, executed
-/ ：
+//Query_MultiSigTxids   txids            ，pending, executed
+//  ：
 //message ReqMultiSigTxids {
 //  string multisigaddr = 1;
 //	uint64 fromtxid = 2;
 //	uint64 totxid = 3;
 //	bool   pending = 4;
 //	bool   executed	= 5;
-// :
+//   :
 //message ReplyMultiSigTxids {
 //  string 			multisigaddr = 1;
 //	repeated uint64	txids		 = 2;
@@ -156,7 +156,7 @@ func (m *MultiSig) Query_MultiSigTxids(in *mty.ReqMultiSigTxids) (types.Message,
 			continue
 		}
 		findTxid := txid
-		/ Pending/Execute txid
+		//  Pending/Executed   txid
 		if in.Pending && !multiSigTx.Executed || in.Executed && multiSigTx.Executed {
 			multiSigTxids.Txids = append(multiSigTxids.Txids, findTxid)
 		}
@@ -165,12 +165,12 @@ func (m *MultiSig) Query_MultiSigTxids(in *mty.ReqMultiSigTxids) (types.Message,
 
 }
 
-//Query_MultiSigTxInfo txi  owne 
-/ :
+//Query_MultiSigTxInfo   txid     ，       owner  
+//  :
 //message ReqMultiSigTxInfo {
 //  string multisigaddr = 1;
 //	uint64 txid = 2;
-/ :
+//  :
 //message ReplyMultiSigTxInfo {
 //    MultiSigTransaction multisigtxinfo = 1;
 //    repeated Owner confirmowners = 3;
@@ -192,18 +192,18 @@ func (m *MultiSig) Query_MultiSigTxInfo(in *mty.ReqMultiSigTxInfo) (types.Messag
 	}
 	if multiSigTx == nil {
 		multiSigTx = &mty.MultiSigTx{}
-	} else { / hex.EncodeToString(  0x 0 
+	} else { //       hex.EncodeToString()     ，   0x，                 0x  
 		multiSigTx.TxHash = "0x" + multiSigTx.TxHash
 	}
 	return multiSigTx, nil
 }
 
-//Query_MultiSigTxConfirmedWeight txi 
-/ :
+//Query_MultiSigTxConfirmedWeight   txid           
+//  :
 //message ReqMultiSigTxInfo {
 //  string multisigaddr = 1;
 //	uint64 txid = 2;
-/ :
+//  :
 //message Int64
 func (m *MultiSig) Query_MultiSigTxConfirmedWeight(in *mty.ReqMultiSigTxInfo) (types.Message, error) {
 	if in == nil {
@@ -232,13 +232,13 @@ func (m *MultiSig) Query_MultiSigTxConfirmedWeight(in *mty.ReqMultiSigTxInfo) (t
 	return &mty.Uint64{Data: totalWeight}, nil
 }
 
-//Query_MultiSigAccUnSpentToday  
-/ :
+//Query_MultiSigAccUnSpentToday                       
+//  :
 //message ReqMultiSigAccUnSpentToday {
 //	string multiSigAddr = 1;
 //	string execer 		= 2;
 //	string symbol 		= 3;
-/ :
+//  :
 //message ReplyMultiSigAccUnSpentToday {
 //	uint64 	amount = 1;
 func (m *MultiSig) Query_MultiSigAccUnSpentToday(in *mty.ReqAccAssets) (types.Message, error) {
@@ -276,7 +276,7 @@ func (m *MultiSig) Query_MultiSigAccUnSpentToday(in *mty.ReqAccAssets) (types.Me
 			replyUnSpentAssets.UnSpentAssets = append(replyUnSpentAssets.UnSpentAssets, &unSpentAssets)
 		}
 	} else {
-		//asset 
+		//assets       
 		err := mty.IsAssetsInvalid(in.Assets.Execer, in.Assets.Symbol)
 		if err != nil {
 			return nil, err
@@ -303,13 +303,13 @@ func (m *MultiSig) Query_MultiSigAccUnSpentToday(in *mty.ReqAccAssets) (types.Me
 	return replyUnSpentAssets, nil
 }
 
-//Query_MultiSigAccAssets   
-/ :
+//Query_MultiSigAccAssets                ，      
+//  :
 //message ReqAccAssets {
 //	string multiSigAddr = 1;
 //	Assets assets 		= 2;
 //	bool   isAll 		= 3;
-/ :
+//  :
 //message MultiSigAccAssets {
 //	Assets 		assets 		= 1;
 //	int64   	recvAmount 	= 2;
@@ -318,7 +318,7 @@ func (m *MultiSig) Query_MultiSigAccAssets(in *mty.ReqAccAssets) (types.Message,
 	if in == nil {
 		return nil, types.ErrInvalidParam
 	}
-	/ 
+	//            
 	if err := address.CheckMultiSignAddress(in.MultiSigAddr); err != nil {
 		if err = address.CheckAddress(in.MultiSigAddr); err != nil {
 			return nil, types.ErrInvalidAddress
@@ -326,7 +326,7 @@ func (m *MultiSig) Query_MultiSigAccAssets(in *mty.ReqAccAssets) (types.Message,
 	}
 
 	replyAccAssets := &mty.ReplyAccAssets{}
-	/ 
+	//            
 	if in.IsAll {
 		values, err := getMultiSigAccAllAssets(m.GetLocalDB(), in.MultiSigAddr)
 		if err != nil {
@@ -351,9 +351,9 @@ func (m *MultiSig) Query_MultiSigAccAssets(in *mty.ReqAccAssets) (types.Message,
 				replyAccAssets.AccAssets = append(replyAccAssets.AccAssets, accAssets)
 			}
 		}
-	} else { / 
+	} else { //            
 		accAssets := &mty.AccAssets{}
-		//asset 
+		//assets       
 		err := mty.IsAssetsInvalid(in.Assets.Execer, in.Assets.Symbol)
 		if err != nil {
 			return nil, err
@@ -377,10 +377,10 @@ func (m *MultiSig) Query_MultiSigAccAssets(in *mty.ReqAccAssets) (types.Message,
 	return replyAccAssets, nil
 }
 
-//Query_MultiSigAccAllAddress 
-/ :
+//Query_MultiSigAccAllAddress                  
+//  :
 //createaddr
-/ :
+//  :
 //[]string
 func (m *MultiSig) Query_MultiSigAccAllAddress(in *mty.ReqMultiSigAccInfo) (types.Message, error) {
 	if in == nil {

@@ -54,17 +54,25 @@ var (
 	genesis = `{"genesis_time":"2018-08-16T15:38:56.951569432+08:00","chain_id":"chain33-Z2cgFj","validators":[{"pub_key":{"type":"secp256k1","data":"03EF0E1D3112CF571743A3318125EDE2E52A4EB904BCBAA4B1F75020C2846A7EB4"},"name":""},{"pub_key":{"type":"secp256k1","data":"027848E7FA630B759DB406940B5506B666A344B1060794BBF314EB459D40881BB3"},"name":""},{"pub_key":{"type":"secp256k1","data":"03F4AB6659E61E8512C9A24AC385CC1AC4D52B87D10ADBDF060086EA82BE62CDDE"},"name":""}],"app_hash":null}`
 	priv    = `{"address":"2B226E6603E52C94715BA4E92080EEF236292E33","pub_key":{"type":"secp256k1","data":"03EF0E1D3112CF571743A3318125EDE2E52A4EB904BCBAA4B1F75020C2846A7EB4"},"last_height":1679,"last_round":0,"last_step":3,"last_signature":{"type":"secp256k1","data":"37892A916D6E487ADF90F9E88FE37024597677B6C6FED47444AD582F74144B3D6E4B364EAF16AF03A4E42827B6D3C86415D734A5A6CCA92E114B23EB9265AF09"},"last_signbytes":"7B22636861696E5F6964223A22636861696E33332D5A326367466A222C22766F7465223A7B22626C6F636B5F6964223A7B2268617368223A224F6A657975396B2B4149426A6E4859456739584765356A7A462B673D222C227061727473223A7B2268617368223A6E756C6C2C22746F74616C223A307D7D2C22686569676874223A313637392C22726F756E64223A302C2274696D657374616D70223A22323031382D30382D33315430373A35313A34332E3935395A222C2274797065223A327D7D","priv_key":{"type":"secp256k1","data":"5A6A14DA6F5A42835E529D75D87CC8904544F59EEE5387A37D87EEAD194D7EB2"}}`
 	config  = `Title="local"
-[crypto]
 [log]
+#     ，  debug(dbug)/info/warn/error(eror)/crit
 loglevel = "debug"
 logConsoleLevel = "info"
+#      ，    ，                
 logFile = "logs/chain33.log"
+#           （  ： ）
 maxFileSize = 300
+#              
 maxBackups = 100
+#            （  ： ）
 maxAge = 28
+#              （    UTC  ）
 localTime = true
+#           （     gz）
 compress = true
+#             
 callerFile = false
+#         
 callerFunction = false
 
 [blockchain]
@@ -143,7 +151,9 @@ blockInterval=2
 continueBlockNum=12
 isValidator=true
 rpcAddr="http://localhost:9801"
+#shuffleType 1          ， 2    vrf          
 shuffleType=1
+#    topN，   true，             topN  ;   false，            ，       
 whetherUpdateTopN=false
 blockNumToUpdateDelegate=20000
 registTopNHeightLimit=100
@@ -177,8 +187,11 @@ alias=["token1:token","token2:token","token3:token"]
 saveTokenTxList=false
 
 [exec.sub.cert]
+#            
 enable=false
+#       
 cryptoPath="authdir/crypto"
+#        ，  "auth_ecdsa", "auth_sm2"
 signType="auth_ecdsa"
 `
 )
@@ -246,7 +259,6 @@ func initEnvDpos() (queue.Queue, *blockchain.BlockChain, queue.Module, queue.Mod
 	var q = queue.New("channel")
 	q.SetConfig(chain33Cfg)
 	cfg := chain33Cfg.GetModuleConfig()
-	cfg.Log.LogFile = ""
 	sub := chain33Cfg.GetSubConfig()
 
 	chain := blockchain.New(chain33Cfg)

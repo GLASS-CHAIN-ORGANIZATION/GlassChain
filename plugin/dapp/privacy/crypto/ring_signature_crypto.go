@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 /*
- Crypt   
+     Crypto  ，    、     
 */
 
 package privacy
@@ -21,10 +21,11 @@ import (
 )
 
 func init() {
-	crypto.Register(privacytypes.SignNameRing, &RingSignED25519{}, crypto.WithRegOptionTypeID(privacytypes.RingBaseonED25519))
+	crypto.Register(privacytypes.SignNameRing, &RingSignED25519{}, false)
+	crypto.RegisterType(privacytypes.SignNameRing, privacytypes.RingBaseonED25519)
 }
 
-// RingSignature crypto.Signatur 
+// RingSignature       crypto.Signature    
 type RingSignature struct {
 	sign types.RingSignature
 }
@@ -53,7 +54,7 @@ func (r *RingSignature) Equals(other crypto.Signature) bool {
 	return false
 }
 
-// RingSignPrivateKey crypto.PrivKe 
+// RingSignPrivateKey       crypto.PrivKey    
 type RingSignPrivateKey struct {
 	key [privateKeyLen]byte
 }
@@ -64,14 +65,14 @@ func (privkey *RingSignPrivateKey) Bytes() []byte {
 }
 
 // Sign signature trasaction
-func (privkey *RingSignPrivateKey) Sign(msg []byte, _ ...interface{}) crypto.Signature {
+func (privkey *RingSignPrivateKey) Sign(msg []byte) crypto.Signature {
 	emptySign := &RingSignature{}
 	if len(msg) <= 0 {
 		return emptySign
 	}
 	tx := new(types.Transaction)
 	if err := types.Decode(msg, tx); err != nil || !bytes.Equal([]byte(privacytypes.PrivacyX), tx.Execer) {
-		// 
+		//               
 		return emptySign
 	}
 	action := new(privacytypes.PrivacyAction)
@@ -79,14 +80,14 @@ func (privkey *RingSignPrivateKey) Sign(msg []byte, _ ...interface{}) crypto.Sig
 		return emptySign
 	}
 	if action.Ty != privacytypes.ActionPrivacy2Privacy && action.Ty != privacytypes.ActionPrivacy2Public {
-		//   
+		//      ，     ，           
 		return emptySign
 	}
 	//
 	privacyInput := action.GetInput()
 	retSign := new(types.RingSignature)
 	if err := types.Decode(tx.Signature.Signature, retSign); err != nil {
-		// 
+		//               
 		return emptySign
 	}
 	//data := types.Encode(tx)
@@ -115,7 +116,7 @@ func (privkey *RingSignPrivateKey) Sign(msg []byte, _ ...interface{}) crypto.Sig
 }
 
 // PubKey convert to public key
-func (privkey *RingSignPrivateKey) PubKey(_ ...interface{}) crypto.PubKey {
+func (privkey *RingSignPrivateKey) PubKey() crypto.PubKey {
 	publicKey := new(RingSignPublicKey)
 	addr32 := (*[KeyLen32]byte)(unsafe.Pointer(&privkey.key))
 	addr64 := (*[privateKeyLen]byte)(unsafe.Pointer(&privkey.key))
@@ -123,7 +124,7 @@ func (privkey *RingSignPrivateKey) PubKey(_ ...interface{}) crypto.PubKey {
 	A := new(edwards25519.ExtendedGroupElement)
 	edwards25519.GeScalarMultBase(A, addr32)
 	A.ToBytes(&publicKey.key)
-	// 
+	//        
 	copy(addr64[KeyLen32:], publicKey.key[:])
 	return publicKey
 }
@@ -136,7 +137,7 @@ func (privkey *RingSignPrivateKey) Equals(other crypto.PrivKey) bool {
 	return false
 }
 
-// RingSignPublicKey crypto.PubKe 
+// RingSignPublicKey       crypto.PubKey    
 type RingSignPublicKey struct {
 	key [publicKeyLen]byte
 }
@@ -157,7 +158,7 @@ func (pubkey *RingSignPublicKey) VerifyBytes(msg []byte, sign crypto.Signature) 
 	}
 	tx := new(types.Transaction)
 	if err := types.Decode(msg, tx); err != nil || !bytes.Equal([]byte(privacytypes.PrivacyX), types.GetRealExecName(tx.Execer)) {
-		// 
+		//               
 		return false
 	}
 	action := new(privacytypes.PrivacyAction)
@@ -165,7 +166,7 @@ func (pubkey *RingSignPublicKey) VerifyBytes(msg []byte, sign crypto.Signature) 
 		return false
 	}
 	if action.Ty != privacytypes.ActionPrivacy2Privacy && action.Ty != privacytypes.ActionPrivacy2Public {
-		//   
+		//      ，     ，           
 		return false
 	}
 	input := action.GetInput()
@@ -194,7 +195,7 @@ func (pubkey *RingSignPublicKey) Equals(other crypto.PubKey) bool {
 	return false
 }
 
-// RingSignED25519 crypto.Crypt 
+// RingSignED25519   crypto.Crypto     
 type RingSignED25519 struct {
 }
 
@@ -254,9 +255,4 @@ func (r *RingSignED25519) SignatureFromBytes(b []byte) (crypto.Signature, error)
 		return nil, err
 	}
 	return sign, nil
-}
-
-// Validate validate msg and signature
-func (r *RingSignED25519) Validate(msg, pub, sig []byte) error {
-	return crypto.BasicValidation(r, msg, pub, sig)
 }

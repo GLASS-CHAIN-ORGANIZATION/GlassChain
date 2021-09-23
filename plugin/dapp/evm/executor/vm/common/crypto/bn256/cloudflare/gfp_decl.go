@@ -1,5 +1,6 @@
 // +build amd64,!generic arm64,!generic
 
+//nolint:unparam //        golangci-linter  
 package bn256
 
 import "golang.org/x/sys/cpu"

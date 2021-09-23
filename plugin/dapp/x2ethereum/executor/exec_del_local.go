@@ -5,10 +5,10 @@ import (
 )
 
 /*
- * 
+ *                 
  */
 
-// ExecDelLocal  
+// ExecDelLocal       ，    
 func (x *x2ethereum) ExecDelLocal(tx *types.Transaction, receipt *types.ReceiptData, index int) (*types.LocalDBSet, error) {
 	kvs, err := x.DelRollbackKV(tx, tx.Execer)
 	if err != nil {

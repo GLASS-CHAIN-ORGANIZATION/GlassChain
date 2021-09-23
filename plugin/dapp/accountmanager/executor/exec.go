@@ -5,6 +5,10 @@ import (
 	aty "github.com/33cn/plugin/plugin/dapp/accountmanager/types"
 )
 
+/*
+ *            
+ *       （statedb）       （log）
+ */
 
 //Exec_Register ...
 func (a *Accountmanager) Exec_Register(payload *aty.Register, tx *types.Transaction, index int) (*types.Receipt, error) {

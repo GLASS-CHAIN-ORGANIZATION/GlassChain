@@ -177,6 +177,7 @@ func testexecDelLocalBoard(t *testing.T) {
 		},
 	}
 
+	//    local      
 
 	tx, err := types.CreateFormatTx(chainTestCfg, chainTestCfg.ExecName(auty.AutonomyX), nil)
 	assert.NoError(t, err)
@@ -213,7 +214,9 @@ func testexecDelLocalBoard(t *testing.T) {
 		Logs: []*types.ReceiptLog{
 			{Ty: auty.TyLogVotePropBoard, Log: types.Encode(receiptBoard2)},
 		}}
+	//    local      
 
+	//         ，           
 	tx, err = types.CreateFormatTx(chainTestCfg, chainTestCfg.ExecName(auty.AutonomyX), nil)
 	assert.NoError(t, err)
 	set, err = au.execAutoLocalBoard(tx, receipt)
@@ -221,7 +224,7 @@ func testexecDelLocalBoard(t *testing.T) {
 	assert.NotNil(t, set)
 	saveKvs(sdb, set.KV)
 
-	
+	//       
 	tx, err = types.CreateFormatTx(chainTestCfg, chainTestCfg.ExecName(auty.AutonomyX), nil)
 	assert.NoError(t, err)
 	set, err = au.execAutoLocalBoard(tx, recpt)
@@ -288,6 +291,7 @@ func TestListProposalBoard(t *testing.T) {
 		Index:      2,
 	}
 
+	//       
 	var kvs []*types.KeyValue
 	table := NewBoardTable(kvdb)
 	for _, tcase := range testcase {
@@ -303,6 +307,7 @@ func TestListProposalBoard(t *testing.T) {
 	}
 
 	saveKvs(sdb, kvs)
+	//     
 	req := &auty.ReqQueryProposalBoard{
 		Status:    auty.AutonomyStatusProposalBoard,
 		Count:     10,
@@ -319,6 +324,7 @@ func TestListProposalBoard(t *testing.T) {
 		k--
 	}
 
+	//     
 	req = &auty.ReqQueryProposalBoard{
 		Status:    auty.AutonomyStatusProposalBoard,
 		Count:     10,
@@ -333,6 +339,7 @@ func TestListProposalBoard(t *testing.T) {
 		assert.Equal(t, rsp.(*auty.ReplyQueryProposalBoard).PropBoards[i].Index, int32(tcase.index))
 	}
 
+	//     
 	req = &auty.ReqQueryProposalBoard{
 		Status:    auty.AutonomyStatusProposalBoard,
 		Count:     1,

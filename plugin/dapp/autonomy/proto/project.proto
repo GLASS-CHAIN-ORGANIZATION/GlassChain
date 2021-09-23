@@ -7,14 +7,18 @@ syntax = "proto3";
 import "lcommon.proto";
 
 package types;
-option go_package = "../types";
 
 message AutonomyProposalProject {
     ProposalProject propProject = 1;
+    //         
     RuleConfig curRule = 2;
+    //            
     repeated string boards = 3;
+    //        
     VoteResult boardVoteRes = 4;
+    //     
     PublicVote pubVote = 5;
+    //   
     int32  status     = 6;
     string address    = 7;
     int64  height     = 8;
@@ -23,24 +27,28 @@ message AutonomyProposalProject {
 }
 
 message ProposalProject {
+    //     
     int32 year  = 1;
     int32 month = 2;
     int32 day   = 3;
 
-    string firstStage   = 4;  
-    string lastStage    = 5;  
-    string production   = 6;  
-    string description  = 7;  
-    string contractor   = 8;  
-    int64  amount       = 9;  
-    string amountDetail = 10; 
+    //     
+    string firstStage   = 4;  //         hash
+    string lastStage    = 5;  //         hash
+    string production   = 6;  //     
+    string description  = 7;  //        
+    string contractor   = 8;  //    
+    int64  amount       = 9;  //     
+    string amountDetail = 10; //     
 
-    string toAddr = 11; 
+    //     
+    string toAddr = 11; //     
 
-    int64 startBlockHeight    = 12; 
-    int64 endBlockHeight      = 13; 
-    int64 realEndBlockHeight  = 14; 
-    int32 projectNeedBlockNum = 15; 
+    //     
+    int64 startBlockHeight    = 12; //         
+    int64 endBlockHeight      = 13; //         
+    int64 realEndBlockHeight  = 14; //           
+    int32 projectNeedBlockNum = 15; //            ，                   
 }
 
 message RevokeProposalProject {

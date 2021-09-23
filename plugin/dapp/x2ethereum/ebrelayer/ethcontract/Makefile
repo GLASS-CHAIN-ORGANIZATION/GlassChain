@@ -1,5 +1,5 @@
 ##
-# solidity bi ，ab  g 
+##  solidity，   bin  ，abi  ，    go  
 
 
 SRC_CONTRACT := sol_contracts

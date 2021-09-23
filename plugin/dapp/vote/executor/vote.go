@@ -8,12 +8,12 @@ import (
 )
 
 /*
- * 
- * 
+ *        
+ *         
  */
 
 var (
-	/ 
+	//  
 	elog = log.New("module", "vote.executor")
 )
 

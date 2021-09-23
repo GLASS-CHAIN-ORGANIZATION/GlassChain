@@ -13,14 +13,14 @@ import (
 	pt "github.com/33cn/plugin/plugin/dapp/paracross/types"
 )
 
-//1 paracros  ExecOk  PACK TyLogErr，O 
-//2 paracross+other， othe PACK OK OK PACK TyLogErr
-//3 other PACK
+//1,     paracross ，     ExecOk，        ，     PACK，    TyLogErr，OK       
+//2,   paracross+other， other  PACK，      OK，      OK，     PACK，  TyLogErr
+//3,     other，   PACK
 func checkReceiptExecOk(receipt *types.ReceiptData) bool {
 	if receipt.Ty == types.ExecOk {
 		return true
 	}
-	/ allow tx  paracross
+	//    allow    tx            paracross
 	for _, log := range receipt.Logs {
 		if log.Ty == types.TyLogErr {
 			return false
@@ -29,24 +29,24 @@ func checkReceiptExecOk(receipt *types.ReceiptData) bool {
 	return true
 }
 
-//1.    PACK。   bloc ）
-//2.  paracross+user.p.xx.paracros  user.p.xx.paracros  
-//3. ExecOk o  
-//4. , t grou    
-//5. ExecPack    LogErr  
-/ para filte ， tx：
-// 1, 	paracross	+     user.p.xx.paracross  
-// 2,    paracross	+     user.p.xx.other 	 
-// 3,    other  		+    user.p.xx.paracross  
-// 4,  	other 		+    user.p.xx.other 	 
-// 5,   user.p.xx.paracross 			 
-// 6, 	    user.p.xx.paracross + user.p.xx.other   
-// 7,      all user.p.xx.other  				 
-///// tx tx
-/ para filte ， tx：
-// 1,   user.p.xx.paracross 			   paracros 
-// 2, 	    user.p.xx.paracross + user.p.xx.other       paracros 
-// 3,      user.p.xx.other  				     othe pack
+//1.         ，                   ，         ,  PACK。（      ，            ,       block  ）
+//2.        ，   paracross+user.p.xx.paracross  ，    user.p.xx.paracross  ，       
+//3.         ExecOk,        ok ，      
+//4.           ,      tx    group  ，         ，        ，      
+//5.      ExecPack，     ，                ，                 ，    LogErr，    ，     
+// para filter  ，           tx：
+// 1,   	paracross	+  	     user.p.xx.paracross        
+// 2,      paracross	+  	     user.p.xx.other 		      
+// 3,      other  		+ 	     user.p.xx.paracross 	       
+// 4,    	other 		+ 	     user.p.xx.other 		      
+// 5,   +    user.p.xx.paracross    				        
+// 6,    	    user.p.xx.paracross + user.p.xx.other          
+// 7,         all user.p.xx.other  					       
+/////                    tx，    tx
+// para filter  ，           tx：
+// 1,   +    user.p.xx.paracross    				          paracross      
+// 2,    	    user.p.xx.paracross + user.p.xx.other              paracross      
+// 3,         user.p.xx.other     					           other  pack
 func filterParaTxGroup(cfg *types.Chain33Config, tx *types.Transaction, allTxs []*types.TxDetail, index int, mainBlockHeight, forkHeight int64) ([]*types.Transaction, int) {
 	var headIdx int
 
@@ -59,7 +59,7 @@ func filterParaTxGroup(cfg *types.Chain33Config, tx *types.Transaction, allTxs [
 
 	endIdx := headIdx + int(tx.GroupCount)
 	for i := headIdx; i < endIdx; i++ {
-		/ forkHeigh   6.2. blockhas  6.2.  
+		//    forkHeight         ，        ,        6.2.0              blockhash  ，   6.2.0    ，   
 		if cfg.IsPara() && mainBlockHeight < forkHeight && !types.Conf(cfg, pt.ParaPrefixConsSubConf).IsEnable(pt.ParaFilterIgnoreTxGroup) {
 			if types.IsParaExecName(string(allTxs[i].Tx.Execer)) {
 				continue
@@ -71,7 +71,7 @@ func filterParaTxGroup(cfg *types.Chain33Config, tx *types.Transaction, allTxs [
 			return nil, endIdx
 		}
 	}
-	/  tx
+	//                     tx
 	var retTxs []*types.Transaction
 	for _, retTx := range allTxs[headIdx:endIdx] {
 		retTxs = append(retTxs, retTx.Tx)
@@ -91,7 +91,7 @@ func FilterTxsForPara(cfg *types.Chain33Config, main *types.ParaTxDetail) []*typ
 			i = endIdx - 1
 			continue
 		}
-		/ paracross tx , 6.2for   user.p.xx.paracros 
+		//   paracross tx             , 6.2fork         user.p.xx.paracross      
 		if main.Header.Height >= forkHeight && bytes.HasSuffix(tx.Execer, []byte(pt.ParaX)) && !checkReceiptExecOk(main.TxDetails[i].Receipt) {
 			clog.Error("FilterTxsForPara rmv tx", "txhash", hex.EncodeToString(tx.Hash()))
 			continue
@@ -113,15 +113,15 @@ func FilterParaCrossTxHashes(txs []*types.Transaction) [][]byte {
 	return txHashs
 }
 
-/ para filte ， tx：
-// 1, 	paracross	+     user.p.xx.paracross  
-// 2,    paracross	+     user.p.xx.other 	 
-// 3,    other  		+    user.p.xx.paracross  
-// 4,  	other 		+    user.p.xx.other 	 
-// 5,   user.p.xx.paracross 			 
-// 6, 	    user.p.xx.paracross + user.p.xx.other   
-// 7,      all user.p.xx.other  				 
-// user.p.xx.paracros  paracros 
+// para filter  ，           tx：
+// 1,   	paracross	+  	     user.p.xx.paracross        
+// 2,      paracross	+  	     user.p.xx.other 		      
+// 3,      other  		+ 	     user.p.xx.paracross 	      
+// 4,    	other 		+ 	     user.p.xx.other 		      
+// 5,   +    user.p.xx.paracross    				        
+// 6,    	    user.p.xx.paracross + user.p.xx.other          
+// 7,         all user.p.xx.other  					       
+//             user.p.xx.paracross       ，                         paracross       
 func crossTxGroupProc(title string, txs []*types.Transaction, index int) ([]*types.Transaction, int32) {
 	var headIdx, endIdx int32
 
@@ -132,8 +132,8 @@ func crossTxGroupProc(title string, txs []*types.Transaction, index int) ([]*typ
 		}
 	}
 	//cross mix tx, contain main and para tx, main prefix with pt.paraX
-	/  paracros  unfreez  
-	/  trad 
+	//              ，  paracross    ，              unfreeze  ，              
+	//           ，        trade  
 	endIdx = headIdx + txs[index].GroupCount
 	for i := headIdx; i < endIdx; i++ {
 		if bytes.HasPrefix(txs[i].Execer, []byte(pt.ParaX)) {
@@ -152,10 +152,10 @@ func crossTxGroupProc(title string, txs []*types.Transaction, index int) ([]*typ
 
 }
 
-//FilterParaMainCrossTxHashes ForkParacrossCommitT txgrou main chain t 
+//FilterParaMainCrossTxHashes ForkParacrossCommitTx    txgroup   main chain tx   
 func FilterParaMainCrossTxHashes(title string, txs []*types.Transaction) [][]byte {
 	var crossTxHashs [][]byte
-	/ tx paracros user.p ， user.p.xx paracros 
+	//  tx    paracross   user.p.  ， user.p.xx.  paracross      
 	for i := 0; i < len(txs); i++ {
 		tx := txs[i]
 		if tx.GroupCount > 1 {
@@ -175,7 +175,7 @@ func FilterParaMainCrossTxHashes(title string, txs []*types.Transaction) [][]byt
 
 }
 
-//CalcTxHashsHash txhas has  
+//CalcTxHashsHash     txhash hash       
 func CalcTxHashsHash(txHashs [][]byte) []byte {
 	if len(txHashs) == 0 {
 		return nil

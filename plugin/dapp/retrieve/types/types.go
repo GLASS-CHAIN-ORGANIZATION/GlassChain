@@ -42,7 +42,7 @@ func NewType(cfg *types.Chain33Config) *RetrieveType {
 	return c
 }
 
-// GetRealToAddr  T 
+// GetRealToAddr     ，  To       
 func (r RetrieveType) GetRealToAddr(tx *types.Transaction) string {
 	if len(tx.To) == 0 {
 		return address.ExecAddress(string(tx.Execer))

@@ -42,7 +42,7 @@ func getLocalDBSize(key []byte) int {
 
 func getLocalDB(key []byte) ([]byte, error) {
 	newKey := append(calcLocalPrefix(wasmCB.contractName), key...)
-	//  
+	//     ，     
 	for _, kv := range wasmCB.localCache {
 		if string(newKey) == string(kv.Key) {
 			return kv.Value, nil
@@ -169,16 +169,4 @@ func printlog(s string) {
 
 func sha256(data []byte) []byte {
 	return common.Sha256(data)
-}
-
-func getENVSize(n int) int {
-	return len(wasmCB.ENV[n])
-}
-
-func getENV(n int) string {
-	return wasmCB.ENV[n]
-}
-
-func totalENV() int {
-	return len(wasmCB.ENV)
 }

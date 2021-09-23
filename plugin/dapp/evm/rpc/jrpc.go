@@ -8,18 +8,17 @@ import (
 	"context"
 	"encoding/hex"
 
-	"github.com/33cn/chain33/common/address"
-
 	"github.com/33cn/chain33/types"
 	evm "github.com/33cn/plugin/plugin/dapp/evm/types"
 )
 
-func (c *Jrpc) CreateDeployTx(parm *evm.EvmContractCreateReq, result *interface{}) error {
+// EvmCreateTx   Evm    
+func (c *Jrpc) EvmCreateTx(parm *evm.EvmContractCreateReq, result *interface{}) error {
 	if parm == nil {
 		return types.ErrInvalidParam
 	}
 
-	reply, err := c.cli.CreateDeployTx(context.Background(), *parm)
+	reply, err := c.cli.Create(context.Background(), *parm)
 	if err != nil {
 		return err
 	}
@@ -27,12 +26,13 @@ func (c *Jrpc) CreateDeployTx(parm *evm.EvmContractCreateReq, result *interface{
 	return nil
 }
 
-func (c *Jrpc) CreateCallTx(parm *evm.EvmContractCallReq, result *interface{}) error {
+// EvmCallTx   Evm    
+func (c *Jrpc) EvmCallTx(parm *evm.EvmContractCallReq, result *interface{}) error {
 	if parm == nil {
 		return types.ErrInvalidParam
 	}
 
-	reply, err := c.cli.CreateCallTx(context.Background(), *parm)
+	reply, err := c.cli.Call(context.Background(), *parm)
 	if err != nil {
 		return err
 	}
@@ -40,24 +40,32 @@ func (c *Jrpc) CreateCallTx(parm *evm.EvmContractCallReq, result *interface{}) e
 	return nil
 }
 
-func (c *Jrpc) CreateTransferOnlyTx(parm *evm.EvmTransferOnlyReq, result *interface{}) error {
+// EvmTransferTx Evm    
+func (c *Jrpc) EvmTransferTx(parm *evm.EvmContractTransferReq, result *interface{}) error {
 	if parm == nil {
 		return types.ErrInvalidParam
 	}
 
-	reply, err := c.cli.CreateTransferOnlyTx(context.Background(), *parm)
+	reply, err := c.cli.Transfer(context.Background(), *parm, false)
 	if err != nil {
 		return err
 	}
+
 	*result = hex.EncodeToString(reply.Data)
 	return nil
 }
 
-func (c *Jrpc) CalcNewContractAddr(parm *evm.EvmCalcNewContractAddrReq, result *interface{}) error {
+// EvmWithdrawTx Evm    
+func (c *Jrpc) EvmWithdrawTx(parm *evm.EvmContractTransferReq, result *interface{}) error {
 	if parm == nil {
 		return types.ErrInvalidParam
 	}
-	newContractAddr := address.GetExecAddress(parm.Caller + parm.Txhash)
-	*result = newContractAddr.String()
+
+	reply, err := c.cli.Transfer(context.Background(), *parm, true)
+	if err != nil {
+		return err
+	}
+
+	*result = hex.EncodeToString(reply.Data)
 	return nil
 }

@@ -15,6 +15,8 @@
 // along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
 
 // +build amd64,blsadx
+
+//nolint:unparam //        golangci-linter  
 package bls12381
 
 // enableADX is true if the ADX/BMI2 instruction set was requested for the BLS

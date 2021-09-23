@@ -167,17 +167,17 @@ func isSelfConsOn(db dbm.KV, height int64) (bool, error) {
 
 func (a *action) checkValidStage(config *pt.SelfConsensStage) error {
 	cfg := a.api.GetConfig()
-	//0. for 
+	//0.         fork  
 	if !cfg.IsDappFork(config.StartHeight, pt.ParaX, pt.ForkParaSelfConsStages) {
 		return errors.Wrapf(types.ErrNotAllow, "checkValidStage config height:%d less than fork height", config.StartHeight)
 	}
 
-	//1. 
+	//1.               
 	if config.StartHeight <= a.height {
 		return errors.Wrapf(pt.ErrHeightHasPast, "checkValidStage config height:%d less than block height:%d", config.StartHeight, a.height)
 	}
 
-	//2. stage    
+	//2.        stages ，    ，      ，          
 	stages, err := getSelfConsensStages(a.db)
 	if err != nil && errors.Cause(err) != pt.ErrKeyNotExist {
 		return errors.Wrapf(err, "checkValidStage get stages")
@@ -217,7 +217,7 @@ func (a *action) stageCancel(config *pt.ConfigCancelInfo) (*types.Receipt, error
 		return nil, err
 	}
 
-	/ 
+	//         
 	if a.fromaddr != stat.FromAddr {
 		return nil, errors.Wrapf(types.ErrNotAllow, "stage id create by:%s,not by:%s", stat.FromAddr, a.fromaddr)
 	}
@@ -250,7 +250,7 @@ func (a *action) stageVote(config *pt.ConfigVoteInfo) (*types.Receipt, error) {
 	if stat.Status != pt.ParaApplyJoining && stat.Status != pt.ParaApplyVoting {
 		return nil, errors.Wrapf(pt.ErrParaNodeOpStatusWrong, "config id:%s,status:%d", config.Id, stat.Status)
 	}
-	//stage blockHeight vote tx height 
+	//stage blockHeight　       vote tx height,      
 	err = a.checkValidStage(stat.Stage)
 	if err != nil {
 		return nil, err
@@ -270,7 +270,7 @@ func (a *action) stageVote(config *pt.ConfigVoteInfo) (*types.Receipt, error) {
 		stat.Votes.Votes = append(stat.Votes.Votes, pt.ParaNodeVoteStr[config.Value])
 	}
 
-	/ nodegrou add 
+	//     nodegroup addr   
 	stat.Votes = updateVotes(stat.Votes, nodes)
 
 	most, vote := getMostVote(stat.Votes)

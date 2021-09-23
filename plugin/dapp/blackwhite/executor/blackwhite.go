@@ -20,7 +20,7 @@ var (
 	driverName     = gt.BlackwhiteX
 )
 
-// Init
+// Init         
 func Init(name string, cfg *types.Chain33Config, sub []byte) {
 	driverName = name
 	gt.BlackwhiteX = driverName
@@ -36,7 +36,7 @@ func InitExecType() {
 	ety.InitFuncList(types.ListMethod(&Blackwhite{}))
 }
 
-// Blackwhite 
+// Blackwhite         
 type Blackwhite struct {
 	drivers.DriverBase
 }
@@ -48,12 +48,12 @@ func newBlackwhite() drivers.Driver {
 	return c
 }
 
-// GetName
+// GetName        
 func GetName() string {
 	return newBlackwhite().GetName()
 }
 
-// GetDriverName 
+// GetDriverName        
 func (c *Blackwhite) GetDriverName() string {
 	return driverName
 }
@@ -124,7 +124,7 @@ func (c *Blackwhite) delHeightIndex(res *gt.ReceiptBlackwhiteStatus) (kvs []*typ
 	return kvs
 }
 
-// GetBlackwhiteRoundInfo
+// GetBlackwhiteRoundInfo         
 func (c *Blackwhite) GetBlackwhiteRoundInfo(req *gt.ReqBlackwhiteRoundInfo) (types.Message, error) {
 	gameID := req.GameID
 	key := calcMavlRoundKey(gameID)
@@ -138,7 +138,7 @@ func (c *Blackwhite) GetBlackwhiteRoundInfo(req *gt.ReqBlackwhiteRoundInfo) (typ
 	if err != nil {
 		return nil, err
 	}
-
+	//     
 	for _, addRes := range round.AddrResult {
 		addRes.ShowSecret = ""
 	}
@@ -164,6 +164,7 @@ func (c *Blackwhite) GetBlackwhiteRoundInfo(req *gt.ReqBlackwhiteRoundInfo) (typ
 	return &rep, nil
 }
 
+// GetBwRoundListInfo           ，        ，       
 func (c *Blackwhite) GetBwRoundListInfo(req *gt.ReqBlackwhiteRoundList) (types.Message, error) {
 	var key []byte
 	var values [][]byte
@@ -184,7 +185,7 @@ func (c *Blackwhite) GetBwRoundListInfo(req *gt.ReqBlackwhiteRoundList) (types.M
 		if len(values) == 0 {
 			return nil, types.ErrNotFound
 		}
-	} else { 
+	} else { //       txhash  
 		heightstr := genHeightIndexStr(req.GetIndex())
 		if 0 == req.Status {
 			key = calcRoundKey4AddrHeight(req.Address, heightstr)
@@ -215,6 +216,7 @@ func (c *Blackwhite) GetBwRoundListInfo(req *gt.ReqBlackwhiteRoundList) (types.M
 		if err != nil {
 			return nil, err
 		}
+		//     
 		for _, addRes := range round.AddrResult {
 			addRes.ShowSecret = ""
 		}
@@ -240,7 +242,7 @@ func (c *Blackwhite) GetBwRoundListInfo(req *gt.ReqBlackwhiteRoundList) (types.M
 	return &rep, nil
 }
 
-// GetBwRoundLoopResult
+// GetBwRoundLoopResult             
 func (c *Blackwhite) GetBwRoundLoopResult(req *gt.ReqLoopResult) (types.Message, error) {
 	localDb := c.GetLocalDB()
 	values, err := localDb.Get(calcRoundKey4LoopResult(req.GameID))
@@ -257,7 +259,7 @@ func (c *Blackwhite) GetBwRoundLoopResult(req *gt.ReqLoopResult) (types.Message,
 		return nil, err
 	}
 
-	if req.LoopSeq > 0 { 
+	if req.LoopSeq > 0 { //      
 		if len(result.Results) < int(req.LoopSeq) {
 			return nil, gt.ErrNoLoopSeq
 		}
@@ -271,7 +273,7 @@ func (c *Blackwhite) GetBwRoundLoopResult(req *gt.ReqLoopResult) (types.Message,
 		res.Results = append(res.Results, perRes)
 		return res, nil
 	}
-	return &result, nil 
+	return &result, nil //       
 }
 
 func genHeightIndexStr(index int64) string {
@@ -282,6 +284,7 @@ func heightIndexToIndex(height int64, index int32) int64 {
 	return height*types.MaxTxsPerBlock + int64(index)
 }
 
+// GetPayloadValue      action   
 func (c *Blackwhite) GetPayloadValue() types.Message {
 	return &gt.BlackwhiteAction{}
 }

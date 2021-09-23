@@ -6,15 +6,15 @@ import (
 )
 
 /*
- * rp 
+ * rpc          
  */
 
-// grp servic 
+//   grpc service  
 type channelClient struct {
 	rpctypes.ChannelClient
 }
 
-// Jrpc json rp 
+// Jrpc   json rpc    
 type Jrpc struct {
 	cli *channelClient
 }
@@ -29,6 +29,6 @@ func Init(name string, s rpctypes.RPCServer) {
 	cli := &channelClient{}
 	grpc := &Grpc{channelClient: cli}
 	cli.Init(name, s, &Jrpc{cli: cli}, grpc)
-	/ grpc servic grpc server pb.g 
+	//  grpc service   grpc server，       pb.go  
 	x2ethereumtypes.RegisterX2EthereumServer(s.GRPC(), grpc)
 }

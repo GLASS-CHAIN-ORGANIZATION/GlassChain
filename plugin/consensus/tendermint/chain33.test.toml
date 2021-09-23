@@ -1,16 +1,24 @@
 Title="local"
 
-[crypto]
 [log]
+#     ，  debug(dbug)/info/warn/error(eror)/crit
 loglevel = "debug"
 logConsoleLevel = "info"
+#      ，    ，                
 logFile = "logs/chain33.log"
+#           （  ： ）
 maxFileSize = 300
+#              
 maxBackups = 100
+#            （  ： ）
 maxAge = 28
+#              （    UTC  ）
 localTime = true
+#           （     gz）
 compress = true
+#             
 callerFile = false
+#         
 callerFunction = false
 
 [blockchain]
@@ -82,8 +90,11 @@ createEmptyBlocks=true
 createEmptyBlocksInterval=1
 validatorNodes=["127.0.0.1:46656", "127.0.0.2:46656"]
 fastSync=false
+# Propose         
 preExec=false
+#     ,  "secp256k1","ed25519","sm2","bls",   "ed25519"
 signName="ed25519"
+#         ,          ,  "bls"
 useAggregateSignature=false
 
 [store]
@@ -114,8 +125,11 @@ alias=["token1:token","token2:token","token3:token"]
 saveTokenTxList=false
 
 [exec.sub.cert]
+#            
 enable=false
+#       
 cryptoPath="authdir/crypto"
+#        ，  "auth_ecdsa", "auth_sm2"
 signType="auth_ecdsa"
 
 [exec.sub.manage]
@@ -124,5 +138,7 @@ superManager=[
 ]
 
 [metrics]
+#      metrics     
 enableMetrics=false
+#      
 dataEmitMode="influxdb"

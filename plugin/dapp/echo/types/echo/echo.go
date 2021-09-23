@@ -10,9 +10,10 @@ import (
 	"github.com/33cn/chain33/types"
 )
 
+// CreateTx     
 func (e *Type) CreateTx(action string, message json.RawMessage) (*types.Transaction, error) {
 	elog.Debug("echo.CreateTx", "action", action)
-
+	//    ping/pang      
 	cfg := e.GetConfig()
 	if action == "ping" || action == "pang" {
 		var param Tx

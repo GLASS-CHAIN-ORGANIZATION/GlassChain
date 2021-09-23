@@ -46,8 +46,8 @@ func pushTxReceipts(txReceipts *types.TxReceipts4Subscribe) error {
 //TxReceipts ...
 type TxReceipts struct {
 	db     dbm.DB
-	seqNum int64 / 
-	height int64 / 
+	seqNum int64 //        
+	height int64 //      
 	quit   chan struct{}
 }
 
@@ -64,7 +64,7 @@ func NewSyncTxReceipts(db dbm.DB) *TxReceipts {
 	return sync
 }
 
-/    
+//         0   ，             ，         
 func (syncTx *TxReceipts) initSyncReceiptDataBase() {
 	txblock0, _ := syncTx.GetTxReceipts(0)
 	if nil != txblock0 {
@@ -94,24 +94,24 @@ func (syncTx *TxReceipts) SaveAndSyncTxs2Relayer() {
 	}
 }
 
-// 
-// 1.  seqNumber ->  seq
-// 2.  lastseq
-// 3. 
+//       
+// 1.    seqNumber ->  seq
+// 2.    lastseq
+// 3.     
 //
-// 
-// 1. ， 
-// 2. 。 ， 
-// ， 
+//     
+// 1.    ，           
+// 2.            。    ，   
+//          ，       
 
-// 
+//       
 func (syncTx *TxReceipts) dealTxReceipts(txReceipts *types.TxReceipts4Subscribe) {
 	count, start, txReceiptsParsed, err := parseTxReceipts(txReceipts)
 	if err != nil {
 		resultCh <- err
 	}
 
-	/  se seq
+	//     ，      seq         seq
 	if start < syncTx.seqNum {
 		log.Error("dealTxReceipts err: the tx and receipt pushed is old", "start", start, "current_seq", syncTx.seqNum)
 		resultCh <- errors.New("The tx and receipt pushed is old")
@@ -126,16 +126,16 @@ func (syncTx *TxReceipts) dealTxReceipts(txReceipts *types.TxReceipts4Subscribe)
 			syncTx.setBlockHeight(txsPerBlock.Height)
 			height = txsPerBlock.Height
 		} else {
-			/ 
+			//        
 			syncTx.delTxReceipts(txsPerBlock.Height)
 			syncTx.setBlockLastSequence(txsPerBlock.SeqNum)
 			height = txsPerBlock.Height - 1
-			/  
+			//             ，                
 			syncTx.setBlockHeight(height)
 		}
 	}
 	//syncTx.syncReceiptChan <- height
-	/  
+	//    ，      
 	resultCh <- nil
 	log.Debug("dealTxReceipts", "seqStart", start, "count", count, "maxBlockHeight", height)
 }
@@ -152,7 +152,7 @@ func (syncTx *TxReceipts) LoadLastBlockHeight() (int64, error) {
 func (syncTx *TxReceipts) setBlockLastSequence(newSequence int64) {
 	Sequencebytes := types.Encode(&types.Int64{Data: newSequence})
 	syncTx.db.Set(lastSequences, Sequencebytes)
-	/ seq
+	//        seq
 	syncTx.updateSequence(newSequence)
 }
 
@@ -210,7 +210,7 @@ func (syncTx *TxReceipts) delTxReceipts(height int64) {
 	_ = syncTx.db.Set(key, nil)
 }
 
-// , 
+//          ,      
 func parseTxReceipts(txReceipts *types.TxReceipts4Subscribe) (count int, start int64, txsWithReceipt []*types.TxReceipts4SubscribePerBlk, err error) {
 	count = len(txReceipts.TxReceipts)
 	txsWithReceipt = make([]*types.TxReceipts4SubscribePerBlk, 0)

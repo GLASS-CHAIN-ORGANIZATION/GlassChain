@@ -1,36 +1,36 @@
 # supervisor
 
-## 
+##      
 
 http://supervisord.org/installing.html
 
-## 
+##     
 
 ```
 sudo pip install --upgrade pip
 sudo pip install -r requirements.txt
 ```
 
-## supervisord 
+## supervisord   
 
 ```
 http://supervisord.org/running.html#supervisorctl-actions
 
-supervisord  supervisord  supervisorctl ：
+supervisord                supervisord   supervisorctl，        ：
 
-supervisord  Supervisord  。
-supervisorctl stop programxxx (programxxx)，programxxx  [program:beepkg]   beepkg。
-supervisorctl start programxxx 
-supervisorctl restart programxxx 
-supervisorctl stop groupworker:   groupworker (start,restart )
-supervisorctl stop all  ：start、restart、stop 。
-supervisorctl reload   。
-supervisorctl update   。
+supervisord，     Supervisord，  、          。
+supervisorctl stop programxxx，       (programxxx)，programxxx   [program:beepkg]      ，       beepkg。
+supervisorctl start programxxx，      
+supervisorctl restart programxxx，      
+supervisorctl stop groupworker: ，         groupworker        (start,restart   )
+supervisorctl stop all，      ， ：start、restart、stop             。
+supervisorctl reload，         ，              、      。
+supervisorctl update，         ，            ，                 。
 
-   stop   reload  update 。
+  ：    stop       ，  reload    update        。
 ```
 
-## relayd
+##   relayd
 
 ```
 echo_supervisord_conf > supervisord.conf

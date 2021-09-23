@@ -29,7 +29,7 @@ import (
 )
 
 const (
-	defaultWaitMinBlockNum = 100 //min block number startHeight before lastHeight in mainchain
+	minBlockNum = 100 //min block number startHeight before lastHeight in mainchain
 
 	defaultGenesisBlockTime int64 = 1514533390
 	//current miner tx take any privatekey for unify all nodes sign purpose, and para chain is free
@@ -73,7 +73,6 @@ type subConfig struct {
 	WriteBlockSeconds       int64    `json:"writeBlockSeconds,omitempty"`
 	ParaRemoteGrpcClient    string   `json:"paraRemoteGrpcClient,omitempty"`
 	StartHeight             int64    `json:"startHeight,omitempty"`
-	WaitMainBlockNum        int64    `json:"waitMainBlockNum,omitempty"`
 	GenesisStartHeightSame  bool     `json:"genesisStartHeightSame,omitempty"`
 	EmptyBlockInterval      []string `json:"emptyBlockInterval,omitempty"`
 	AuthAccount             string   `json:"authAccount,omitempty"`
@@ -110,11 +109,9 @@ func New(cfg *types.Consensus, sub []byte) queue.Module {
 		subcfg.WriteBlockSeconds = poolMainBlockSec
 	}
 
-	if subcfg.WaitMainBlockNum <= 0 {
-		subcfg.WaitMainBlockNum = defaultWaitMinBlockNum
-	}
-
-	if cfg.GenesisBlockTime == 1514533394 {
+	//     toml GenesisBlockTime=1514533394，      ，        1514533390,        cfg.GenesisBlockTime,  
+	//       1514533390，      ，              ，panic    
+	if cfg.GenesisBlockTime == 1514533390 {
 		panic("para chain GenesisBlockTime need be modified to 1514533390 or other")
 	}
 
@@ -171,6 +168,7 @@ func New(cfg *types.Consensus, sub []byte) queue.Module {
 	return para
 }
 
+//para         
 func (client *client) CheckBlock(parent *types.Block, current *types.BlockDetail) error {
 	err := checkMinerTx(current)
 	return err
@@ -239,7 +237,9 @@ func (client *client) InitBlock() {
 		if client.subCfg.StartHeight <= 0 {
 			panic(fmt.Sprintf("startHeight(%d) should be more than 0 in mainchain", client.subCfg.StartHeight))
 		}
+		//           hash startHeight-1   block hash
 		mainHash := client.GetStartMainHash(client.subCfg.StartHeight - 1)
+		//     
 		newblock := &types.Block{}
 		newblock.Height = 0
 		newblock.BlockTime = defaultGenesisBlockTime
@@ -250,6 +250,7 @@ func (client *client) InitBlock() {
 		newblock.ParentHash = zeroHash[:]
 		newblock.MainHash = mainHash
 
+		//    1,        6.2.0        blockhash  ，   6.2.0    ，   
 		newblock.MainHeight = client.subCfg.StartHeight - 1
 		if client.subCfg.GenesisStartHeightSame {
 			newblock.MainHeight = client.subCfg.StartHeight
@@ -274,6 +275,7 @@ func (client *client) InitBlock() {
 
 }
 
+// GetStartMainHash   start
 func (client *client) GetStartMainHash(height int64) []byte {
 	lastHeight, err := client.GetLastHeightOnMainChain()
 	if err != nil {
@@ -285,7 +287,7 @@ func (client *client) GetStartMainHash(height int64) []byte {
 
 	if height > 0 {
 		hint := time.NewTicker(time.Second * time.Duration(client.subCfg.WriteBlockSeconds))
-		for lastHeight < height+client.subCfg.WaitMainBlockNum {
+		for lastHeight < height+minBlockNum {
 			select {
 			case <-hint.C:
 				plog.Info("Waiting lastHeight increase......", "lastHeight", lastHeight, "startHeight", height)
@@ -298,7 +300,7 @@ func (client *client) GetStartMainHash(height int64) []byte {
 			}
 		}
 		hint.Stop()
-		plog.Info(fmt.Sprintf("lastHeight more than %d blocks after startHeight", client.subCfg.WaitMainBlockNum), "lastHeight", lastHeight, "startHeight", height)
+		plog.Info(fmt.Sprintf("lastHeight more than %d blocks after startHeight", minBlockNum), "lastHeight", lastHeight, "startHeight", height)
 	}
 
 	hash, err := client.GetHashByHeightOnMainChain(height)
@@ -312,12 +314,12 @@ func (client *client) GetStartMainHash(height int64) []byte {
 func (client *client) CreateGenesisTx() (ret []*types.Transaction) {
 	var tx types.Transaction
 	cfg := client.GetAPI().GetConfig()
-	tx.Execer = []byte(cfg.ExecName(cfg.GetCoinExec()))
+	tx.Execer = []byte(cfg.ExecName(cty.CoinsX))
 	tx.To = client.Cfg.Genesis
 	//gen payload
 	g := &cty.CoinsAction_Genesis{}
 	g.Genesis = &types.AssetsGenesis{}
-	g.Genesis.Amount = client.subCfg.GenesisAmount * cfg.GetCoinPrecision()
+	g.Genesis.Amount = client.subCfg.GenesisAmount * types.Coin
 	tx.Payload = types.Encode(&cty.CoinsAction{Value: g, Ty: cty.CoinsActionGenesis})
 	ret = append(ret, &tx)
 	return
@@ -360,10 +362,12 @@ func (client *client) isCaughtUp() bool {
 }
 
 func checkMinerTx(current *types.BlockDetail) error {
+	//         execs,       
 	if len(current.Block.Txs) == 0 {
 		return types.ErrEmptyTx
 	}
 	baseTx := current.Block.Txs[0]
+	//           
 	var action paracross.ParacrossAction
 	err := types.Decode(baseTx.GetPayload(), &action)
 	if err != nil {
@@ -372,20 +376,24 @@ func checkMinerTx(current *types.BlockDetail) error {
 	if action.GetTy() != pt.ParacrossActionMiner {
 		return paracross.ErrParaMinerTxType
 	}
+	//        OK
 	if action.GetMiner() == nil {
 		return paracross.ErrParaEmptyMinerTx
 	}
 
+	//  exec     
 	if current.Receipts[0].Ty != types.ExecOk {
 		return paracross.ErrParaMinerExecErr
 	}
 	return nil
 }
 
+//  newBlock       
 func (client *client) CmpBestBlock(newBlock *types.Block, cmpBlock *types.Block) bool {
 	return false
 }
 
+//["0:50","100:20","500:30"]
 func parseEmptyBlockInterval(cfg []string) ([]*emptyBlockInterval, error) {
 	var emptyInter []*emptyBlockInterval
 	if len(cfg) == 0 {

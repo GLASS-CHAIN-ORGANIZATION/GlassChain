@@ -17,13 +17,14 @@ import (
 
 	"fmt"
 
-	ecdsa_util "github.com/33cn/chain33/system/crypto/secp256r1"
 	sm2_util "github.com/33cn/chain33/system/crypto/sm2"
+	ecdsa_util "github.com/33cn/plugin/plugin/crypto/ecdsa"
 	ty "github.com/33cn/plugin/plugin/dapp/cert/types"
 	"github.com/pkg/errors"
 	"github.com/tjfoc/gmsm/sm2"
 )
 
+// SKI   ski
 func SKI(curve elliptic.Curve, x, y *big.Int) (ski []byte) {
 	raw := elliptic.Marshal(curve, x, y)
 
@@ -32,6 +33,7 @@ func SKI(curve elliptic.Curve, x, y *big.Int) (ski []byte) {
 	return hash.Sum(nil)
 }
 
+// GetPublicKeySKIFromCert  cert       ski
 func GetPublicKeySKIFromCert(cert []byte, signType int) (string, error) {
 	dcert, _ := pem.Decode(cert)
 	if dcert == nil {
@@ -61,6 +63,7 @@ func GetPublicKeySKIFromCert(cert []byte, signType int) (string, error) {
 	return hex.EncodeToString(ski), nil
 }
 
+// EncodeCertToSignature        
 func EncodeCertToSignature(signByte []byte, cert []byte, uid []byte) []byte {
 	var certSign ty.CertSignature
 	certSign.Signature = append(certSign.Signature, signByte...)
@@ -69,6 +72,7 @@ func EncodeCertToSignature(signByte []byte, cert []byte, uid []byte) []byte {
 	return types.Encode(&certSign)
 }
 
+// DecodeCertFromSignature         
 func DecodeCertFromSignature(signByte []byte) (*ty.CertSignature, error) {
 	var certSign ty.CertSignature
 	err := types.Decode(signByte, &certSign)
@@ -79,6 +83,7 @@ func DecodeCertFromSignature(signByte []byte) (*ty.CertSignature, error) {
 	return &certSign, nil
 }
 
+// PrivKeyByteFromRaw pem    byte    
 func PrivKeyByteFromRaw(raw []byte, signType int) ([]byte, error) {
 	block, _ := pem.Decode(raw)
 	if block == nil {

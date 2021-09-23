@@ -15,17 +15,17 @@ import (
 )
 
 var (
-	// ConfNameActiveTime
+	// ConfNameActiveTime    
 	ConfNameActiveTime = et.AccountmanagerX + "-" + "activeTime"
-	// ConfNameLockTime 
+	// ConfNameLockTime        
 	ConfNameLockTime = et.AccountmanagerX + "-" + "lockTime"
-	// ConfNameManagerAddr 
+	// ConfNameManagerAddr      
 	ConfNameManagerAddr = et.AccountmanagerX + "-" + "managerAddr"
-	// DefaultActiveTime
+	// DefaultActiveTime      
 	DefaultActiveTime = int64(5 * 360 * 24 * 3600)
-	// DefaultLockTime 
+	// DefaultLockTime          
 	DefaultLockTime = int64(15 * 24 * 3600)
-	// DefaultManagerAddr 
+	// DefaultManagerAddr        
 	DefaultManagerAddr = "12qyocayNF7Lv6C9qW4avxs2E7U41fKSfv"
 )
 
@@ -50,7 +50,7 @@ func NewAction(e *Accountmanager, tx *types.Transaction, index int) *Action {
 		e.GetBlockTime(), e.GetHeight(), dapp.ExecAddress(string(tx.Execer)), e.GetLocalDB(), index, e.GetAPI()}
 }
 
-//GetIndex get index,
+//GetIndex get index     ,            
 func (a *Action) GetIndex() int64 {
 	return a.blocktime*types.MaxTxsPerBlock + int64(a.index)
 }
@@ -69,6 +69,7 @@ func (a *Action) Register(payload *et.Register) (*types.Receipt, error) {
 		return nil, et.ErrAccountIDExist
 	}
 
+	//        
 	cfg := a.api.GetConfig()
 	defaultActiveTime := getConfValue(cfg, a.statedb, ConfNameActiveTime, DefaultActiveTime)
 	account := &et.Account{
@@ -91,7 +92,7 @@ func (a *Action) Register(payload *et.Register) (*types.Receipt, error) {
 	return receipts, nil
 }
 
-//Reset
+//Reset                ,                 
 func (a *Action) Reset(payload *et.ResetKey) (*types.Receipt, error) {
 	var logs []*types.ReceiptLog
 	cfg := a.api.GetConfig()
@@ -103,6 +104,7 @@ func (a *Action) Reset(payload *et.ResetKey) (*types.Receipt, error) {
 	if err != nil {
 		return nil, et.ErrAccountIDNotExist
 	}
+	//         15 ,         
 	defaultLockTime := getConfValue(cfg, a.statedb, ConfNameLockTime, DefaultLockTime)
 	account.Status = et.Locked
 	account.LockTime = a.blocktime + defaultLockTime
@@ -131,6 +133,7 @@ func (a *Action) Transfer(payload *et.Transfer) (*types.Receipt, error) {
 		elog.Error("Transfer", "fromaddr", a.fromaddr, "err", et.ErrAccountIDNotPermiss)
 		return nil, et.ErrAccountIDNotPermiss
 	}
+	//  prevAddr     ，     ，                   
 	if account1.PrevAddr != "" {
 		assetDB, err := account.NewAccountDB(cfg, payload.Asset.GetExec(), payload.Asset.GetSymbol(), a.statedb)
 		if err != nil {
@@ -196,7 +199,7 @@ func (a *Action) Transfer(payload *et.Transfer) (*types.Receipt, error) {
 
 //Supervise ...
 func (a *Action) Supervise(payload *et.Supervise) (*types.Receipt, error) {
-
+	//  ，             
 	cfg := a.api.GetConfig()
 	managerAddr := getManagerAddr(cfg, a.statedb, ConfNameManagerAddr, DefaultManagerAddr)
 	if managerAddr != a.fromaddr {
@@ -213,6 +216,7 @@ func (a *Action) Supervise(payload *et.Supervise) (*types.Receipt, error) {
 		}
 		switch payload.Op {
 		case et.Freeze:
+			//TODO                 ,  freeze         
 			accountM.Status = et.Frozen
 
 		case et.UnFreeze:
@@ -263,9 +267,9 @@ func (a *Action) Apply(payload *et.Apply) (*types.Receipt, error) {
 		}
 		accountM.LockTime = 0
 		accountM.Status = et.Normal
-
+		//TODO     coins         ，token    ,   transfer    fromAccountID == toAccountID
 		cfg := a.api.GetConfig()
-		coinsAssetDB, err := account.NewAccountDB(cfg, cfg.GetCoinExec(), cfg.GetCoinSymbol(), a.statedb)
+		coinsAssetDB, err := account.NewAccountDB(cfg, "coins", cfg.GetCoinSymbol(), a.statedb)
 		if err != nil {
 			return nil, err
 		}
@@ -306,6 +310,7 @@ func getConfValue(cfg *types.Chain33Config, db dbm.KV, key string, defaultValue 
 		elog.Debug("accountmanager getConfValue", "can't get value from values arr. key:", key)
 		return defaultValue
 	}
+	//       ，         
 	v, err := strconv.ParseInt(values[len(values)-1], 10, 64)
 	if err != nil {
 		elog.Debug("accountmanager getConfValue", "Type conversion error:", err.Error())
@@ -338,7 +343,7 @@ func getManageKey(cfg *types.Chain33Config, key string, db dbm.KV) ([]byte, erro
 	manageKey := types.ManageKey(key)
 	value, err := db.Get([]byte(manageKey))
 	if err != nil {
-		if cfg.IsPara() { 
+		if cfg.IsPara() { //           
 			elog.Debug("accountmanager getManage", "can't get value from db,key:", key, "err", err.Error())
 			return nil, err
 		}
@@ -358,11 +363,12 @@ func getConfigKey(key string, db dbm.KV) ([]byte, error) {
 	return value, nil
 }
 
+//      ，         ，     
 func findAccountListByIndex(localdb dbm.KV, expireTime int64, primaryKey string) (*et.ReplyAccountList, error) {
 	table := NewAccountTable(localdb)
 	var rows []*tab.Row
 	var err error
-	if primaryKey == "" { 
+	if primaryKey == "" { //     ,           
 		rows, err = table.ListIndex("index", nil, nil, et.Count, et.ListASC)
 	} else {
 		rows, err = table.ListIndex("index", nil, []byte(primaryKey), et.Count, et.ListASC)
@@ -377,11 +383,11 @@ func findAccountListByIndex(localdb dbm.KV, expireTime int64, primaryKey string)
 		if account.ExpireTime > expireTime {
 			break
 		}
-
+		//        
 		account.Status = et.Expired
 		reply.Accounts = append(reply.Accounts, account)
 	}
-
+	//      
 	if len(rows) == int(et.Count) {
 		reply.PrimaryKey = string(rows[len(rows)-1].Primary)
 	}
@@ -391,7 +397,7 @@ func findAccountListByIndex(localdb dbm.KV, expireTime int64, primaryKey string)
 func findAccountByID(localdb dbm.KV, accountID string) (*et.Account, error) {
 	table := NewAccountTable(localdb)
 	prefix := []byte(accountID)
-
+	//     ,           
 	rows, err := table.ListIndex("accountID", prefix, nil, 1, et.ListDESC)
 	if err != nil {
 		elog.Debug("findAccountByID.", "accountID", accountID, "err", err.Error())
@@ -407,6 +413,7 @@ func findAccountByID(localdb dbm.KV, accountID string) (*et.Account, error) {
 func findAccountByAddr(localdb dbm.KV, addr string) (*et.Account, error) {
 	table := NewAccountTable(localdb)
 	prefix := []byte(addr)
+	//     ,           
 	rows, err := table.ListIndex("addr", prefix, nil, 1, et.ListDESC)
 	if err != nil {
 		elog.Error("findAccountByAddr.", "addr", addr, "err", err.Error())
@@ -428,7 +435,7 @@ func findAccountListByStatus(localdb dbm.KV, status, direction int32, primaryKey
 
 	var rows []*tab.Row
 	var err error
-	if primaryKey == "" { 
+	if primaryKey == "" { //     ,           
 		rows, err = table.ListIndex("status", prefix, nil, et.Count, direction)
 	} else {
 		rows, err = table.ListIndex("status", prefix, []byte(primaryKey), et.Count, direction)
@@ -442,7 +449,7 @@ func findAccountListByStatus(localdb dbm.KV, status, direction int32, primaryKey
 		account := row.Data.(*et.Account)
 		reply.Accounts = append(reply.Accounts, account)
 	}
-
+	//      
 	if len(rows) == int(et.Count) {
 		reply.PrimaryKey = string(rows[len(rows)-1].Primary)
 	}

@@ -36,8 +36,8 @@ const (
 const (
 	ListDESC    = int32(0)
 	ListASC     = int32(1)
-	DefultCount = int32(20)  / 
-	MaxCount    = int32(100) / 10 
+	DefultCount = int32(20)  //          
+	MaxCount    = int32(100) //   100 
 )
 
 // Star level
@@ -50,6 +50,7 @@ const (
 
 const (
 	luckyNumMol = 100000
+	decimal     = types.Coin //1e8
 	blockNum    = 5
 )
 
@@ -357,7 +358,7 @@ func (action *Action) LotteryBuy(buy *pty.LotteryBuy) (*types.Receipt, error) {
 	Once ExecTransfer succeed, ExecFrozen succeed, no roolback needed
 	**********/
 
-	receipt, err := action.coinsAccount.ExecTransfer(action.fromaddr, lott.CreateAddr, action.execaddr, buy.GetAmount()*cfg.GetCoinPrecision())
+	receipt, err := action.coinsAccount.ExecTransfer(action.fromaddr, lott.CreateAddr, action.execaddr, buy.GetAmount()*decimal)
 	if err != nil {
 		llog.Error("LotteryBuy.ExecTransfer", "addr", action.fromaddr, "execaddr", action.execaddr, "amount", buy.GetAmount())
 		return nil, err
@@ -365,7 +366,7 @@ func (action *Action) LotteryBuy(buy *pty.LotteryBuy) (*types.Receipt, error) {
 	logs = append(logs, receipt.Logs...)
 	kv = append(kv, receipt.KV...)
 
-	receipt, err = action.coinsAccount.ExecFrozen(lott.CreateAddr, action.execaddr, buy.GetAmount()*cfg.GetCoinPrecision())
+	receipt, err = action.coinsAccount.ExecFrozen(lott.CreateAddr, action.execaddr, buy.GetAmount()*decimal)
 
 	if err != nil {
 		llog.Error("LotteryBuy.Frozen", "addr", lott.CreateAddr, "execaddr", action.execaddr, "amount", buy.GetAmount())
@@ -502,17 +503,16 @@ func (action *Action) LotteryClose(draw *pty.LotteryClose) (*types.Receipt, erro
 	}
 	llog.Debug("LotteryClose", "totalReturn", totalReturn)
 
-	cfg := action.api.GetConfig()
 	if totalReturn > 0 {
 
-		if !action.CheckExecAccount(lott.CreateAddr, cfg.GetCoinPrecision()*totalReturn, true) {
+		if !action.CheckExecAccount(lott.CreateAddr, decimal*totalReturn, true) {
 			return nil, pty.ErrLotteryFundNotEnough
 		}
 
 		for _, recs := range lott.PurRecords {
 			if recs.AmountOneRound > 0 {
 				receipt, err := action.coinsAccount.ExecTransferFrozen(lott.CreateAddr, recs.Addr, action.execaddr,
-					cfg.GetCoinPrecision()*recs.AmountOneRound)
+					decimal*recs.AmountOneRound)
 				if err != nil {
 					return nil, err
 				}
@@ -547,8 +547,8 @@ func (action *Action) findLuckyNum(isSolo bool, lott *LotteryDB) (int64, error) 
 		//used for internal verification
 		num = 12345
 	} else {
-		/ randnu 
-		/    action.height-1
+		//    randnum  
+		//    ，        ，         ，    action.height-1
 		llog.Debug("findLuckyNum on randnum module")
 		param := &types.ReqRandHash{
 			ExecName: "ticket",
@@ -621,11 +621,11 @@ func (action *Action) checkDraw(lott *LotteryDB) (*types.Receipt, *pty.LotteryUp
 	}
 	llog.Debug("checkDraw", "lenofupdate", len(updateInfo.BuyInfo), "update", updateInfo.BuyInfo)
 
-	var factor = action.api.GetConfig().GetCoinPrecision()
+	var factor = decimal
 	if totalFund > 0 {
 		if totalFund > lott.GetFund()/2 {
 			llog.Debug("checkDraw ajust fund", "lott.Fund", lott.Fund, "totalFund", totalFund)
-			factor = action.api.GetConfig().GetCoinPrecision() * (lott.GetFund()) / 2 / (totalFund)
+			factor = decimal * (lott.GetFund()) / 2 / (totalFund)
 			lott.Fund = lott.Fund / 2
 		} else {
 			lott.Fund -= totalFund
@@ -811,7 +811,7 @@ func ListLotteryLuckyHistory(db dbm.Lister, stateDB dbm.KV, param *pty.ReqLotter
 	prefix = calcLotteryDrawPrefix(param.LotteryId)
 	key = calcLotteryDrawKey(param.LotteryId, param.GetRound())
 
-	if param.GetRound() == 0 { / 
+	if param.GetRound() == 0 { //     
 		values, err = db.List(prefix, nil, count, direction)
 	} else {
 		values, err = db.List(prefix, key, count, direction)
@@ -851,7 +851,7 @@ func ListLotteryBuyRecords(db dbm.Lister, stateDB dbm.KV, param *pty.ReqLotteryB
 	prefix = calcLotteryBuyPrefix(param.LotteryId, param.Addr)
 	key = calcLotteryBuyKey(param.LotteryId, param.Addr, param.GetRound(), param.GetIndex())
 
-	if param.GetRound() == 0 { / 
+	if param.GetRound() == 0 { //     
 		values, err = db.List(prefix, nil, count, direction)
 	} else {
 		values, err = db.List(prefix, key, count, direction)
@@ -893,7 +893,7 @@ func ListLotteryGainRecords(db dbm.Lister, stateDB dbm.KV, param *pty.ReqLottery
 	prefix = calcLotteryGainPrefix(param.LotteryId, param.Addr)
 	key = calcLotteryGainKey(param.LotteryId, param.Addr, param.GetRound())
 
-	if param.GetRound() == 0 { / 
+	if param.GetRound() == 0 { //     
 		values, err = db.List(prefix, nil, count, direction)
 	} else {
 		values, err = db.List(prefix, key, count, direction)

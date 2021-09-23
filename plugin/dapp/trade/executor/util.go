@@ -12,15 +12,15 @@ import (
 )
 
 /*
-   token trade ，  symbol  token symbol，
-    symbol  exec.sybol@title, @title ，  , )。
-    exec， 。
+           token        trade     ，     symbol   token  symbol，
+      symbol     exec.sybol@title, @title    ， (     ,          )。
+          exec，            。
 
-   
-       exec = "" symbol = "TEST"
-         exec =  "token"  symbol = "token.TEST"
+      
+            exec = "" symbol = "TEST"
+             exec =  "token"  symbol = "token.TEST"
 
-   , 
+       ,                 
      exec = "paracross"  symbol = "token.TEST"
      exec = "token"      symbol = "token.TEST"
 
@@ -84,7 +84,7 @@ func createAccountDB(cfg *types.Chain33Config, height int64, db db.KV, exec, sym
 
 func createPriceDB(cfg *types.Chain33Config, height int64, db db.KV, exec, symbol string) (*account.DB, error) {
 	if cfg.IsDappFork(height, pt.TradeX, pt.ForkTradePriceX) {
-		//  coins
+		//        coins
 		if exec == "" {
 			acc := account.NewCoinsAccount(cfg)
 			acc.SetDB(db)

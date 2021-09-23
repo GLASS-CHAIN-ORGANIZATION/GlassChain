@@ -7,10 +7,8 @@ package commands
 import (
 	"encoding/hex"
 	"fmt"
-	"os"
+	"strconv"
 	"time"
-
-	"github.com/pkg/errors"
 
 	"strings"
 
@@ -27,7 +25,7 @@ var (
 	defMixCount int32 = 16
 )
 
-// PrivacyCmd 
+// PrivacyCmd          
 func PrivacyCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "privacy",
@@ -107,7 +105,7 @@ func createPub2PrivTxFlags(cmd *cobra.Command) {
 func createPub2PrivTx(cmd *cobra.Command, args []string) {
 	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
 	pubkeypair, _ := cmd.Flags().GetString("pubkeypair")
-	amount, _ := cmd.Flags().GetFloat64("amount")
+	amount := cmdtypes.GetAmountValue(cmd, "amount")
 	tokenname, _ := cmd.Flags().GetString("symbol")
 	note, _ := cmd.Flags().GetString("note")
 	expire, _ := cmd.Flags().GetInt64("expire")
@@ -127,21 +125,10 @@ func createPub2PrivTx(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	cfg, err := cmdtypes.GetChainConfig(rpcLaddr)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, errors.Wrapf(err, "GetChainConfig"))
-		return
-	}
-	amountInt64, err := types.FormatFloatDisplay2Value(amount, cfg.CoinPrecision)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, errors.Wrapf(err, "FormatFloatDisplay2Value"))
-		return
-	}
-
 	params := pty.ReqCreatePrivacyTx{
 		Tokenname:  tokenname,
 		ActionType: pty.ActionPublic2Privacy,
-		Amount:     amountInt64,
+		Amount:     amount,
 		Note:       note,
 		Pubkeypair: pubkeypair,
 		Expire:     expire,
@@ -181,7 +168,7 @@ func createPriv2PrivTxFlags(cmd *cobra.Command) {
 func createPriv2PrivTx(cmd *cobra.Command, args []string) {
 	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
 	pubkeypair, _ := cmd.Flags().GetString("pubkeypair")
-	amount, _ := cmd.Flags().GetFloat64("amount")
+	amount := cmdtypes.GetAmountValue(cmd, "amount")
 	mixCount, _ := cmd.Flags().GetInt32("mixcount")
 	tokenname, _ := cmd.Flags().GetString("symbol")
 	note, _ := cmd.Flags().GetString("note")
@@ -202,20 +189,11 @@ func createPriv2PrivTx(cmd *cobra.Command, args []string) {
 		fmt.Println("Invalid expiretype", expiretype)
 		return
 	}
-	cfg, err := cmdtypes.GetChainConfig(rpcLaddr)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, errors.Wrapf(err, "GetChainConfig"))
-		return
-	}
-	amountInt64, err := types.FormatFloatDisplay2Value(amount, cfg.CoinPrecision)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, errors.Wrapf(err, "FormatFloatDisplay2Value"))
-		return
-	}
+
 	params := pty.ReqCreatePrivacyTx{
 		Tokenname:  tokenname,
 		ActionType: pty.ActionPrivacy2Privacy,
-		Amount:     amountInt64,
+		Amount:     amount,
 		Note:       note,
 		Pubkeypair: pubkeypair,
 		From:       sender,
@@ -256,7 +234,7 @@ func createPriv2PubTxFlags(cmd *cobra.Command) {
 
 func createPriv2PubTx(cmd *cobra.Command, args []string) {
 	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
-	amount, _ := cmd.Flags().GetFloat64("amount")
+	amount := cmdtypes.GetAmountValue(cmd, "amount")
 	mixCount, _ := cmd.Flags().GetInt32("mixcount")
 	tokenname, _ := cmd.Flags().GetString("symbol")
 	from, _ := cmd.Flags().GetString("from")
@@ -278,20 +256,11 @@ func createPriv2PubTx(cmd *cobra.Command, args []string) {
 		fmt.Println("Invalid expiretype", expiretype)
 		return
 	}
-	cfg, err := cmdtypes.GetChainConfig(rpcLaddr)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, errors.Wrapf(err, "GetChainConfig"))
-		return
-	}
-	amountInt64, err := types.FormatFloatDisplay2Value(amount, cfg.CoinPrecision)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, errors.Wrapf(err, "FormatFloatDisplay2Value"))
-		return
-	}
+
 	params := pty.ReqCreatePrivacyTx{
 		Tokenname:  tokenname,
 		ActionType: pty.ActionPrivacy2Public,
-		Amount:     amountInt64,
+		Amount:     amount,
 		Note:       note,
 		From:       from,
 		To:         to,
@@ -325,13 +294,6 @@ func showPrivacyAccountSpend(cmd *cobra.Command, args []string) {
 	addr, _ := cmd.Flags().GetString("addr")
 	exec, _ := cmd.Flags().GetString("exec")
 	symbol, _ := cmd.Flags().GetString("symbol")
-
-	cfg, err := cmdtypes.GetChainConfig(rpcLaddr)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, errors.Wrapf(err, "GetChainConfig"))
-		return
-	}
-
 	params := pty.ReqPrivBal4AddrToken{
 		Addr:      addr,
 		Token:     symbol,
@@ -340,18 +302,17 @@ func showPrivacyAccountSpend(cmd *cobra.Command, args []string) {
 
 	var res pty.UTXOHaveTxHashs
 	ctx := jsonclient.NewRPCCtx(rpcLaddr, "privacy.ShowPrivacyAccountSpend", params, &res)
-	ctx.SetResultCbExt(parseShowPrivacyAccountSpendRes)
-	ctx.RunExt(cfg)
+	ctx.SetResultCb(parseShowPrivacyAccountSpendRes)
+	ctx.Run()
 }
 
-func parseShowPrivacyAccountSpendRes(arg ...interface{}) (interface{}, error) {
-	total := int64(0)
-	res := arg[0].(*pty.UTXOHaveTxHashs)
-	cfg := arg[1].(*rpctypes.ChainConfigInfo)
-
+func parseShowPrivacyAccountSpendRes(arg interface{}) (interface{}, error) {
+	total := float64(0)
+	res := arg.(*pty.UTXOHaveTxHashs)
 	rets := make([]*PrivacyAccountSpendResult, 0)
 	for _, utxo := range res.UtxoHaveTxHashs {
-		total += utxo.Amount
+		amount := float64(utxo.Amount) / float64(types.Coin)
+		total += amount
 
 		var isSave bool
 		for _, ret := range rets {
@@ -359,7 +320,7 @@ func parseShowPrivacyAccountSpendRes(arg ...interface{}) (interface{}, error) {
 				result := &PrivacyAccountResult{
 					Txhash:   common.ToHex(utxo.UtxoBasic.UtxoGlobalIndex.Txhash),
 					OutIndex: utxo.UtxoBasic.UtxoGlobalIndex.Outindex,
-					Amount:   types.FormatAmount2FloatDisplay(utxo.Amount, cfg.CoinPrecision, true),
+					Amount:   strconv.FormatFloat(amount, 'f', 4, 64),
 				}
 				ret.Res = append(ret.Res, result)
 				isSave = true
@@ -373,7 +334,7 @@ func parseShowPrivacyAccountSpendRes(arg ...interface{}) (interface{}, error) {
 				//TxIndex:  utxo.UtxoBasic.UtxoGlobalIndex.Txindex,
 				Txhash:   common.ToHex(utxo.UtxoBasic.UtxoGlobalIndex.Txhash),
 				OutIndex: utxo.UtxoBasic.UtxoGlobalIndex.Outindex,
-				Amount:   types.FormatAmount2FloatDisplay(utxo.Amount, cfg.CoinPrecision, true),
+				Amount:   strconv.FormatFloat(amount, 'f', 4, 64),
 			}
 			var SpendResult PrivacyAccountSpendResult
 			SpendResult.Txhash = utxo.TxHash
@@ -382,7 +343,7 @@ func parseShowPrivacyAccountSpendRes(arg ...interface{}) (interface{}, error) {
 		}
 	}
 
-	fmt.Println(fmt.Sprintf("Total Privacy spend amount is %s", types.FormatAmount2FloatDisplay(total, cfg.CoinPrecision, true)))
+	fmt.Println(fmt.Sprintf("Total Privacy spend amount is %s", strconv.FormatFloat(total, 'f', 4, 64)))
 
 	return rets, nil
 }
@@ -407,13 +368,6 @@ func showAmountOfUTXO(cmd *cobra.Command, args []string) {
 	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
 	exec, _ := cmd.Flags().GetString("exec")
 	symbol, _ := cmd.Flags().GetString("symbol")
-
-	cfg, err := cmdtypes.GetChainConfig(rpcLaddr)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, errors.Wrapf(err, "GetChainConfig"))
-		return
-	}
-
 	reqPrivacyToken := pty.ReqPrivacyToken{AssetExec: exec, AssetSymbol: symbol}
 	var params rpctypes.Query4Jrpc
 	params.Execer = pty.PrivacyX
@@ -422,15 +376,14 @@ func showAmountOfUTXO(cmd *cobra.Command, args []string) {
 
 	var res pty.ReplyPrivacyAmounts
 	ctx := jsonclient.NewRPCCtx(rpcLaddr, "Chain33.Query", params, &res)
-	ctx.SetResultCbExt(parseShowAmountOfUTXORes)
-	ctx.RunExt(cfg)
+	ctx.SetResultCb(parseShowAmountOfUTXORes)
+	ctx.Run()
 }
 
-func parseShowAmountOfUTXORes(arg ...interface{}) (interface{}, error) {
-	res := arg[0].(*pty.ReplyPrivacyAmounts)
-	cfg := arg[1].(*rpctypes.ChainConfigInfo)
+func parseShowAmountOfUTXORes(arg interface{}) (interface{}, error) {
+	res := arg.(*pty.ReplyPrivacyAmounts)
 	for _, amount := range res.AmountDetail {
-		amount.Amount = amount.Amount / cfg.CoinPrecision
+		amount.Amount = amount.Amount / types.Coin
 	}
 	return res, nil
 }
@@ -455,20 +408,9 @@ func showUTXOs4SpecifiedAmountFlag(cmd *cobra.Command) {
 func showUTXOs4SpecifiedAmount(cmd *cobra.Command, args []string) {
 	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
 	amount, _ := cmd.Flags().GetFloat64("amount")
+	amountInt64 := int64(amount*types.InputPrecision) * types.Multiple1E4
 	exec, _ := cmd.Flags().GetString("exec")
 	symbol, _ := cmd.Flags().GetString("symbol")
-
-	cfg, err := cmdtypes.GetChainConfig(rpcLaddr)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, errors.Wrapf(err, "GetChainConfig"))
-		return
-	}
-	amountInt64, err := types.FormatFloatDisplay2Value(amount, cfg.CoinPrecision)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, errors.Wrapf(err, "FormatFloatDisplay2Value"))
-		return
-	}
-
 	reqPrivacyToken := pty.ReqPrivacyToken{
 		AssetExec:   exec,
 		AssetSymbol: symbol,
@@ -530,12 +472,6 @@ func showPrivacyAccountInfo(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	cfg, err := cmdtypes.GetChainConfig(rpcLaddr)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, errors.Wrapf(err, "GetChainConfig"))
-		return
-	}
-
 	params := pty.ReqPrivacyAccount{
 		Addr:        addr,
 		Token:       token,
@@ -545,48 +481,49 @@ func showPrivacyAccountInfo(cmd *cobra.Command, args []string) {
 
 	var res pty.ReplyPrivacyAccount
 	ctx := jsonclient.NewRPCCtx(rpcLaddr, "privacy.ShowPrivacyAccountInfo", params, &res)
-	ctx.SetResultCbExt(parseshowPrivacyAccountInfo)
-	ctx.RunExt(cfg)
+	ctx.SetResultCb(parseshowPrivacyAccountInfo)
+	ctx.Run()
 }
 
-func parseshowPrivacyAccountInfo(arg ...interface{}) (interface{}, error) {
-	total := int64(0)
-	totalFrozen := int64(0)
-	res := arg[0].(*pty.ReplyPrivacyAccount)
-	cfg := arg[1].(*rpctypes.ChainConfigInfo)
+func parseshowPrivacyAccountInfo(arg interface{}) (interface{}, error) {
+	total := float64(0)
+	totalFrozen := float64(0)
+	res := arg.(*pty.ReplyPrivacyAccount)
 
 	var availableAmount, frozenAmount, totalAmount string
 
 	utxos := make([]*PrivacyAccountResult, 0)
 	for _, utxo := range res.Utxos.Utxos {
-		total += utxo.Amount
+		amount := float64(utxo.Amount) / float64(types.Coin)
+		total += amount
 
 		if res.Displaymode == 1 || res.Displaymode == 3 {
 			result := &PrivacyAccountResult{
 				Txhash:   common.ToHex(utxo.UtxoBasic.UtxoGlobalIndex.Txhash),
 				OutIndex: utxo.UtxoBasic.UtxoGlobalIndex.Outindex,
-				Amount:   types.FormatAmount2FloatDisplay(utxo.Amount, cfg.CoinPrecision, true),
+				Amount:   strconv.FormatFloat(amount, 'f', 4, 64),
 			}
 			utxos = append(utxos, result)
 		}
 	}
-	availableAmount = types.FormatAmount2FloatDisplay(total, cfg.CoinPrecision, true)
+	availableAmount = strconv.FormatFloat(total, 'f', 4, 64)
 
 	ftxos := make([]*PrivacyAccountResult, 0)
 	for _, utxo := range res.Ftxos.Utxos {
-		totalFrozen += utxo.Amount
+		amount := float64(utxo.Amount) / float64(types.Coin)
+		totalFrozen += amount
 
 		if res.Displaymode == 2 || res.Displaymode == 3 {
 			result := &PrivacyAccountResult{
 				Txhash:   common.ToHex(utxo.UtxoBasic.UtxoGlobalIndex.Txhash),
 				OutIndex: utxo.UtxoBasic.UtxoGlobalIndex.Outindex,
-				Amount:   types.FormatAmount2FloatDisplay(utxo.Amount, cfg.CoinPrecision, true),
+				Amount:   strconv.FormatFloat(amount, 'f', 4, 64),
 			}
 			ftxos = append(ftxos, result)
 		}
 	}
-	frozenAmount = types.FormatAmount2FloatDisplay(totalFrozen, cfg.CoinPrecision, true)
-	totalAmount = types.FormatAmount2FloatDisplay(total+totalFrozen, cfg.CoinPrecision, true)
+	frozenAmount = strconv.FormatFloat(totalFrozen, 'f', 4, 64)
+	totalAmount = strconv.FormatFloat(total+totalFrozen, 'f', 4, 64)
 
 	ret := &PrivacyAccountInfoResult{
 		AvailableDetail: utxos,
@@ -612,12 +549,12 @@ func addListPrivacyTxsFlags(cmd *cobra.Command) {
 	cmd.Flags().StringP("addr", "a", "", "account address")
 	cmd.MarkFlagRequired("addr")
 	//
-	cmd.Flags().Int32P("sendrecv", "f", 0, "send or recv flag (0: send, 1: recv), default 0")
+	cmd.Flags().Int32P("sendrecv", "", 0, "send or recv flag (0: send, 1: recv), default 0")
 	cmd.Flags().Int32P("count", "c", 10, "number of transactions, default 10")
 	cmd.Flags().StringP("exec", "e", "coins", "asset executor(coins, token, paracross), default coins")
-	cmd.Flags().StringP("symbol", "s", types.BTY, "asset sysmbol.(BTY default)")
+	cmd.Flags().StringP("token", "", types.BTY, "token name.(BTY supported)")
 	cmd.Flags().Int32P("direction", "d", 1, "query direction (0: pre page, 1: next page), valid with seedtxhash param")
-	cmd.Flags().StringP("txHeightIndex", "x", "", "start tx height index string")
+	cmd.Flags().StringP("seedtxhash", "", "", "seed trasnaction hash")
 }
 
 func listPrivacyTxsFlags(cmd *cobra.Command, args []string) {
@@ -626,37 +563,29 @@ func listPrivacyTxsFlags(cmd *cobra.Command, args []string) {
 	direction, _ := cmd.Flags().GetInt32("direction")
 	addr, _ := cmd.Flags().GetString("addr")
 	sendRecvFlag, _ := cmd.Flags().GetInt32("sendrecv")
-	symbol, _ := cmd.Flags().GetString("symbol")
-	txHeightIndex, _ := cmd.Flags().GetString("txHeightIndex")
+	tokenname, _ := cmd.Flags().GetString("token")
+	seedtxhash, _ := cmd.Flags().GetString("seedtxhash")
 	exec, _ := cmd.Flags().GetString("exec")
-
-	cfg, err := cmdtypes.GetChainConfig(rpcLaddr)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, errors.Wrapf(err, "GetChainConfig"))
-		return
-	}
-
 	params := pty.ReqPrivacyTransactionList{
-		AssetExec:          exec,
-		AssetSymbol:        symbol,
-		SendRecvFlag:       sendRecvFlag,
-		Direction:          direction,
-		Count:              count,
-		Address:            addr,
-		StartTxHeightIndex: txHeightIndex,
+		AssetExec:    exec,
+		Tokenname:    tokenname,
+		SendRecvFlag: sendRecvFlag,
+		Direction:    direction,
+		Count:        count,
+		Address:      addr,
+		Seedtxhash:   []byte(seedtxhash),
 	}
 	var res rpctypes.WalletTxDetails
 	ctx := jsonclient.NewRPCCtx(rpcLaddr, "privacy.GetPrivacyTxByAddr", params, &res)
-	ctx.SetResultCbExt(parseWalletTxListRes)
-	ctx.RunExt(cfg)
+	ctx.SetResultCb(parseWalletTxListRes)
+	ctx.Run()
 }
 
-func parseWalletTxListRes(arg ...interface{}) (interface{}, error) {
-	res := arg[0].(*rpctypes.WalletTxDetails)
-	cfg := arg[1].(*types.Chain33Config)
+func parseWalletTxListRes(arg interface{}) (interface{}, error) {
+	res := arg.(*rpctypes.WalletTxDetails)
 	var result cmdtypes.WalletTxDetailsResult
 	for _, v := range res.TxDetails {
-		amountResult := types.FormatAmount2FloatDisplay(v.Amount, cfg.GetCoinPrecision(), true)
+		amountResult := strconv.FormatFloat(float64(v.Amount)/float64(types.Coin), 'f', 4, 64)
 		wtxd := &cmdtypes.WalletTxDetailResult{
 			Tx:         cmdtypes.DecodeTransaction(v.Tx),
 			Receipt:    v.Receipt,

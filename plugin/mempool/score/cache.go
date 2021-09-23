@@ -8,7 +8,7 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-// Queue   a b   c     b, )
+// Queue       (  =  a*  b*   /     -  c*  ,     ,    ,  a   b,c   )
 type Queue struct {
 	*skiplist.Queue
 	subConfig subConfig
@@ -32,7 +32,7 @@ func (item *scoreScore) Hash() []byte {
 
 func (item *scoreScore) Compare(cmp skiplist.Scorer) int {
 	it := cmp.(*scoreScore)
-	/  
+	//    ，    
 	if item.EnterTime < it.EnterTime {
 		return skiplist.Big
 	}
@@ -46,7 +46,7 @@ func (item *scoreScore) ByteSize() int64 {
 	return int64(proto.Size(item.Value))
 }
 
-// NewQueue 
+// NewQueue     
 func NewQueue(subcfg subConfig) *Queue {
 	return &Queue{
 		Queue:     skiplist.NewQueue(subcfg.PoolCacheSize),
@@ -60,7 +60,7 @@ func NewQueue(subcfg subConfig) *Queue {
 //		cache.subConfig.PricePower - cache.subConfig.TimeParam*item.EnterTime, Value: item}, nil
 //}
 
-//GetItem  key
+//GetItem        key
 func (cache *Queue) GetItem(hash string) (*mempool.Item, error) {
 	item, err := cache.Queue.GetItem(hash)
 	if err != nil {
@@ -69,19 +69,19 @@ func (cache *Queue) GetItem(hash string) (*mempool.Item, error) {
 	return item.(*scoreScore).Item, nil
 }
 
-// Push t Queue t Queu Mempoo error
+// Push    tx   Queue；  tx    Queue  Mempool       error
 func (cache *Queue) Push(item *mempool.Item) error {
 	return cache.Queue.Push(&scoreScore{Item: item, subConfig: cache.subConfig})
 }
 
-// Walk 
+// Walk       
 func (cache *Queue) Walk(count int, cb func(value *mempool.Item) bool) {
 	cache.Queue.Walk(count, func(item skiplist.Scorer) bool {
 		return cb(item.(*scoreScore).Item)
 	})
 }
 
-// GetProperFee 
+// GetProperFee         
 func (cache *Queue) GetProperFee() int64 {
 	var sumScore int64
 	var properFeerate int64
@@ -97,7 +97,7 @@ func (cache *Queue) GetProperFee() int64 {
 		i++
 		return true
 	})
-	/ int64(100 
+	//   int64(100)        
 	properFeerate = (sumScore/int64(i) + cache.subConfig.TimeParam*time.Now().Unix()) * int64(100) /
 		(cache.subConfig.PriceConstant * cache.subConfig.PricePower)
 	return properFeerate

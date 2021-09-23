@@ -34,10 +34,10 @@ func (p *privacy) Exec_Public2Privacy(payload *ty.Public2Privacy, tx *types.Tran
 
 	txhash := common.ToHex(tx.Hash())
 	output := payload.GetOutput().GetKeyoutput()
-	/ bloc  ，
-	/ utx input  K 
-	//executo  k blockchai 
-	/  UTX 
+	//           block       ，          ，
+	//      utxo  input，    ，          KV   
+	//executor        ，    kv   blockchain  
+	// ：       UTXO               
 	for index, keyOutput := range output {
 		key := CalcPrivacyOutputKey(payload.AssetExec, payload.Tokenname, keyOutput.Amount, txhash, index)
 		value := types.Encode(keyOutput)
@@ -138,16 +138,17 @@ func (p *privacy) Exec_Privacy2Public(payload *ty.Privacy2Public, tx *types.Tran
 }
 
 func (p *privacy) createAccountDB(exec, symbol string) (*account.DB, error) {
-	cfg := p.GetAPI().GetConfig()
-	if exec == "" || exec == cfg.GetCoinExec() {
+
+	if exec == "" || exec == "coins" {
 		return p.GetCoinsAccount(), nil
 	}
+	cfg := p.GetAPI().GetConfig()
 	return account.NewAccountDB(cfg, exec, symbol, p.GetStateDB())
 }
 
 func (p *privacy) buildPrivacyReceiptLog(assetExec, assetSymbol string, output *ty.PrivacyOutput) *ty.ReceiptPrivacyOutput {
 	if assetExec == "" {
-		assetExec = p.GetAPI().GetConfig().GetCoinExec()
+		assetExec = "coins"
 	}
 	receipt := &ty.ReceiptPrivacyOutput{
 		AssetExec:   assetExec,

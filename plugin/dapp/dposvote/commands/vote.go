@@ -33,6 +33,7 @@ var (
 	pvFile   = "priv_validator_"
 )
 
+//DPosCmd DPosVote     
 func DPosCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "dpos",
@@ -62,6 +63,7 @@ func DPosCmd() *cobra.Command {
 	return cmd
 }
 
+//DPosRegistCmd             
 func DPosRegistCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "regist",
@@ -84,7 +86,8 @@ func addRegistFlags(cmd *cobra.Command) {
 }
 
 func regist(cmd *cobra.Command, args []string) {
-	paraName, _ := cmd.Flags().GetString("paraName")
+	title, _ := cmd.Flags().GetString("title")
+	cfg := types.GetCliSysParam(title)
 
 	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
 	pubkey, _ := cmd.Flags().GetString("pubkey")
@@ -93,7 +96,7 @@ func regist(cmd *cobra.Command, args []string) {
 
 	payload := fmt.Sprintf("{\"pubkey\":\"%s\", \"address\":\"%s\", \"IP\":\"%s\"}", pubkey, address, ip)
 	params := &rpctypes.CreateTxIn{
-		Execer:     types.GetExecName(dty.DPosX, paraName),
+		Execer:     cfg.ExecName(dty.DPosX),
 		ActionName: dty.CreateRegistTx,
 		Payload:    []byte(payload),
 	}
@@ -104,6 +107,7 @@ func regist(cmd *cobra.Command, args []string) {
 
 }
 
+//DPosCancelRegistCmd              
 func DPosCancelRegistCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "cancelRegist",
@@ -123,7 +127,8 @@ func addCancelRegistFlags(cmd *cobra.Command) {
 }
 
 func cancelRegist(cmd *cobra.Command, args []string) {
-	paraName, _ := cmd.Flags().GetString("paraName")
+	title, _ := cmd.Flags().GetString("title")
+	cfg := types.GetCliSysParam(title)
 
 	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
 	pubkey, _ := cmd.Flags().GetString("pubkey")
@@ -131,7 +136,7 @@ func cancelRegist(cmd *cobra.Command, args []string) {
 
 	payload := fmt.Sprintf("{\"pubkey\":\"%s\", \"address\":\"%s\"}", pubkey, address)
 	params := &rpctypes.CreateTxIn{
-		Execer:     types.GetExecName(dty.DPosX, paraName),
+		Execer:     cfg.ExecName(dty.DPosX),
 		ActionName: dty.CreateCancelRegistTx,
 		Payload:    []byte(payload),
 	}
@@ -141,6 +146,7 @@ func cancelRegist(cmd *cobra.Command, args []string) {
 	ctx.RunWithoutMarshal()
 }
 
+//DPosVoteCmd              
 func DPosVoteCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "vote",
@@ -161,7 +167,8 @@ func addVoteFlags(cmd *cobra.Command) {
 }
 
 func vote(cmd *cobra.Command, args []string) {
-	paraName, _ := cmd.Flags().GetString("paraName")
+	title, _ := cmd.Flags().GetString("title")
+	cfg := types.GetCliSysParam(title)
 
 	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
 	pubkey, _ := cmd.Flags().GetString("pubkey")
@@ -170,7 +177,7 @@ func vote(cmd *cobra.Command, args []string) {
 
 	payload := fmt.Sprintf("{\"pubkey\":\"%s\", \"votes\":\"%d\", \"fromAddr\":\"%s\"}", pubkey, votes, addr)
 	params := &rpctypes.CreateTxIn{
-		Execer:     types.GetExecName(dty.DPosX, paraName),
+		Execer:     cfg.ExecName(dty.DPosX),
 		ActionName: dty.CreateVoteTx,
 		Payload:    []byte(payload),
 	}
@@ -180,6 +187,7 @@ func vote(cmd *cobra.Command, args []string) {
 	ctx.RunWithoutMarshal()
 }
 
+//DPosVoteCancelCmd                
 func DPosVoteCancelCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "cancelVote",
@@ -199,7 +207,8 @@ func addCancelVoteFlags(cmd *cobra.Command) {
 }
 
 func cancelVote(cmd *cobra.Command, args []string) {
-	paraName, _ := cmd.Flags().GetString("paraName")
+	title, _ := cmd.Flags().GetString("title")
+	cfg := types.GetCliSysParam(title)
 
 	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
 	pubkey, _ := cmd.Flags().GetString("pubkey")
@@ -207,7 +216,7 @@ func cancelVote(cmd *cobra.Command, args []string) {
 
 	payload := fmt.Sprintf("{\"pubkey\":\"%s\", \"index\":\"%d\"}", pubkey, index)
 	params := &rpctypes.CreateTxIn{
-		Execer:     types.GetExecName(dty.DPosX, paraName),
+		Execer:     cfg.ExecName(dty.DPosX),
 		ActionName: dty.CreateCancelVoteTx,
 		Payload:    []byte(payload),
 	}
@@ -217,6 +226,7 @@ func cancelVote(cmd *cobra.Command, args []string) {
 	ctx.RunWithoutMarshal()
 }
 
+//DPosReRegistCmd               
 func DPosReRegistCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "reRegist",
@@ -239,7 +249,8 @@ func addReRegistFlags(cmd *cobra.Command) {
 }
 
 func reRegist(cmd *cobra.Command, args []string) {
-	paraName, _ := cmd.Flags().GetString("paraName")
+	title, _ := cmd.Flags().GetString("title")
+	cfg := types.GetCliSysParam(title)
 
 	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
 	pubkey, _ := cmd.Flags().GetString("pubkey")
@@ -248,7 +259,7 @@ func reRegist(cmd *cobra.Command, args []string) {
 
 	payload := fmt.Sprintf("{\"pubkey\":\"%s\", \"address\":\"%s\", \"IP\":\"%s\"}", pubkey, address, ip)
 	params := &rpctypes.CreateTxIn{
-		Execer:     types.GetExecName(dty.DPosX, paraName),
+		Execer:     cfg.ExecName(dty.DPosX),
 		ActionName: dty.CreateReRegistTx,
 		Payload:    []byte(payload),
 	}
@@ -259,6 +270,7 @@ func reRegist(cmd *cobra.Command, args []string) {
 
 }
 
+//DPosCandidatorQueryCmd               
 func DPosCandidatorQueryCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "candidatorQuery",
@@ -310,6 +322,7 @@ func candidatorQuery(cmd *cobra.Command, args []string) {
 	}
 }
 
+//DPosVoteQueryCmd             
 func DPosVoteQueryCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "voteQuery",
@@ -348,6 +361,7 @@ func voteQuery(cmd *cobra.Command, args []string) {
 
 }
 
+//DPosVrfMRegistCmd     VRF M  （    ）    
 func DPosVrfMRegistCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "vrfMRegist",
@@ -370,7 +384,8 @@ func addVrfMFlags(cmd *cobra.Command) {
 }
 
 func vrfM(cmd *cobra.Command, args []string) {
-	paraName, _ := cmd.Flags().GetString("paraName")
+	title, _ := cmd.Flags().GetString("title")
+	cfg := types.GetCliSysParam(title)
 
 	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
 	pubkey, _ := cmd.Flags().GetString("pubkey")
@@ -379,7 +394,7 @@ func vrfM(cmd *cobra.Command, args []string) {
 
 	payload := fmt.Sprintf("{\"pubkey\":\"%s\", \"cycle\":\"%d\", \"m\":\"%s\"}", pubkey, cycle, m)
 	params := &rpctypes.CreateTxIn{
-		Execer:     types.GetExecName(dty.DPosX, paraName),
+		Execer:     cfg.ExecName(dty.DPosX),
 		ActionName: dty.CreateRegistVrfMTx,
 		Payload:    []byte(payload),
 	}
@@ -389,6 +404,7 @@ func vrfM(cmd *cobra.Command, args []string) {
 	ctx.RunWithoutMarshal()
 }
 
+//DPosVrfRPRegistCmd   VRF R/P(hash proof)      
 func DPosVrfRPRegistCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "vrfRPRegist",
@@ -414,7 +430,8 @@ func addVrfRPRegistFlags(cmd *cobra.Command) {
 }
 
 func vrfRP(cmd *cobra.Command, args []string) {
-	paraName, _ := cmd.Flags().GetString("paraName")
+	title, _ := cmd.Flags().GetString("title")
+	cfg := types.GetCliSysParam(title)
 
 	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
 	pubkey, _ := cmd.Flags().GetString("pubkey")
@@ -424,7 +441,7 @@ func vrfRP(cmd *cobra.Command, args []string) {
 
 	payload := fmt.Sprintf("{\"pubkey\":\"%s\", \"cycle\":\"%d\", \"r\":\"%s\", \"p\":\"%s\"}", pubkey, cycle, hash, proof)
 	params := &rpctypes.CreateTxIn{
-		Execer:     types.GetExecName(dty.DPosX, paraName),
+		Execer:     cfg.ExecName(dty.DPosX),
 		ActionName: dty.CreateRegistVrfRPTx,
 		Payload:    []byte(payload),
 	}
@@ -434,6 +451,7 @@ func vrfRP(cmd *cobra.Command, args []string) {
 	ctx.RunWithoutMarshal()
 }
 
+//DPosVrfQueryCmd   VRF          
 func DPosVrfQueryCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "vrfQuery",
@@ -808,7 +826,8 @@ func recordCB(cmd *cobra.Command, args []string) {
 	if err != nil {
 		return
 	}
-	paraName, _ := cmd.Flags().GetString("paraName")
+	title, _ := cmd.Flags().GetString("title")
+	cfg := types.GetCliSysParam(title)
 
 	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
 	key, _ := cmd.Flags().GetString("privKey")
@@ -856,7 +875,7 @@ func recordCB(cmd *cobra.Command, args []string) {
 		cycle, height, hash, hex.EncodeToString(privKey.PubKey().Bytes()), sig)
 
 	params := &rpctypes.CreateTxIn{
-		Execer:     types.GetExecName(dty.DPosX, paraName),
+		Execer:     cfg.ExecName(dty.DPosX),
 		ActionName: dty.CreateRecordCBTx,
 		Payload:    []byte(payload),
 	}
@@ -866,6 +885,7 @@ func recordCB(cmd *cobra.Command, args []string) {
 	ctx.RunWithoutMarshal()
 }
 
+//DPosCBQueryCmd   Cycle Boundary info   
 func DPosCBQueryCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "cbQuery",
@@ -934,6 +954,7 @@ func cbQuery(cmd *cobra.Command, args []string) {
 	}
 }
 
+//DPosTopNQueryCmd   TopN          
 func DPosTopNQueryCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "topNQuery",

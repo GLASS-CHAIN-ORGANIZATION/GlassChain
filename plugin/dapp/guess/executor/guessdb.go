@@ -20,23 +20,32 @@ import (
 )
 
 const (
+	//ListDESC         
 	ListDESC = int32(0)
 
+	//ListASC         
 	ListASC = int32(1)
 
+	//DefaultCount           
 	DefaultCount = int32(10)
 
+	//DefaultCategory     
 	DefaultCategory = "default"
 
+	//MaxBetsOneTime         
 	MaxBetsOneTime = 10000e8
 
+	//MaxBetsNumber            
 	MaxBetsNumber = 10000000e8
 
+	//MaxBetHeight                  
 	MaxBetHeight = 1000000
 
+	//MaxExpireHeight                 
 	MaxExpireHeight = 1000000
 )
 
+//Action       
 type Action struct {
 	coinsAccount *account.DB
 	db           dbm.KV
@@ -50,6 +59,7 @@ type Action struct {
 	mainHeight   int64
 }
 
+//NewAction   Action  
 func NewAction(guess *Guess, tx *types.Transaction, index int) *Action {
 	hash := tx.Hash()
 	fromAddr := tx.From()
@@ -68,6 +78,7 @@ func NewAction(guess *Guess, tx *types.Transaction, index int) *Action {
 	}
 }
 
+//CheckExecAccountBalance      Guess          
 func (action *Action) CheckExecAccountBalance(fromAddr string, ToFrozen, ToActive int64) bool {
 	acc := action.coinsAccount.LoadExecAccount(fromAddr, action.execaddr)
 	if acc.GetBalance() >= ToFrozen && acc.GetFrozen() >= ToActive {
@@ -76,6 +87,7 @@ func (action *Action) CheckExecAccountBalance(fromAddr string, ToFrozen, ToActiv
 	return false
 }
 
+//Key State         Key     
 func Key(id string) (key []byte) {
 	//key = append(key, []byte("mavl-"+types.ExecName(pkt.GuessX)+"-")...)
 	key = append(key, []byte("mavl-"+gty.GuessX+"-")...)
@@ -83,6 +95,7 @@ func Key(id string) (key []byte) {
 	return key
 }
 
+//queryGameInfos     id            
 func queryGameInfos(kvdb db.KVDB, infos *gty.QueryGuessGameInfos) (types.Message, error) {
 	var games []*gty.GuessGame
 	gameTable := gty.NewGuessGameTable(kvdb)
@@ -100,6 +113,7 @@ func queryGameInfos(kvdb db.KVDB, infos *gty.QueryGuessGameInfos) (types.Message
 	return &gty.ReplyGuessGameInfos{Games: games}, nil
 }
 
+//queryGameInfo   gameid  game  
 func queryGameInfo(kvdb db.KVDB, gameID []byte) (*gty.GuessGame, error) {
 	gameTable := gty.NewGuessGameTable(kvdb)
 	query := gameTable.GetQuery(kvdb)
@@ -113,6 +127,7 @@ func queryGameInfo(kvdb db.KVDB, gameID []byte) (*gty.GuessGame, error) {
 	return game, nil
 }
 
+//queryUserTableData   user   
 func queryUserTableData(query *table.Query, indexName string, prefix, primaryKey []byte) (types.Message, error) {
 	rows, err := query.ListIndex(indexName, prefix, primaryKey, DefaultCount, 0)
 	if err != nil {
@@ -137,6 +152,7 @@ func queryUserTableData(query *table.Query, indexName string, prefix, primaryKey
 	return &gty.GuessGameRecords{Records: records, PrimaryKey: primary}, nil
 }
 
+//queryGameTableData   game   
 func queryGameTableData(query *table.Query, indexName string, prefix, primaryKey []byte) (types.Message, error) {
 	rows, err := query.ListIndex(indexName, prefix, primaryKey, DefaultCount, 0)
 	if err != nil {
@@ -161,6 +177,7 @@ func queryGameTableData(query *table.Query, indexName string, prefix, primaryKey
 	return &gty.GuessGameRecords{Records: records, PrimaryKey: primary}, nil
 }
 
+//queryJoinTableData   join   
 func queryJoinTableData(talbeJoin *table.JoinTable, indexName string, prefix, primaryKey []byte) (types.Message, error) {
 	rows, err := talbeJoin.ListIndex(indexName, prefix, primaryKey, DefaultCount, 0)
 	if err != nil {
@@ -199,6 +216,7 @@ func (action *Action) getIndex() int64 {
 	return action.height*types.MaxTxsPerBlock + int64(action.index)
 }
 
+//getReceiptLog             
 func (action *Action) getReceiptLog(game *gty.GuessGame, statusChange bool, bet *gty.GuessGameBet) *types.ReceiptLog {
 	log := &types.ReceiptLog{}
 	r := &gty.ReceiptGuessGame{}
@@ -252,6 +270,7 @@ func (action *Action) readGame(id string) (*gty.GuessGame, error) {
 	return &game, nil
 }
 
+//       
 func (action *Action) newGame(gameID string, start *gty.GuessGameStart) *gty.GuessGame {
 	game := &gty.GuessGame{
 		GameID: gameID,
@@ -278,6 +297,7 @@ func (action *Action) newGame(gameID string, start *gty.GuessGameStart) *gty.Gue
 	return game
 }
 
+//GameStart         
 func (action *Action) GameStart(start *gty.GuessGameStart) (*types.Receipt, error) {
 	var logs []*types.ReceiptLog
 	var kv []*types.KeyValue
@@ -349,6 +369,7 @@ func (action *Action) GameStart(start *gty.GuessGameStart) (*types.Receipt, erro
 	return &types.Receipt{Ty: types.ExecOk, KV: kv, Logs: logs}, nil
 }
 
+//GameBet         
 func (action *Action) GameBet(pbBet *gty.GuessGameBet) (*types.Receipt, error) {
 	var logs []*types.ReceiptLog
 	var kv []*types.KeyValue
@@ -372,6 +393,7 @@ func (action *Action) GameBet(pbBet *gty.GuessGameBet) (*types.Receipt, error) {
 	if !canBet {
 		var receiptLog *types.ReceiptLog
 		if prevStatus != game.Status {
+			//       ，            ，         addr  ， addr:status          
 			action.changeAllAddrIndex(game)
 			receiptLog = action.getReceiptLog(game, true, nil)
 		} else {
@@ -384,6 +406,7 @@ func (action *Action) GameBet(pbBet *gty.GuessGameBet) (*types.Receipt, error) {
 		return &types.Receipt{Ty: types.ExecOk, KV: kv, Logs: logs}, nil
 	}
 
+	//          
 	options, legal := getOptions(game.GetOptions())
 	if !legal || len(options) == 0 {
 		logger.Error("GameBet", "addr", action.fromaddr, "execaddr", action.execaddr, "Game Options illegal",
@@ -397,6 +420,7 @@ func (action *Action) GameBet(pbBet *gty.GuessGameBet) (*types.Receipt, error) {
 		return nil, types.ErrInvalidParam
 	}
 
+	//          ，    ，    
 	if pbBet.GetBetsNum() > game.GetMaxBetsOneTime() {
 		pbBet.BetsNum = game.GetMaxBetsOneTime()
 	}
@@ -407,6 +431,7 @@ func (action *Action) GameBet(pbBet *gty.GuessGameBet) (*types.Receipt, error) {
 		return nil, types.ErrInvalidParam
 	}
 
+	//       
 	checkValue := pbBet.BetsNum
 	if !action.CheckExecAccountBalance(action.fromaddr, checkValue, 0) {
 		logger.Error("GameBet", "addr", action.fromaddr, "execaddr", action.execaddr, "id",
@@ -438,6 +463,7 @@ func (action *Action) GameBet(pbBet *gty.GuessGameBet) (*types.Receipt, error) {
 	return &types.Receipt{Ty: types.ExecOk, KV: kv, Logs: logs}, nil
 }
 
+//GameStopBet           
 func (action *Action) GameStopBet(pbBet *gty.GuessGameStopBet) (*types.Receipt, error) {
 	var logs []*types.ReceiptLog
 	var kv []*types.KeyValue
@@ -455,6 +481,7 @@ func (action *Action) GameStopBet(pbBet *gty.GuessGameStopBet) (*types.Receipt, 
 		return nil, gty.ErrGuessStatus
 	}
 
+	//  adminAddr    stopBet
 	if game.AdminAddr != action.fromaddr {
 		logger.Error("GameStopBet", "addr", action.fromaddr, "execaddr", action.execaddr, "fromAddr is not adminAddr",
 			action.fromaddr, "adminAddr", game.AdminAddr)
@@ -464,7 +491,7 @@ func (action *Action) GameStopBet(pbBet *gty.GuessGameStopBet) (*types.Receipt, 
 	action.changeStatus(game, gty.GuessGameStatusStopBet)
 
 	var receiptLog *types.ReceiptLog
-
+	//      ，    addr     index
 	action.changeAllAddrIndex(game)
 	receiptLog = action.getReceiptLog(game, true, nil)
 
@@ -474,7 +501,7 @@ func (action *Action) GameStopBet(pbBet *gty.GuessGameStopBet) (*types.Receipt, 
 	return &types.Receipt{Ty: types.ExecOk, KV: kv, Logs: logs}, nil
 }
 
-
+//addGuessBet             
 func (action *Action) addGuessBet(game *gty.GuessGame, pbBet *gty.GuessGameBet) {
 	bet := &gty.GuessBet{Option: pbBet.GetOption(), BetsNumber: pbBet.BetsNum, Index: action.getIndex()}
 	player := &gty.GuessPlayer{Addr: action.fromaddr, Bet: bet}
@@ -482,11 +509,11 @@ func (action *Action) addGuessBet(game *gty.GuessGame, pbBet *gty.GuessGameBet) 
 
 	for i := 0; i < len(game.BetStat.Items); i++ {
 		if game.BetStat.Items[i].Option == trimStr(pbBet.GetOption()) {
-
+			//           
 			game.BetStat.Items[i].BetsNumber += pbBet.GetBetsNum()
 			game.BetStat.Items[i].BetsTimes++
 
-
+			//      
 			game.BetStat.TotalBetsNumber += pbBet.GetBetsNum()
 			game.BetStat.TotalBetTimes++
 			break
@@ -496,7 +523,7 @@ func (action *Action) addGuessBet(game *gty.GuessGame, pbBet *gty.GuessGameBet) 
 	game.BetsNumber += pbBet.GetBetsNum()
 }
 
-
+//GamePublish             
 func (action *Action) GamePublish(publish *gty.GuessGamePublish) (*types.Receipt, error) {
 	var logs []*types.ReceiptLog
 	var kv []*types.KeyValue
@@ -508,6 +535,7 @@ func (action *Action) GamePublish(publish *gty.GuessGamePublish) (*types.Receipt
 		return nil, err
 	}
 
+	//  adminAddr    publish
 	if game.AdminAddr != action.fromaddr {
 		logger.Error("GamePublish", "addr", action.fromaddr, "execaddr", action.execaddr, "fromAddr is not adminAddr",
 			action.fromaddr, "adminAddr", game.AdminAddr)
@@ -520,6 +548,7 @@ func (action *Action) GamePublish(publish *gty.GuessGamePublish) (*types.Receipt
 		return nil, gty.ErrGuessStatus
 	}
 
+	//          
 	options, legal := getOptions(game.GetOptions())
 	if !legal || len(options) == 0 {
 		logger.Error("GamePublish", "addr", action.fromaddr, "execaddr", action.execaddr, "Game Options illegal",
@@ -535,6 +564,7 @@ func (action *Action) GamePublish(publish *gty.GuessGamePublish) (*types.Receipt
 
 	game.Result = trimStr(publish.Result)
 
+	//         ，     Admin      ；
 	for i := 0; i < len(game.Plays); i++ {
 		player := game.Plays[i]
 		value := player.Bet.BetsNumber
@@ -559,7 +589,7 @@ func (action *Action) GamePublish(publish *gty.GuessGamePublish) (*types.Receipt
 	}
 
 	action.changeStatus(game, gty.GuessGameStatusPublish)
-
+	//           
 	totalBetsNumber := game.BetStat.TotalBetsNumber
 	winBetsNumber := int64(0)
 	for j := 0; j < len(game.BetStat.Items); j++ {
@@ -568,6 +598,7 @@ func (action *Action) GamePublish(publish *gty.GuessGamePublish) (*types.Receipt
 		}
 	}
 
+	//           ，               
 	devAddr := gty.DevShareAddr
 	platAddr := gty.PlatformShareAddr
 	devFee := int64(0)
@@ -612,6 +643,7 @@ func (action *Action) GamePublish(publish *gty.GuessGamePublish) (*types.Receipt
 		kv = append(kv, receipt.KV...)
 	}
 
+	//     ，            
 	winValue := totalBetsNumber - devFee - platFee
 	for j := 0; j < len(game.Plays); j++ {
 		player := game.Plays[j]
@@ -645,7 +677,7 @@ func (action *Action) GamePublish(publish *gty.GuessGamePublish) (*types.Receipt
 	return &types.Receipt{Ty: types.ExecOk, KV: kv, Logs: logs}, nil
 }
 
-
+//GameAbort         
 func (action *Action) GameAbort(pbend *gty.GuessGameAbort) (*types.Receipt, error) {
 	var logs []*types.ReceiptLog
 	var kv []*types.KeyValue
@@ -665,9 +697,10 @@ func (action *Action) GameAbort(pbend *gty.GuessGameAbort) (*types.Receipt, erro
 	}
 
 	preStatus := game.Status
-
+	//                。
 	action.refreshStatusByTime(game)
 
+	//      ，        Abort，             Abort
 	if game.Status != gty.GuessGameStatusTimeOut {
 		if game.AdminAddr != action.fromaddr {
 			logger.Error("GameAbort", "addr", action.fromaddr, "execaddr", action.execaddr, "Only admin can abort",
@@ -676,7 +709,7 @@ func (action *Action) GameAbort(pbend *gty.GuessGameAbort) (*types.Receipt, erro
 		}
 	}
 
-
+	//      
 	for i := 0; i < len(game.Plays); i++ {
 		player := game.Plays[i]
 		value := player.Bet.BetsNumber
@@ -694,12 +727,13 @@ func (action *Action) GameAbort(pbend *gty.GuessGameAbort) (*types.Receipt, erro
 	}
 
 	if game.Status != preStatus {
+		//  action.RefreshStatusByTime(game)           index ，           。
 		game.Status = gty.GuessGameStatusAbort
 	} else {
 		action.changeStatus(game, gty.GuessGameStatusAbort)
 	}
 
-
+	//      ，      addr   index
 	action.changeAllAddrIndex(game)
 
 	receiptLog := action.getReceiptLog(game, true, nil)
@@ -708,6 +742,7 @@ func (action *Action) GameAbort(pbend *gty.GuessGameAbort) (*types.Receipt, erro
 	return &types.Receipt{Ty: types.ExecOk, KV: kv, Logs: logs}, nil
 }
 
+//getOptions       ，           ，  "A:xxxx;B:xxxx;C:xxx"，“：”      ，    ，":"      。
 func getOptions(strOptions string) (options []string, legal bool) {
 	if len(strOptions) == 0 {
 		return nil, false
@@ -730,6 +765,7 @@ func getOptions(strOptions string) (options []string, legal bool) {
 	return options, legal
 }
 
+//trimStr          、   、   
 func trimStr(str string) string {
 	str = strings.Replace(str, " ", "", -1)
 	str = strings.Replace(str, "\t", "", -1)
@@ -738,6 +774,7 @@ func trimStr(str string) string {
 	return str
 }
 
+//isLegalOption            
 func isLegalOption(options []string, option string) bool {
 	option = trimStr(option)
 	for i := 0; i < len(options); i++ {
@@ -749,6 +786,7 @@ func isLegalOption(options []string, option string) bool {
 	return false
 }
 
+//changeStatus       ，        
 func (action *Action) changeStatus(game *gty.GuessGame, destStatus int32) {
 	if game.Status != destStatus {
 		game.PreStatus = game.Status
@@ -758,6 +796,7 @@ func (action *Action) changeStatus(game *gty.GuessGame, destStatus int32) {
 	}
 }
 
+//changeAllAddrIndex      ，           
 func (action *Action) changeAllAddrIndex(game *gty.GuessGame) {
 	for i := 0; i < len(game.Plays); i++ {
 		player := game.Plays[i]
@@ -766,8 +805,10 @@ func (action *Action) changeAllAddrIndex(game *gty.GuessGame) {
 	}
 }
 
+//refreshStatusByTime         ，      
 func (action *Action) refreshStatusByTime(game *gty.GuessGame) (canBet bool) {
 	mainHeight := action.mainHeight
+	//              ，           ，        。
 	if game.DrivenByAdmin {
 
 		if (mainHeight - game.StartHeight) >= game.ExpireHeight {
@@ -779,6 +820,7 @@ func (action *Action) refreshStatusByTime(game *gty.GuessGame) (canBet bool) {
 		return true
 	}
 
+	//                    ，       
 	heightDiff := mainHeight - game.StartHeight
 	if heightDiff >= game.MaxBetHeight {
 		logger.Error("GameBet", "addr", action.fromaddr, "execaddr", action.execaddr, "Height over limit",
@@ -797,12 +839,13 @@ func (action *Action) refreshStatusByTime(game *gty.GuessGame) (canBet bool) {
 	return canBet
 }
 
+//checkTime          。
 func (action *Action) checkTime(start *gty.GuessGameStart) bool {
 	if start.MaxBetHeight == 0 && start.ExpireHeight == 0 {
-
+		//          ，      admin     。
 		start.DrivenByAdmin = true
 
-
+		//           ，       
 		start.ExpireHeight = MaxExpireHeight
 		return true
 	}

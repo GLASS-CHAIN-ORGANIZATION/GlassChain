@@ -2,26 +2,25 @@ Title="bityuan"
 TestNet=true
 FixTime=false
 
-[crypto]
 [log]
-#  debug(dbug)/info/warn/error(eror)/crit
+#     ，  debug(dbug)/info/warn/error(eror)/crit
 loglevel = "debug"
 logConsoleLevel = "info"
-#   
+#      ，    ，                
 logFile = "logs/chain33.log"
-#   ）
+#           （  ： ）
 maxFileSize = 300
-# 
+#              
 maxBackups = 100
-#   ）
+#            （  ： ）
 maxAge = 28
-#  UT ）
+#              （    UTC  ）
 localTime = true
-#  gz）
+#           （     gz）
 compress = true
-# 
+#             
 callerFile = false
-# 
+#         
 callerFunction = false
 
 [blockchain]
@@ -173,11 +172,11 @@ tokenApprs = [
 genesis="14KEKbYtKKQm4wMthSK9J4La4nAiidGozt"
 
 [exec.sub.cert]
-# 
+#            
 enable=false
-# 
+#       
 cryptoPath="authdir/crypto"
-#  "auth_ecdsa", "auth_sm2"
+#        ，  "auth_ecdsa", "auth_sm2"
 signType="auth_ecdsa"
 
 [exec.sub.manage]
@@ -191,8 +190,8 @@ superManager=[
 total="16htvcBNSEA7fZhAdLJphDwQRQJaHpyHTp"
 useBalance=false
 
- fork chain3 
- 
+#      fork,   chain33      
+#        
 [fork.system]
 ForkChainParamV1= 0
 ForkCheckTxDup=0
@@ -219,40 +218,7 @@ ForkTicketFundAddrV1=-1 #fork6.3
 ForkRootHash =1
 [fork.sub.coins]
 Enable=0
-
 [fork.sub.ticket]
 Enable=0
 ForkTicketId = 1600000
 ForkTicketVrf = 2070000
-
-[fork.sub.token]
-Enable=0
-ForkTokenBlackList= 0
-ForkBadTokenSymbol= 0
-ForkTokenPrice=0
-ForkTokenSymbolWithNumber=0
-ForkTokenCheck= 0
-
-[fork.sub.manage]
-Enable=0
-ForkManageExec=0
-
-[fork.sub.valnode]
-Enable=0
-
-[fork.sub.dpos]
-Enable=0
-
-[fork.sub.paracross]
-Enable=0
-ForkParacrossWithdrawFromParachain=0
-ForkParacrossCommitTx=0
-ForkLoopCheckCommitTxDone=0
-   0 720000   selfConsensEnablePreContrac 
-ForkParaSelfConsStages=0
-ForkParaAssetTransferRbk=0
-        
-ForkParaFullMinerHeight=0
-
-[fork.sub.qbftNode]
-Enable=0

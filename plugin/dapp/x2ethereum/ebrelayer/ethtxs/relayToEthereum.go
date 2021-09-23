@@ -21,7 +21,7 @@ var (
 const (
 	// GasLimit : the gas limit in Gwei used for transactions sent with TransactOpts
 	GasLimit        = uint64(100 * 10000)
-	GasLimit4Deploy = uint64(0) / 0  ,TODO 
+	GasLimit4Deploy = uint64(0) //       0,       ,          ,TODO:            
 )
 
 // RelayOracleClaimToEthereum : relays the provided burn or lock to Chain33Bridge contract on the Ethereum network

@@ -4,6 +4,11 @@ import (
 	"github.com/33cn/chain33/types"
 )
 
+/*
+ *                 
+ */
+
+// ExecDelLocal       ，    
 func (e *exchange) ExecDelLocal(tx *types.Transaction, receipt *types.ReceiptData, index int) (*types.LocalDBSet, error) {
 	kvs, err := e.DelRollbackKV(tx, tx.Execer)
 	if err != nil {

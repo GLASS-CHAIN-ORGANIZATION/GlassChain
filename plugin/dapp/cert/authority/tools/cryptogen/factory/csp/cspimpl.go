@@ -11,6 +11,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// New           
 func New(keyStore KeyStore) (CSP, error) {
 	signers := make(map[reflect.Type]Signer)
 	signers[reflect.TypeOf(&ecdsaPrivateKey{})] = &ecdsaSigner{}

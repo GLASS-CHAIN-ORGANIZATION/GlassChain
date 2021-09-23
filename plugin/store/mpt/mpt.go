@@ -147,7 +147,7 @@ func (mpts *Store) CommitUpgrade(req *types.ReqHash) ([]byte, error) {
 	return nil, nil
 }
 
-// Rollback mp 
+// Rollback       mpt    
 func (mpts *Store) Rollback(req *types.ReqHash) ([]byte, error) {
 	_, ok := mpts.trees[string(req.Hash)]
 	if !ok {
@@ -164,7 +164,7 @@ func (mpts *Store) Del(req *types.StoreDel) ([]byte, error) {
 	return nil, nil
 }
 
-// IterateRangeByStateHash ； statehash hash, start key, end: key, ascending  , fn 
+// IterateRangeByStateHash       ； statehash：    hash, start：     key, end:    key, ascending：  ，  , fn       
 func (mpts *Store) IterateRangeByStateHash(statehash []byte, start []byte, end []byte, ascending bool, fn func(key, value []byte) bool) {
 	mpt.IterateRangeByStateHash(mpts.GetDB(), statehash, start, end, ascending, fn)
 }

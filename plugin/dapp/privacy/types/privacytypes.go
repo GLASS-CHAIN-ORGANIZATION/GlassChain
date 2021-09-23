@@ -6,27 +6,27 @@ package types
 
 import "github.com/33cn/chain33/types"
 
-// IsExpire FTX  true
+// IsExpire   FTXO    ，    true
 func (ftxos *FTXOsSTXOsInOneTx) IsExpire(blockheight, blocktime int64) bool {
 	valid := ftxos.GetExpire()
 	if valid == 0 {
-		// Expir 0 false
+		// Expire 0，  false
 		return false
 	}
-	// expireBoun 
+	//   expireBound           
 	if valid <= types.ExpireBound {
 		return valid <= blockheight
 	}
 	return valid <= blocktime
 }
 
-// SetExpire 
+// SetExpire     
 func (ftxos *FTXOsSTXOsInOneTx) SetExpire(expire int64) {
 	if expire > types.ExpireBound {
-		// FTX  T 1 
+		// FTXO       ，  Tx       12      
 		ftxos.Expire = expire + 12
 	} else {
-		// FTX  T +1
+		// FTXO           ，  Tx   +1
 		ftxos.Expire = expire + 1
 	}
 }

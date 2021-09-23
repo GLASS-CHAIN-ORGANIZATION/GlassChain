@@ -1,7 +1,7 @@
 package executor_test
 
 var jscode = `
-
+//      
 function Init(context) {
     this.kvc = new kvcreator("init")
     this.context = context
@@ -36,7 +36,10 @@ Query.prototype.hello = function(args) {
 `
 var _ = jscode
 var gamecode = `
-
+//        
+//    :       0 - 10     hash(    + 9) (       ) NewGame()
+//         ，         。 Guess()
+//   CloseGame()
 function Init(context) {
     this.kvc = new kvcreator("init")
     this.context = context
@@ -60,11 +63,11 @@ Exec.prototype.NewGame = function(args) {
     game.obet = game.bet
     game.addr = this.context.from
     game.status = 1 //open
-
+    //     9000 ,  js  int    
     if (game.bet < 10 * COINS || game.bet > 10000000 * COINS) {
         throwerr("bet low than 10 or hight than 10000000")
     }
-    if (this.kvc.get(game.randhash)) { 
+    if (this.kvc.get(game.randhash)) { //  randhash       
         throwerr("dup rand hash")
     }
     var err = this.acc.execFrozen(this.name, this.context.from, game.bet)
@@ -124,14 +127,14 @@ Exec.prototype.CloseGame = function(args) {
     if (n == -1) {
         throwerr("err rand str")
     }
-
+    //                   
     if (this.context.height - game.height < MIN_WAIT_BLOCK) {
         throwerr("close game must wait "+MIN_WAIT_BLOCK+" block")
     }
     for (var i = 0; i < matches.length; i++) {
         var match = matches[i].left
         if (match.num == n) {
-
+            //          ，          ，           this
             win.call(this, game, match)
         } else {
             fail.call(this, game, match)

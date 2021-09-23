@@ -54,22 +54,22 @@ func Test_Upgrade(t *testing.T) {
 		localdb.Set(kv.Key, kv.Value)
 	}
 
-	// 
+	//     
 	setVersion(localdb, 1)
 	kvset, err = callUpgradeLocalDBV2(localdb)
 	assert.Nil(t, err)
 	assert.NotNil(t, kvset)
 
-	// ， 
+	//           ，       
 	kvset, err = callUpgradeLocalDBV2(localdb)
 	assert.Nil(t, err)
 	assert.Nil(t, kvset)
 
-	//  ， 0
+	//         ，        ，         0
 	setVersion(localdb, 1)
 	kvset, err = callUpgradeLocalDBV2(localdb)
 	assert.Nil(t, err)
-	// version 
+	//   version   
 	assert.Equal(t, 1, len(kvset.KV))
 
 	// just print log
@@ -77,10 +77,10 @@ func Test_Upgrade(t *testing.T) {
 }
 
 func callUpgradeLocalDBV2(localdb dbm.KVDB) (*types.LocalDBSet, error) {
-	return UpgradeLocalDBV2(localdb, "coins", "bty")
+	return UpgradeLocalDBV2(localdb, "bty")
 }
 
-// ， asset 
+//            ， asset   
 func Test_UpgradeOrderAsset(t *testing.T) {
 	dir, db, localdb := util.CreateTestDB()
 	defer util.CloseTestDB(dir, db)
@@ -109,14 +109,14 @@ func Test_UpgradeOrderAsset(t *testing.T) {
 		err := types.Decode(v, &kv)
 		assert.Nil(t, err)
 
-		// v2， 
+		//     v2，       
 		if !bytes.Equal([]byte("LODB-trade-order_v2-d-000000000000300001"), kv.Key) {
 			assert.Equal(t, []byte(primaryKey), kv.Value)
 			assert.True(t, bytes.HasPrefix(kv.Key, []byte(prefix)))
 		}
 	}
 
-	// assert 
+	// assert     
 	v, err := localdb.Get([]byte("LODB-trade-order_v2-m-asset-coins.bty_token.CCNY-000000000000300001"))
 	assert.Nil(t, err)
 	assert.Equal(t, primaryKey, string(v))

@@ -7,6 +7,9 @@ package main
 import (
 	"flag"
 	"fmt"
+	l "github.com/33cn/chain33/common/log/log15"
+	tml "github.com/BurntSushi/toml"
+	"github.com/rs/cors"
 	"io"
 	"net"
 	"net/http"
@@ -16,10 +19,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	l "github.com/33cn/chain33/common/log/log15"
-	tml "github.com/BurntSushi/toml"
-	"github.com/rs/cors"
-
 	"github.com/33cn/plugin/plugin/dapp/token/cmd/signatory-server/signatory"
 )
 
@@ -28,15 +27,15 @@ var (
 	configPath = flag.String("f", "signatory.toml", "configfile")
 )
 
-// ， 
-//   1. toke 
-//       1.  ， 
-//       1. ，  owner, symbol
-//       1. 
-//   1.     1bty
-//       1. 
-//       1. 
-//  http  json rpc
+//      ，       
+//   1.      token     
+//       1. a        ，                     
+//       1.        ，      owner, symbol
+//       1.          
+//   1.              1bty
+//       1.     
+//       1.          
+//      http   json rpc
 //    app-proto
 //      |
 //      V
@@ -113,7 +112,7 @@ func main() {
 
 }
 
-// InitCfg 
+// InitCfg      
 func InitCfg(path string) *signatory.Config {
 	var cfg signatory.Config
 	if _, err := tml.DecodeFile(path, &cfg); err != nil {
@@ -124,7 +123,7 @@ func InitCfg(path string) *signatory.Config {
 	return &cfg
 }
 
-// InitWhiteList 
+// InitWhiteList       
 func InitWhiteList(cfg *signatory.Config) map[string]bool {
 	whitelist := map[string]bool{}
 	if len(cfg.Whitelist) == 1 && cfg.Whitelist[0] == "*" {

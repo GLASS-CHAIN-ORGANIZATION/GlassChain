@@ -38,11 +38,11 @@ var (
 )
 
 func TestExchange(t *testing.T) {
-
+	//    
 	cfg := types.NewChain33Config(types.GetDefaultCfgstring())
 	cfg.SetTitleOnlyForTest("chain33")
 	Init(et.ExchangeX, cfg, nil)
-	total := 100 * types.DefaultCoinPrecision
+	total := 100 * types.Coin
 	accountA := types.Account{
 		Balance: total,
 		Frozen:  0,
@@ -98,125 +98,164 @@ func TestExchange(t *testing.T) {
 		1539918074,
 	}
 
+	/*
+	         ，        ，        
+	     ：
+	   1.     10   。
+	   2.       5   
+	   3.            
+	*/
 
 	Exec_LimitOrder(t, &et.LimitOrder{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
-		RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: 4, Amount: 10 * types.DefaultCoinPrecision, Op: et.OpBuy}, PrivKeyA, stateDB, kvdb, env)
+		RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: 4, Amount: 10 * types.Coin, Op: et.OpBuy}, PrivKeyA, stateDB, kvdb, env)
+	//          ,          list[0],   
 	orderList, err := Exec_QueryOrderList(et.Ordered, Nodes[0], "", stateDB, kvdb)
 	assert.Equal(t, nil, err)
 
 	orderID1 := orderList.List[0].OrderID
-
+	//     ，      
 	order, err := Exec_QueryOrder(orderID1, stateDB, kvdb)
 	assert.Equal(t, nil, err)
 	assert.Equal(t, int32(et.Ordered), order.Status)
-	assert.Equal(t, 10*types.DefaultCoinPrecision, order.GetBalance())
+	assert.Equal(t, 10*types.Coin, order.GetBalance())
 
+	//  op      
 	marketDepthList, err := Exec_QueryMarketDepth(&et.QueryMarketDepth{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
 		RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Op: et.OpBuy}, stateDB, kvdb)
 	assert.Equal(t, nil, err)
-	assert.Equal(t, 10*types.DefaultCoinPrecision, marketDepthList.List[0].GetAmount())
+	assert.Equal(t, 10*types.Coin, marketDepthList.List[0].GetAmount())
 
+	//    
 	Exec_LimitOrder(t, &et.LimitOrder{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
-		RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: 4, Amount: 5 * types.DefaultCoinPrecision, Op: et.OpSell}, PrivKeyB, stateDB, kvdb, env)
+		RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: 4, Amount: 5 * types.Coin, Op: et.OpSell}, PrivKeyB, stateDB, kvdb, env)
+	//          ,          list[0],   
 	orderList, err = Exec_QueryOrderList(et.Completed, Nodes[1], "", stateDB, kvdb)
 	assert.Equal(t, nil, err)
 	orderID2 := orderList.List[0].OrderID
-
+	//    1  
 	order, err = Exec_QueryOrder(orderID1, stateDB, kvdb)
 	assert.Equal(t, nil, err)
-
+	//  1       ordered
 	assert.Equal(t, int32(et.Ordered), order.Status)
-	assert.Equal(t, 5*types.DefaultCoinPrecision, order.Balance)
+	assert.Equal(t, 5*types.Coin, order.Balance)
 
+	//order2   completed
 	order, err = Exec_QueryOrder(orderID2, stateDB, kvdb)
 	assert.Equal(t, nil, err)
 	assert.Equal(t, int32(et.Completed), order.Status)
-
+	//  op      
 	marketDepthList, err = Exec_QueryMarketDepth(&et.QueryMarketDepth{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
 		RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Op: et.OpBuy}, stateDB, kvdb)
 	assert.Equal(t, nil, err)
-
-	assert.Equal(t, 5*types.DefaultCoinPrecision, marketDepthList.List[0].GetAmount())
+	//        
+	assert.Equal(t, 5*types.Coin, marketDepthList.List[0].GetAmount())
 
 	//QueryHistoryOrderList
 	orderList, err = Exec_QueryHistoryOrder(&et.QueryHistoryOrderList{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
 		RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}}, stateDB, kvdb)
 	assert.Equal(t, nil, err)
 	assert.Equal(t, orderID2, orderList.List[0].OrderID)
-
+	//        
 	Exec_RevokeOrder(t, orderID1, PrivKeyA, stateDB, kvdb, env)
-
+	//     ，      
 	order, err = Exec_QueryOrder(orderID1, stateDB, kvdb)
 	assert.Equal(t, nil, err)
-
+	//  1     Revoked
 	assert.Equal(t, int32(et.Revoked), order.Status)
-	assert.Equal(t, 5*types.DefaultCoinPrecision, order.Balance)
+	assert.Equal(t, 5*types.Coin, order.Balance)
 
+	//  op      
+	//  bty,CCNY     ,       
 	marketDepthList, err = Exec_QueryMarketDepth(&et.QueryMarketDepth{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
 		RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Op: et.OpBuy}, stateDB, kvdb)
 	assert.NotEqual(t, nil, err)
-
+	//                
+	//  ordered          
 	orderList, err = Exec_QueryOrderList(et.Ordered, Nodes[0], "", stateDB, kvdb)
 	assert.Equal(t, types.ErrNotFound, err)
 
-
-	Exec_LimitOrder(t, &et.LimitOrder{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"}, RightAsset: &et.Asset{Execer: "paracross", Symbol: "coins.bty"}, Price: 50000000, Amount: 10 * types.DefaultCoinPrecision, Op: et.OpSell}, PrivKeyA, stateDB, kvdb, env)
-
+	/*
+			       ，        ，        
+			    
+			     ：
+			   1.     10   。
+		       2.       10   
+		       3.     5   
+		       4.     15   
+	*/
+	Exec_LimitOrder(t, &et.LimitOrder{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"}, RightAsset: &et.Asset{Execer: "paracross", Symbol: "coins.bty"}, Price: 50000000, Amount: 10 * types.Coin, Op: et.OpSell}, PrivKeyA, stateDB, kvdb, env)
+	//          
 	orderList, err = Exec_QueryOrderList(et.Ordered, Nodes[0], "", stateDB, kvdb)
 	assert.Nil(t, err)
 	orderID3 := orderList.List[0].OrderID
 
 	Exec_LimitOrder(t, &et.LimitOrder{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
-		RightAsset: &et.Asset{Execer: "paracross", Symbol: "coins.bty"}, Price: 50000000, Amount: 10 * types.DefaultCoinPrecision, Op: et.OpSell}, PrivKeyA, stateDB, kvdb, env)
-
+		RightAsset: &et.Asset{Execer: "paracross", Symbol: "coins.bty"}, Price: 50000000, Amount: 10 * types.Coin, Op: et.OpSell}, PrivKeyA, stateDB, kvdb, env)
+	//          
 	orderList, err = Exec_QueryOrderList(et.Ordered, Nodes[0], "", stateDB, kvdb)
 	assert.Nil(t, err)
 	orderID4 := orderList.List[0].OrderID
 
+	//  op      
 	marketDepthList, err = Exec_QueryMarketDepth(&et.QueryMarketDepth{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
 		RightAsset: &et.Asset{Execer: "paracross", Symbol: "coins.bty"}, Op: et.OpSell}, stateDB, kvdb)
 	assert.Equal(t, nil, err)
-
-	assert.Equal(t, 20*types.DefaultCoinPrecision, marketDepthList.List[0].GetAmount())
+	//        
+	assert.Equal(t, 20*types.Coin, marketDepthList.List[0].GetAmount())
 
 	Exec_LimitOrder(t, &et.LimitOrder{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
-		RightAsset: &et.Asset{Execer: "paracross", Symbol: "coins.bty"}, Price: 50000000, Amount: 5 * types.DefaultCoinPrecision, Op: et.OpBuy}, PrivKeyB, stateDB, kvdb, env)
-
+		RightAsset: &et.Asset{Execer: "paracross", Symbol: "coins.bty"}, Price: 50000000, Amount: 5 * types.Coin, Op: et.OpBuy}, PrivKeyB, stateDB, kvdb, env)
+	//          
 	orderList, err = Exec_QueryOrderList(et.Completed, Nodes[1], "", stateDB, kvdb)
 	assert.Equal(t, nil, err)
 	assert.Equal(t, int32(et.Completed), orderList.List[1].Status)
-
+	//             
+	//    3  
 	order, err = Exec_QueryOrder(orderID3, stateDB, kvdb)
 	assert.Equal(t, nil, err)
 	assert.Equal(t, int32(et.Ordered), order.Status)
-
-	assert.Equal(t, 5*types.DefaultCoinPrecision, order.Balance)
+	//    
+	assert.Equal(t, 5*types.Coin, order.Balance)
 	Exec_LimitOrder(t, &et.LimitOrder{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
-		RightAsset: &et.Asset{Execer: "paracross", Symbol: "coins.bty"}, Price: 50000000, Amount: 15 * types.DefaultCoinPrecision, Op: et.OpBuy}, PrivKeyB, stateDB, kvdb, env)
-
+		RightAsset: &et.Asset{Execer: "paracross", Symbol: "coins.bty"}, Price: 50000000, Amount: 15 * types.Coin, Op: et.OpBuy}, PrivKeyB, stateDB, kvdb, env)
+	//order3,order4       
 	order, err = Exec_QueryOrder(orderID3, stateDB, kvdb)
 	assert.Equal(t, nil, err)
 	assert.Equal(t, int32(et.Completed), order.Status)
 	order, err = Exec_QueryOrder(orderID4, stateDB, kvdb)
 	assert.Equal(t, nil, err)
 	assert.Equal(t, int32(et.Completed), order.Status)
-
+	//  op      ,        
 	marketDepthList, err = Exec_QueryMarketDepth(&et.QueryMarketDepth{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
 		RightAsset: &et.Asset{Execer: "paracross", Symbol: "coins.bty"}, Op: et.OpSell}, stateDB, kvdb)
 	assert.Equal(t, types.ErrNotFound, err)
 
+	/*
+	            /           
+	     ：
+	   1.     5,   4   
+	   2.     10,   3   
+	   3.     5,   4   
+	   4.     5,   5   
+	   5.    15,   4.5   
+	   6.     2,   1   
+	   7.     8,   1   
+	   8.        
+	*/
+
 	Exec_LimitOrder(t, &et.LimitOrder{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
-		RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: 400000000, Amount: 5 * types.DefaultCoinPrecision, Op: et.OpBuy}, PrivKeyD, stateDB, kvdb, env)
+		RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: 400000000, Amount: 5 * types.Coin, Op: et.OpBuy}, PrivKeyD, stateDB, kvdb, env)
 	orderList, err = Exec_QueryOrderList(et.Ordered, Nodes[3], "", stateDB, kvdb)
 	assert.Nil(t, err)
 	orderID6 := orderList.List[0].OrderID
 
 	Exec_LimitOrder(t, &et.LimitOrder{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
-		RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: 300000000, Amount: 10 * types.DefaultCoinPrecision, Op: et.OpSell}, PrivKeyC, stateDB, kvdb, env)
+		RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: 300000000, Amount: 10 * types.Coin, Op: et.OpSell}, PrivKeyC, stateDB, kvdb, env)
 	orderList, err = Exec_QueryOrderList(et.Ordered, Nodes[2], "", stateDB, kvdb)
 	assert.Nil(t, err)
 	orderID7 := orderList.List[0].OrderID
 
+	//    6     
 	order, err = Exec_QueryOrder(orderID6, stateDB, kvdb)
 	assert.Equal(t, nil, err)
 	assert.Equal(t, int32(et.Completed), order.Status)
@@ -224,28 +263,28 @@ func TestExchange(t *testing.T) {
 	order, err = Exec_QueryOrder(orderID7, stateDB, kvdb)
 	assert.Equal(t, nil, err)
 	assert.Equal(t, int32(et.Ordered), order.Status)
-
+	//      ,       
 	acc := accD1.LoadExecAccount(Nodes[3], execAddr)
-	assert.Equal(t, 85*types.DefaultCoinPrecision, acc.Balance)
+	assert.Equal(t, 85*types.Coin, acc.Balance)
 
 	Exec_LimitOrder(t, &et.LimitOrder{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
-		RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: 400000000, Amount: 5 * types.DefaultCoinPrecision, Op: et.OpSell}, PrivKeyC, stateDB, kvdb, env)
+		RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: 400000000, Amount: 5 * types.Coin, Op: et.OpSell}, PrivKeyC, stateDB, kvdb, env)
 	orderList, err = Exec_QueryOrderList(et.Ordered, Nodes[2], "", stateDB, kvdb)
 	assert.Nil(t, err)
 	orderID8 := orderList.List[0].OrderID
 	Exec_LimitOrder(t, &et.LimitOrder{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
-		RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: 500000000, Amount: 5 * types.DefaultCoinPrecision, Op: et.OpSell}, PrivKeyC, stateDB, kvdb, env)
+		RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: 500000000, Amount: 5 * types.Coin, Op: et.OpSell}, PrivKeyC, stateDB, kvdb, env)
 	orderList, err = Exec_QueryOrderList(et.Ordered, Nodes[2], "", stateDB, kvdb)
 	assert.Nil(t, err)
 	orderID9 := orderList.List[0].OrderID
 
 	Exec_LimitOrder(t, &et.LimitOrder{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
-		RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: 450000000, Amount: 15 * types.DefaultCoinPrecision, Op: et.OpBuy}, PrivKeyD, stateDB, kvdb, env)
+		RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: 450000000, Amount: 15 * types.Coin, Op: et.OpBuy}, PrivKeyD, stateDB, kvdb, env)
 	orderList, err = Exec_QueryOrderList(et.Ordered, Nodes[3], "", stateDB, kvdb)
 	//orderID10 := orderList.List[0].OrderID
-	assert.Equal(t, 5*types.DefaultCoinPrecision, orderList.List[0].Balance)
+	assert.Equal(t, 5*types.Coin, orderList.List[0].Balance)
 	assert.Nil(t, err)
-
+	//order7 order8        
 	order, err = Exec_QueryOrder(orderID7, stateDB, kvdb)
 	assert.Equal(t, nil, err)
 	assert.Equal(t, int32(et.Completed), order.Status)
@@ -256,42 +295,43 @@ func TestExchange(t *testing.T) {
 	order, err = Exec_QueryOrder(orderID9, stateDB, kvdb)
 	assert.Equal(t, nil, err)
 	assert.Equal(t, int32(et.Ordered), order.Status)
-	assert.Equal(t, 5*types.DefaultCoinPrecision, order.Balance)
-
+	assert.Equal(t, 5*types.Coin, order.Balance)
+	//    
 	acc = accD1.LoadExecAccount(Nodes[3], execAddr)
 	// 100-3*10-5*4-4.5*5   = 27.5
 	assert.Equal(t, int64(2750000000), acc.Balance)
 	acc = accC.LoadExecAccount(Nodes[2], execAddr)
-	assert.Equal(t, 80*types.DefaultCoinPrecision, acc.Balance)
+	assert.Equal(t, 80*types.Coin, acc.Balance)
 
 	Exec_LimitOrder(t, &et.LimitOrder{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
-		RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: 100000000, Amount: 2 * types.DefaultCoinPrecision, Op: et.OpSell}, PrivKeyC, stateDB, kvdb, env)
+		RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: 100000000, Amount: 2 * types.Coin, Op: et.OpSell}, PrivKeyC, stateDB, kvdb, env)
 	orderList, err = Exec_QueryOrderList(et.Completed, Nodes[2], "", stateDB, kvdb)
 	assert.Nil(t, err)
 	Exec_LimitOrder(t, &et.LimitOrder{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
-		RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: 100000000, Amount: 8 * types.DefaultCoinPrecision, Op: et.OpSell}, PrivKeyC, stateDB, kvdb, env)
+		RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: 100000000, Amount: 8 * types.Coin, Op: et.OpSell}, PrivKeyC, stateDB, kvdb, env)
 	orderList, err = Exec_QueryOrderList(et.Ordered, Nodes[2], "", stateDB, kvdb)
 	assert.Nil(t, err)
 	orderID10 := orderList.List[0].OrderID
 	assert.Equal(t, int32(et.Ordered), orderList.List[0].Status)
-	assert.Equal(t, 5*types.DefaultCoinPrecision, orderList.List[0].Balance)
-
+	assert.Equal(t, 5*types.Coin, orderList.List[0].Balance)
+	//    
 	acc = accD1.LoadExecAccount(Nodes[3], execAddr)
 	// 100-3*10-5*4-1*5   = 45
-	assert.Equal(t, 45*types.DefaultCoinPrecision, acc.Balance)
+	assert.Equal(t, 45*types.Coin, acc.Balance)
 	acc = accC.LoadExecAccount(Nodes[2], execAddr)
-	assert.Equal(t, 70*types.DefaultCoinPrecision, acc.Balance)
-
+	assert.Equal(t, 70*types.Coin, acc.Balance)
+	//orderID9 order10   
 	Exec_RevokeOrder(t, orderID9, PrivKeyC, stateDB, kvdb, env)
 	Exec_RevokeOrder(t, orderID10, PrivKeyC, stateDB, kvdb, env)
 	marketDepthList, err = Exec_QueryMarketDepth(&et.QueryMarketDepth{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
 		RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Op: et.OpSell}, stateDB, kvdb)
 	assert.NotEqual(t, nil, err)
 	acc = accC.LoadExecAccount(Nodes[2], execAddr)
-	assert.Equal(t, 80*types.DefaultCoinPrecision, acc.Balance)
+	assert.Equal(t, 80*types.Coin, acc.Balance)
 
+	//    ,     
 	util.CloseTestDB(dir, stateDB)
-	total = 1000 * types.DefaultCoinPrecision
+	total = 1000 * types.Coin
 	accountA = types.Account{
 		Balance: total,
 		Frozen:  0,
@@ -324,32 +364,41 @@ func TestExchange(t *testing.T) {
 		1,
 		1539918074,
 	}
-
+	/*
+	        ：
+	      :
+	    1.  200 ，   1   1   
+	    2.       1,   200   
+	    3.         ,    
+	    4.               
+	*/
 
 	for i := 0; i < 200; i++ {
 		Exec_LimitOrder(t, &et.LimitOrder{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
-			RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: 100000000, Amount: 1 * types.DefaultCoinPrecision, Op: et.OpBuy}, PrivKeyA, stateDB, kvdb, env)
+			RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: 100000000, Amount: 1 * types.Coin, Op: et.OpBuy}, PrivKeyA, stateDB, kvdb, env)
 	}
 
 	Exec_LimitOrder(t, &et.LimitOrder{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
-		RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: 100000000, Amount: 200 * types.DefaultCoinPrecision, Op: et.OpSell}, PrivKeyB, stateDB, kvdb, env)
+		RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: 100000000, Amount: 200 * types.Coin, Op: et.OpSell}, PrivKeyB, stateDB, kvdb, env)
 	if et.MaxMatchCount > 200 {
 		return
 	}
 	orderList, err = Exec_QueryOrderList(et.Ordered, Nodes[1], "", stateDB, kvdb)
 	orderID := orderList.List[0].OrderID
 	assert.Equal(t, nil, err)
-	assert.Equal(t, (200-et.MaxMatchCount)*types.DefaultCoinPrecision, orderList.List[0].Balance)
-
+	assert.Equal(t, (200-et.MaxMatchCount)*types.Coin, orderList.List[0].Balance)
+	//  op      
 	marketDepthList, err = Exec_QueryMarketDepth(&et.QueryMarketDepth{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
 		RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Op: et.OpBuy}, stateDB, kvdb)
 	assert.Equal(t, nil, err)
-	assert.Equal(t, (200-et.MaxMatchCount)*types.DefaultCoinPrecision, marketDepthList.List[0].GetAmount())
+	assert.Equal(t, (200-et.MaxMatchCount)*types.Coin, marketDepthList.List[0].GetAmount())
 	marketDepthList, err = Exec_QueryMarketDepth(&et.QueryMarketDepth{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
 		RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Op: et.OpSell}, stateDB, kvdb)
 	assert.Equal(t, nil, err)
-	assert.Equal(t, (200-et.MaxMatchCount)*types.DefaultCoinPrecision, marketDepthList.List[0].GetAmount())
+	assert.Equal(t, (200-et.MaxMatchCount)*types.Coin, marketDepthList.List[0].GetAmount())
 
+	//            
+	//    
 	var count int
 	var primaryKey string
 	for {
@@ -365,7 +414,8 @@ func TestExchange(t *testing.T) {
 	}
 	assert.Equal(t, et.MaxMatchCount, count)
 
-
+	//          
+	//            
 	count = 0
 	primaryKey = ""
 	for {
@@ -382,22 +432,23 @@ func TestExchange(t *testing.T) {
 		primaryKey = orderList.PrimaryKey
 	}
 	assert.Equal(t, et.MaxMatchCount, count)
-
+	//         ,    
 	err = Exec_LimitOrder(t, &et.LimitOrder{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
-		RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: 100000000, Amount: 100 * types.DefaultCoinPrecision, Op: et.OpSell}, PrivKeyA, stateDB, kvdb, env)
+		RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: 100000000, Amount: 100 * types.Coin, Op: et.OpSell}, PrivKeyA, stateDB, kvdb, env)
 	assert.Equal(t, nil, err)
 	marketDepthList, err = Exec_QueryMarketDepth(&et.QueryMarketDepth{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
 		RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Op: et.OpSell}, stateDB, kvdb)
 	assert.Equal(t, nil, err)
-	assert.Equal(t, (200-et.MaxMatchCount+100)*types.DefaultCoinPrecision, marketDepthList.List[0].GetAmount())
-
+	assert.Equal(t, (200-et.MaxMatchCount+100)*types.Coin, marketDepthList.List[0].GetAmount())
+	//               
 	err = Exec_RevokeOrder(t, orderID, PrivKeyA, stateDB, kvdb, env)
 	assert.NotEqual(t, nil, err)
 	err = Exec_RevokeOrder(t, orderID, PrivKeyB, stateDB, kvdb, env)
 	assert.Equal(t, nil, err)
 
+	//    ,     
 	util.CloseTestDB(dir, stateDB)
-	total = 1000 * types.DefaultCoinPrecision
+	total = 1000 * types.Coin
 	accountA = types.Account{
 		Balance: total,
 		Frozen:  0,
@@ -430,71 +481,84 @@ func TestExchange(t *testing.T) {
 		1,
 		1539918074,
 	}
+	/*
+	  //    ,                   
+	      :
+	    1.       ,    ：
+	        10   
+	        20   
+	        50   
+	        20   
+	        50   
+	        100   
 
+	*/
 	acc = accB1.LoadExecAccount(Nodes[1], execAddr)
-	assert.Equal(t, 1000*types.DefaultCoinPrecision, acc.Balance)
+	assert.Equal(t, 1000*types.Coin, acc.Balance)
 	acc = accA.LoadExecAccount(Nodes[0], execAddr)
-	assert.Equal(t, 1000*types.DefaultCoinPrecision, acc.Balance)
+	assert.Equal(t, 1000*types.Coin, acc.Balance)
 	var txs []*types.Transaction
 	for i := 0; i < 10; i++ {
 		tx, err := CreateLimitOrder(&et.LimitOrder{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
-			RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: types.DefaultCoinPrecision, Amount: types.DefaultCoinPrecision, Op: et.OpBuy}, PrivKeyB)
+			RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: types.Coin, Amount: types.Coin, Op: et.OpBuy}, PrivKeyB)
 		assert.Equal(t, nil, err)
 		txs = append(txs, tx)
 	}
 
 	for i := 0; i < 20; i++ {
 		tx, err := CreateLimitOrder(&et.LimitOrder{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
-			RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: types.DefaultCoinPrecision, Amount: types.DefaultCoinPrecision, Op: et.OpSell}, PrivKeyA)
+			RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: types.Coin, Amount: types.Coin, Op: et.OpSell}, PrivKeyA)
 		assert.Equal(t, nil, err)
 		txs = append(txs, tx)
 	}
 
 	for i := 0; i < 50; i++ {
 		tx, err := CreateLimitOrder(&et.LimitOrder{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
-			RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: types.DefaultCoinPrecision, Amount: types.DefaultCoinPrecision, Op: et.OpBuy}, PrivKeyB)
+			RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: types.Coin, Amount: types.Coin, Op: et.OpBuy}, PrivKeyB)
 		assert.Equal(t, nil, err)
 		txs = append(txs, tx)
 	}
 
 	for i := 0; i < 20; i++ {
 		tx, err := CreateLimitOrder(&et.LimitOrder{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
-			RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: types.DefaultCoinPrecision, Amount: types.DefaultCoinPrecision, Op: et.OpSell}, PrivKeyA)
+			RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: types.Coin, Amount: types.Coin, Op: et.OpSell}, PrivKeyA)
 		assert.Equal(t, nil, err)
 		txs = append(txs, tx)
 	}
 	for i := 0; i < 50; i++ {
 		tx, err := CreateLimitOrder(&et.LimitOrder{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
-			RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: types.DefaultCoinPrecision, Amount: types.DefaultCoinPrecision, Op: et.OpBuy}, PrivKeyB)
+			RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: types.Coin, Amount: types.Coin, Op: et.OpBuy}, PrivKeyB)
 		assert.Equal(t, nil, err)
 		txs = append(txs, tx)
 	}
 
 	for i := 0; i < 100; i++ {
 		tx, err := CreateLimitOrder(&et.LimitOrder{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
-			RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: types.DefaultCoinPrecision, Amount: types.DefaultCoinPrecision, Op: et.OpSell}, PrivKeyA)
+			RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: types.Coin, Amount: types.Coin, Op: et.OpSell}, PrivKeyA)
 		assert.Equal(t, nil, err)
 		txs = append(txs, tx)
 	}
 	err = Exec_Block(t, stateDB, kvdb, env, txs...)
 	assert.Equal(t, nil, err)
 	acc = accB1.LoadExecAccount(Nodes[1], execAddr)
-	assert.Equal(t, 890*types.DefaultCoinPrecision, acc.Balance)
+	assert.Equal(t, 890*types.Coin, acc.Balance)
 	acc = accA.LoadExecAccount(Nodes[0], execAddr)
-	assert.Equal(t, 860*types.DefaultCoinPrecision, acc.Balance)
-	assert.Equal(t, 30*types.DefaultCoinPrecision, acc.Frozen)
+	assert.Equal(t, 860*types.Coin, acc.Balance)
+	assert.Equal(t, 30*types.Coin, acc.Frozen)
 
+	//  op      
 	marketDepthList, err = Exec_QueryMarketDepth(&et.QueryMarketDepth{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
 		RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Op: et.OpBuy}, stateDB, kvdb)
 	assert.NotEqual(t, nil, err)
-	//assert.Equal(t, (200-et.MaxMatchCount)*types.DefaultCoinPrecision, marketDepthList.List[0].GetAmount())
+	//assert.Equal(t, (200-et.MaxMatchCount)*types.Coin, marketDepthList.List[0].GetAmount())
 	marketDepthList, err = Exec_QueryMarketDepth(&et.QueryMarketDepth{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
 		RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Op: et.OpSell}, stateDB, kvdb)
 	assert.Equal(t, nil, err)
-	assert.Equal(t, 30*types.DefaultCoinPrecision, marketDepthList.List[0].GetAmount())
+	assert.Equal(t, 30*types.Coin, marketDepthList.List[0].GetAmount())
 
+	//    ,     
 	util.CloseTestDB(dir, stateDB)
-	total = 1000 * types.DefaultCoinPrecision
+	total = 1000 * types.Coin
 	accountA = types.Account{
 		Balance: total,
 		Frozen:  0,
@@ -527,56 +591,65 @@ func TestExchange(t *testing.T) {
 		1,
 		1539918074,
 	}
-
+	/*
+			  //    ,                  
+			      :
+			    1.      ,    ：
+		            100   
+			        50   
+			        20   
+			        100   
+	*/
 	acc = accB1.LoadExecAccount(Nodes[1], execAddr)
-	assert.Equal(t, 1000*types.DefaultCoinPrecision, acc.Balance)
+	assert.Equal(t, 1000*types.Coin, acc.Balance)
 	acc = accA.LoadExecAccount(Nodes[0], execAddr)
-	assert.Equal(t, 1000*types.DefaultCoinPrecision, acc.Balance)
+	assert.Equal(t, 1000*types.Coin, acc.Balance)
 	txs = nil
 	for i := 0; i < 100; i++ {
 		tx, err := CreateLimitOrder(&et.LimitOrder{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
-			RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: types.DefaultCoinPrecision, Amount: types.DefaultCoinPrecision, Op: et.OpSell}, PrivKeyA)
+			RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: types.Coin, Amount: types.Coin, Op: et.OpSell}, PrivKeyA)
 		assert.Equal(t, nil, err)
 		txs = append(txs, tx)
 	}
 
 	for i := 0; i < 50; i++ {
 		tx, err := CreateLimitOrder(&et.LimitOrder{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
-			RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: types.DefaultCoinPrecision, Amount: types.DefaultCoinPrecision, Op: et.OpBuy}, PrivKeyB)
+			RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: types.Coin, Amount: types.Coin, Op: et.OpBuy}, PrivKeyB)
 		assert.Equal(t, nil, err)
 		txs = append(txs, tx)
 	}
 
 	for i := 0; i < 20; i++ {
 		tx, err := CreateLimitOrder(&et.LimitOrder{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
-			RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: types.DefaultCoinPrecision, Amount: types.DefaultCoinPrecision, Op: et.OpSell}, PrivKeyA)
+			RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: types.Coin, Amount: types.Coin, Op: et.OpSell}, PrivKeyA)
 		assert.Equal(t, nil, err)
 		txs = append(txs, tx)
 	}
 	for i := 0; i < 100; i++ {
 		tx, err := CreateLimitOrder(&et.LimitOrder{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
-			RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: types.DefaultCoinPrecision, Amount: types.DefaultCoinPrecision, Op: et.OpBuy}, PrivKeyB)
+			RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Price: types.Coin, Amount: types.Coin, Op: et.OpBuy}, PrivKeyB)
 		assert.Equal(t, nil, err)
 		txs = append(txs, tx)
 	}
 	err = Exec_Block(t, stateDB, kvdb, env, txs...)
 	assert.Equal(t, nil, err)
 	acc = accB1.LoadExecAccount(Nodes[1], execAddr)
-	assert.Equal(t, 850*types.DefaultCoinPrecision, acc.Balance)
-	assert.Equal(t, 30*types.DefaultCoinPrecision, acc.Frozen)
+	assert.Equal(t, 850*types.Coin, acc.Balance)
+	assert.Equal(t, 30*types.Coin, acc.Frozen)
 	acc = accA.LoadExecAccount(Nodes[0], execAddr)
-	assert.Equal(t, 880*types.DefaultCoinPrecision, acc.Balance)
+	assert.Equal(t, 880*types.Coin, acc.Balance)
 
-
+	//  op      
 	marketDepthList, err = Exec_QueryMarketDepth(&et.QueryMarketDepth{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
 		RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Op: et.OpSell}, stateDB, kvdb)
 	assert.NotEqual(t, nil, err)
 	marketDepthList, err = Exec_QueryMarketDepth(&et.QueryMarketDepth{LeftAsset: &et.Asset{Symbol: "bty", Execer: "coins"},
 		RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"}, Op: et.OpBuy}, stateDB, kvdb)
 	assert.Equal(t, nil, err)
-	assert.Equal(t, 30*types.DefaultCoinPrecision, marketDepthList.List[0].GetAmount())
+	assert.Equal(t, 30*types.Coin, marketDepthList.List[0].GetAmount())
 
-
+	//            
+	//    
 	count = 0
 	primaryKey = ""
 	for {
@@ -646,16 +719,12 @@ func CreateRevokeOrder(orderID int64, privKey string) (tx *types.Transaction, er
 	return tx, nil
 }
 
+//            
 func Exec_Block(t *testing.T, stateDB db.DB, kvdb db.KVDB, env *execEnv, txs ...*types.Transaction) error {
 	cfg := types.NewChain33Config(types.GetDefaultCfgstring())
 	cfg.SetTitleOnlyForTest("chain33")
 	exec := NewExchange()
-	q := queue.New("channel")
-	q.SetConfig(cfg)
-	api, _ := client.New(q.Client(), nil)
-	exec.SetAPI(api)
 	e := exec.(*exchange)
-
 	for index, tx := range txs {
 		err := e.CheckTx(tx, index)
 		if err != nil {
@@ -664,7 +733,10 @@ func Exec_Block(t *testing.T, stateDB db.DB, kvdb db.KVDB, env *execEnv, txs ...
 		}
 
 	}
-
+	q := queue.New("channel")
+	q.SetConfig(cfg)
+	api, _ := client.New(q.Client(), nil)
+	exec.SetAPI(api)
 	exec.SetStateDB(stateDB)
 	exec.SetLocalDB(kvdb)
 	env.blockHeight = env.blockHeight + 1
@@ -721,6 +793,7 @@ func Exec_QueryOrderList(status int32, addr string, primaryKey string, stateDB d
 	exec.SetAPI(api)
 	exec.SetStateDB(stateDB)
 	exec.SetLocalDB(kvdb)
+	//          
 	msg, err := exec.Query(et.FuncNameQueryOrderList, types.Encode(&et.QueryOrderList{Status: status, Address: addr, PrimaryKey: primaryKey}))
 	if err != nil {
 		return nil, err
@@ -737,7 +810,7 @@ func Exec_QueryOrder(orderID int64, stateDB db.KV, kvdb db.KVDB) (*et.Order, err
 	exec.SetAPI(api)
 	exec.SetStateDB(stateDB)
 	exec.SetLocalDB(kvdb)
-
+	//  orderID      
 	msg, err := exec.Query(et.FuncNameQueryOrder, types.Encode(&et.QueryOrder{OrderID: orderID}))
 	if err != nil {
 		return nil, err
@@ -755,7 +828,7 @@ func Exec_QueryMarketDepth(query *et.QueryMarketDepth, stateDB db.KV, kvdb db.KV
 	exec.SetAPI(api)
 	exec.SetStateDB(stateDB)
 	exec.SetLocalDB(kvdb)
-
+	//  QueryMarketDepth      
 	msg, err := exec.Query(et.FuncNameQueryMarketDepth, types.Encode(query))
 	if err != nil {
 		return nil, err
@@ -773,7 +846,7 @@ func Exec_QueryHistoryOrder(query *et.QueryHistoryOrderList, stateDB db.KV, kvdb
 	exec.SetAPI(api)
 	exec.SetStateDB(stateDB)
 	exec.SetLocalDB(kvdb)
-
+	//  QueryMarketDepth      
 	msg, err := exec.Query(et.FuncNameQueryHistoryOrderList, types.Encode(query))
 	return msg.(*et.OrderList), err
 }
@@ -820,7 +893,7 @@ func TestKV(t *testing.T) {
 }
 
 func TestSafeMul(t *testing.T) {
-	t.Log(SafeMul(1e8, 1e7, types.DefaultCoinPrecision))
-	t.Log(SafeMul(1e10, 1e16, types.DefaultCoinPrecision))
-	t.Log(SafeMul(1e7, 1e6, types.DefaultCoinPrecision))
+	t.Log(SafeMul(1e8, 1e7))
+	t.Log(SafeMul(1e10, 1e16))
+	t.Log(SafeMul(1e7, 1e6))
 }

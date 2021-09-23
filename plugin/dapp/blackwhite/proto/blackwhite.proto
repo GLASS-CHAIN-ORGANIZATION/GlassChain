@@ -3,7 +3,6 @@ syntax = "proto3";
 import "transaction.proto";
 
 package types;
-option go_package = "../types";
 
 message AddressResult {
     string   addr             = 1;
@@ -18,30 +17,31 @@ message BlackwhiteRound {
     string gameID = 1;
     // create -> play(timeout) -> show -> done
     int32 status = 2;
+    //        
     int64 playAmount = 3;
-
+    //     
     int32 playerCount = 4;
-
+    //       
     int32 curPlayerCount = 5;
- 
+    //         
     int32 loop = 6;
-
+    //         
     int32 curShowCount = 7;
-
+    //       
     int64 createTime = 8;
-
+    //         
     int64 showTime = 9;
-
+    //     
     int64 timeout = 10;
-
+    //       
     string createAddr = 11;
-
+    //     
     string gameName = 12;
-
+    //       
     repeated AddressResult addrResult = 13;
-
+    //     
     repeated string winner = 14;
-
+    // block       
     int64 index = 15;
 }
 
@@ -86,7 +86,7 @@ message ReceiptBlackwhite {
 message ReceiptBlackwhiteStatus {
     string gameID = 1;
     int32  status = 2;
-
+    //       
     int32  prevStatus = 3;
     string addr       = 4;
     int64  index      = 5;
@@ -101,8 +101,10 @@ message ReplyBlackwhiteRoundInfo {
 }
 
 message ReqBlackwhiteRoundList {
+    //    status  ,status    
     int32 status = 1;
-     string address   = 2;
+    //    ，             game  ，    status，     ，              
+    string address   = 2;
     int32  count     = 3;
     int32  direction = 4;
     int64  index     = 5;
@@ -132,18 +134,31 @@ message BlackwhiteRoundResult {
     string gameID = 1;
     // create -> play(timeout) -> show -> done
     int32 status = 2;
+    //        
     int64 playAmount = 3;
+    //     
     int32 playerCount = 4;
+    //       
     int32 curPlayerCount = 5;
+    //         
     int32 loop = 6;
+    //         
     int32 curShowCount = 7;
+    //       
     int64 createTime = 8;
+    //         
     int64 showTime = 9;
+    //     
     int64 timeout = 10;
+    //       
     string createAddr = 11;
+    //     
     string gameName = 12;
+    //       
     repeated AddressResult addrResult = 13;
+    //     
     repeated string winner = 14;
+    // block       
     int64 index = 15;
 }
 
@@ -174,8 +189,12 @@ message BlackwhiteTimeoutDoneTxReq {
 }
 
 service blackwhite {
+    // blackwhite          
+    //     
     rpc Create(BlackwhiteCreate) returns (UnsignTx) {}
+    //        
     rpc Show(BlackwhiteShow) returns (UnsignTx) {}
+    //    
     rpc Play(BlackwhitePlay) returns (UnsignTx) {}
     rpc TimeoutDone(BlackwhiteTimeoutDone) returns (UnsignTx) {}
 }

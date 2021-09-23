@@ -2,7 +2,6 @@ package abi
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"reflect"
 	"testing"
@@ -78,10 +77,7 @@ func TestABI_Unpack(t *testing.T) {
 
 		data, err := Unpack(common.FromHex(test.input), test.method, abiData)
 		assert.NoError(t, err)
-		jsondata, err := json.Marshal(data)
-		assert.NoError(t, err)
-		jsonStr := string(jsondata)
-		assert.EqualValues(t, test.output, jsonStr)
+		assert.EqualValues(t, test.output, data)
 	}
 }
 
@@ -114,6 +110,7 @@ func TestProcFuncCall(t *testing.T) {
 	}
 }
 
+// TestProcArray     ABI         
 func TestProcArray(t *testing.T) {
 	for _, test := range []struct {
 		input  string
@@ -143,6 +140,7 @@ func TestProcArray(t *testing.T) {
 	}
 }
 
+// Test_GoValue         ABI    ，              
 func Test_GoValue(t *testing.T) {
 	for i, test := range []struct {
 		typ    string

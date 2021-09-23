@@ -51,12 +51,12 @@ func (client *Client) GetGenesisBlockTime() int64 {
 // CreateGenesisTx get genesis tx
 func (client *Client) CreateGenesisTx() (ret []*types.Transaction) {
 	var tx types.Transaction
-	tx.Execer = []byte(client.GetAPI().GetConfig().GetCoinExec())
+	tx.Execer = []byte(cty.CoinsX)
 	tx.To = genesis
 	//gen payload
 	g := &cty.CoinsAction_Genesis{}
 	g.Genesis = &types.AssetsGenesis{}
-	g.Genesis.Amount = 1e8 * client.GetAPI().GetConfig().GetCoinPrecision()
+	g.Genesis.Amount = 1e8 * types.Coin
 	tx.Payload = types.Encode(&cty.CoinsAction{Value: g, Ty: cty.CoinsActionGenesis})
 	ret = append(ret, &tx)
 	return
@@ -113,6 +113,7 @@ func (client *Client) Close() {
 
 // CreateBlock method
 func (client *Client) CreateBlock() {
+	//             
 	tocker := time.NewTicker(30 * time.Second)
 	beg := time.Now()
 OuterLoop:
@@ -143,6 +144,7 @@ OuterLoop:
 		case <-hint.C:
 			rlog.Info("==================This is Leader node=====================")
 		case <-ticker.C:
+			//  leader      ，      ，    
 			if !mux.Load().(bool) {
 				rlog.Warn("Not Leader node anymore")
 				return
@@ -169,11 +171,12 @@ OuterLoop:
 			newblock.ParentHash = lastBlock.Hash(cfg)
 			newblock.Height = lastBlock.Height + 1
 			client.AddTxsToBlock(&newblock, txs)
+			//                TxHash
 			if cfg.IsFork(newblock.Height, "ForkRootHash") {
 				newblock.Txs = types.TransactionSort(newblock.Txs)
 			}
 			newblock.TxHash = merkle.CalcMerkleRoot(cfg, newblock.Height, newblock.Txs)
-
+			//    
 			newblock.Difficulty = cfg.GetP(0).PowLimitBits
 			newblock.BlockTime = types.Now().Unix()
 			if lastBlock.BlockTime >= newblock.BlockTime {
@@ -189,10 +192,12 @@ OuterLoop:
 	}
 }
 
+//  raft    BlockInfo
 func (client *Client) propose(block *types.Block) {
 	client.proposeC <- block
 }
 
+//  receive channel  leader   block
 func (client *Client) readCommits(commitC <-chan *types.Block, errorC <-chan error) {
 	var data *types.Block
 	var ok bool
@@ -229,6 +234,7 @@ func (client *Client) readCommits(commitC <-chan *types.Block, errorC <-chan err
 	}
 }
 
+//    ，         validator  ，   ，       
 func (client *Client) pollingTask() {
 	for {
 		select {
@@ -253,6 +259,7 @@ func (client *Client) pollingTask() {
 	}
 }
 
+//CmpBestBlock   newBlock       
 func (client *Client) CmpBestBlock(newBlock *types.Block, cmpBlock *types.Block) bool {
 	return false
 }

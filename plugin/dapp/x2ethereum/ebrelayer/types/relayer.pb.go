@@ -9,9 +9,9 @@ import proto "github.com/golang/protobuf/proto"
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
 
-// 
-// 	 privkey : 
-// 	 addr  
+//        
+// 	 privkey :          
+// 	 addr :    
 type Account4Relayer struct {
 	Privkey []byte `protobuf:"bytes,1,opt,name=privkey,proto3" json:"privkey,omitempty"`
 	Addr    string `protobuf:"bytes,2,opt,name=addr" json:"addr,omitempty"`
@@ -155,7 +155,7 @@ type LockEthErc20 struct {
 	OwnerKey  string `protobuf:"bytes,1,opt,name=ownerKey" json:"ownerKey,omitempty"`
 	TokenAddr string `protobuf:"bytes,2,opt,name=tokenAddr" json:"tokenAddr,omitempty"`
 	Amount    string `protobuf:"bytes,3,opt,name=amount" json:"amount,omitempty"`
-	// loc chain3 
+	//  lock         chain33      
 	Chain33Receiver string `protobuf:"bytes,4,opt,name=chain33Receiver" json:"chain33Receiver,omitempty"`
 }
 

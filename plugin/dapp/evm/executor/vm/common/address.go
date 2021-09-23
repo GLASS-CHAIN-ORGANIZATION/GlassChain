@@ -6,9 +6,6 @@ package common
 
 import (
 	"math/big"
-	"strings"
-
-	"github.com/ethereum/go-ethereum/common"
 
 	"encoding/hex"
 
@@ -19,25 +16,34 @@ import (
 	"github.com/holiman/uint256"
 )
 
+// Address        ，           
+//               Address<->big.Int， Address<->[]byte        
+//                 Hash160  ，   EVM      [20]byte，                
 type Address struct {
 	Addr *address.Address
 }
 
+// Hash160Address EVM        
 type Hash160Address [Hash160Length]byte
 
+// String      
 func (a Address) String() string { return a.Addr.String() }
 
+// Bytes     
 func (a Address) Bytes() []byte {
 	return a.Addr.Hash160[:]
 }
 
+// Big    
 func (a Address) Big() *big.Int {
 	ret := new(big.Int).SetBytes(a.Bytes())
 	return ret
 }
 
+// Hash       
 func (a Address) Hash() Hash { return ToHash(a.Bytes()) }
 
+// ToHash160   EVM    
 func (a Address) ToHash160() Hash160Address {
 	var h Hash160Address
 	h.SetBytes(a.Bytes())
@@ -80,25 +86,24 @@ func (h Hash160Address) Hex() string {
 	return "0x" + string(result)
 }
 
+// ToAddress   Chain33     
 func (h Hash160Address) ToAddress() Address {
 	return BytesToAddress(h[:])
 }
 
+// NewAddress xHash  EVM    
 func NewAddress(cfg *types.Chain33Config, txHash []byte) Address {
 	execAddr := address.GetExecAddress(cfg.ExecName("user.evm.") + BytesToHash(txHash).Hex())
 	return Address{Addr: execAddr}
 }
 
-func NewContractAddress(b Address, txHash []byte) Address {
-	execAddr := address.GetExecAddress(b.String() + common.Bytes2Hex(txHash))
-	return Address{Addr: execAddr}
-}
-
+// ExecAddress       
 func ExecAddress(execName string) Address {
 	execAddr := address.GetExecAddress(execName)
 	return Address{Addr: execAddr}
 }
 
+// BytesToAddress        
 func BytesToAddress(b []byte) Address {
 	a := new(address.Address)
 	a.Version = 0
@@ -106,23 +111,17 @@ func BytesToAddress(b []byte) Address {
 	return Address{Addr: a}
 }
 
+// BytesToHash160Address        
 func BytesToHash160Address(b []byte) Hash160Address {
 	var h Hash160Address
 	h.SetBytes(b)
 	return h
 }
 
+// StringToAddress         
 func StringToAddress(s string) *Address {
 	addr, err := address.NewAddrFromString(s)
 	if err != nil {
-		hbytes, err := hex.DecodeString(strings.TrimPrefix(s, "0x"))
-		if err == nil {
-			if len(hbytes) == 20 {
-				var addr address.Address
-				addr.SetBytes(hbytes)
-				return &Address{Addr: &addr}
-			}
-		}
 		log15.Error("create address form string error", "string:", s)
 		return nil
 	}
@@ -141,6 +140,7 @@ func bigBytes(b *big.Int) (out []byte) {
 	return
 }
 
+// BigToAddress         
 func BigToAddress(b *big.Int) Address {
 	a := new(address.Address)
 	a.Version = 0
@@ -148,22 +148,24 @@ func BigToAddress(b *big.Int) Address {
 	return Address{Addr: a}
 }
 
+// EmptyAddress      
 func EmptyAddress() Address { return BytesToAddress([]byte{0}) }
 
 // HexToAddress returns Address with byte values of s.
 // If s is larger than len(h), s will be cropped from the left.
 func HexToAddress(s string) Hash160Address { return BytesToHash160Address(FromHex(s)) }
 
+// Uint256ToAddress         
 func Uint256ToAddress(b *uint256.Int) Address {
 	a := new(address.Address)
 	a.Version = 0
 	out := make([]byte, 20)
-
 	copy(out[:], b.Bytes())
 	a.SetBytes(out)
 	return Address{Addr: a}
 }
 
+// HexToAddr               
 func HexToAddr(s string) Address {
 	a := new(address.Address)
 	a.Version = 0

@@ -9,6 +9,7 @@ import (
 	gt "github.com/33cn/plugin/plugin/dapp/blackwhite/types"
 )
 
+// Query_GetBlackwhiteRoundInfo       
 func (c *Blackwhite) Query_GetBlackwhiteRoundInfo(in *gt.ReqBlackwhiteRoundInfo) (types.Message, error) {
 	if in == nil {
 		return nil, types.ErrInvalidParam
@@ -16,6 +17,7 @@ func (c *Blackwhite) Query_GetBlackwhiteRoundInfo(in *gt.ReqBlackwhiteRoundInfo)
 	return c.GetBlackwhiteRoundInfo(in)
 }
 
+// Query_GetBlackwhiteByStatusAndAddr                
 func (c *Blackwhite) Query_GetBlackwhiteByStatusAndAddr(in *gt.ReqBlackwhiteRoundList) (types.Message, error) {
 	if in == nil {
 		return nil, types.ErrInvalidParam
@@ -23,6 +25,7 @@ func (c *Blackwhite) Query_GetBlackwhiteByStatusAndAddr(in *gt.ReqBlackwhiteRoun
 	return c.GetBwRoundListInfo(in)
 }
 
+// Query_GetBlackwhiteloopResult              
 func (c *Blackwhite) Query_GetBlackwhiteloopResult(in *gt.ReqLoopResult) (types.Message, error) {
 	if in == nil {
 		return nil, types.ErrInvalidParam

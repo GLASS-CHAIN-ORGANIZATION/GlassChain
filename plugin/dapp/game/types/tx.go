@@ -7,9 +7,9 @@ package types
 // GamePreCreateTx pre create game,unused
 type GamePreCreateTx struct {
 	//Secret     string `json:"secret"`
-
+	//       ，     
 	Amount int64 `json:"amount"`
-
+	//     sha256  
 	HashType  string `json:"hashType"`
 	HashValue []byte `json:"hashValue,omitempty"`
 	Fee       int64  `json:"fee"`

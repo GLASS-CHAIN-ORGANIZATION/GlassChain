@@ -7,8 +7,13 @@ import (
 	et "github.com/33cn/plugin/plugin/dapp/accountmanager/types"
 )
 
+/*
+ *        
+ *         
+ */
 
 var (
+	//  
 	elog = log.New("module", "accountmanager.executor")
 )
 
@@ -48,12 +53,14 @@ func (a *Accountmanager) GetDriverName() string {
 	return driverName
 }
 
+//ExecutorOrder Exec          ExecLocal
 func (a *Accountmanager) ExecutorOrder() int64 {
 	return drivers.ExecLocalSameTime
 }
 
+// CheckTx            ，     
 func (a *Accountmanager) CheckTx(tx *types.Transaction, index int) error {
-
+	//          payload,        
 	var ama et.AccountmanagerAction
 	err := types.Decode(tx.GetPayload(), &ama)
 	if err != nil {

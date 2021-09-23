@@ -18,15 +18,15 @@ proj := "build"
 default: depends build
 
 build: depends
-	go build $(BUILD_FLAGS) -v -o $(APP)
-	go build $(BUILD_FLAGS) -v -o $(CLI) $(SRC_CLI)
-	go build $(BUILD_FLAGS) -v -o build/fork-config github.com/33cn/plugin/cli/fork_config/
+	go build $(BUILD_FLAGS) -v -i -o $(APP)
+	go build $(BUILD_FLAGS) -v -i -o $(CLI) $(SRC_CLI)
+	go build $(BUILD_FLAGS) -v -i -o build/fork-config github.com/33cn/plugin/cli/fork_config/
 	@cp chain33.toml build/
 	@cp chain33.para.toml build/ci/paracross/
 
 
 build_ci: depends ## Build the binary file for CI
-	@go build -v -o $(CLI) $(SRC_CLI)
+	@go build -v -i -o $(CLI) $(SRC_CLI)
 	@go build $(BUILD_FLAGS) -v -o $(APP)
 	@cp chain33.toml build/
 	@cp chain33.para.toml build/ci/paracross/
@@ -36,7 +36,7 @@ para:
 	@go build -v -o build/$(NAME) -ldflags "-X $(SRC_CLI)/buildflags.ParaName=user.p.$(NAME). -X $(SRC_CLI)/buildflags.RPCAddr=http://localhost:8901" $(SRC_CLI)
 
 vet:
-	@go vet -copylocks=false ./...
+	@go vet ./...
 
 autotest: ## build autotest binary
 	@cd build/autotest && bash ./run.sh build && cd ../../
@@ -47,7 +47,7 @@ autotest_ci: autotest ## autotest ci
 autotest_tick: autotest ## run with ticket mining
 	@cd build/autotest && bash ./run.sh gitlabci build && cd ../../
 
-update: ## version It can be a git tag with a specific version number or a commit hash, which pulls the latest version from the master branch by default without filling in anything
+update: ## version    git tag       ,    commit hash,             master        
 	@if [ -n "$(version)" ]; then   \
 	go get -v github.com/33cn/chain33@${version}  ; \
 	else \

@@ -36,16 +36,21 @@ const (
 )
 
 const (
+	// GetBlackwhiteRoundInfo    cmd          
 	GetBlackwhiteRoundInfo = "GetBlackwhiteRoundInfo"
+	// GetBlackwhiteByStatusAndAddr    cmd          
 	GetBlackwhiteByStatusAndAddr = "GetBlackwhiteByStatusAndAddr"
+	// GetBlackwhiteloopResult    cmd          
 	GetBlackwhiteloopResult = "GetBlackwhiteloopResult"
 )
 
 var (
+	// BlackwhiteX      
 	BlackwhiteX = "blackwhite"
 	glog        = log15.New("module", BlackwhiteX)
 	// JRPCName json RPC name
 	JRPCName = "Blackwhite"
+	// ExecerBlackwhite      byte  
 	ExecerBlackwhite = []byte(BlackwhiteX)
 	actionName       = map[string]int32{
 		"Create":      BlackwhiteActionCreate,

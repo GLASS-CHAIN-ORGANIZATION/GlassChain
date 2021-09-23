@@ -44,7 +44,7 @@ var (
 	Nodes    = [][]byte{
 		[]byte("1KSBd17H7ZK8iT37aJztFB22XGwsPTdwE4"),
 	}
-	total    = 100 * types.DefaultCoinPrecision
+	total    = 100 * types.Coin
 	USERNAME = "user1"
 	ORGNAME  = "org1"
 	SIGNTYPE = ct.AuthSM2
@@ -75,7 +75,7 @@ func manageKeySet(key string, value string, db dbm.KV) {
 }
 
 func initEnv() (*execEnv, error) {
-	cfg := types.NewChain33Config(types.ReadFile("./test/chain33.auth.test.toml"))
+	cfg := types.NewChain33Config(types.ReadFile("./test/chain33.toml"))
 	cfg.SetTitleOnlyForTest("chain33")
 
 	sub := cfg.GetSubConfig()

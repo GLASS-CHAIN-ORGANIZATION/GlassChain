@@ -19,7 +19,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// OracleCmd 
+// OracleCmd       
 func OracleCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "oracle",
@@ -39,7 +39,7 @@ func OracleCmd() *cobra.Command {
 	return cmd
 }
 
-// OraclePublishEventRawTxCmd 
+// OraclePublishEventRawTxCmd     
 func OraclePublishEventRawTxCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "publish_event",
@@ -88,7 +88,9 @@ func addPublishEventFlags(cmd *cobra.Command) {
 }
 
 func publishEvent(cmd *cobra.Command, args []string) {
-	paraName, _ := cmd.Flags().GetString("paraName")
+	title, _ := cmd.Flags().GetString("title")
+	cfg := types.GetCliSysParam(title)
+
 	rpcLaddr, err := cmd.Flags().GetString("rpc_laddr")
 	if err != nil {
 		fmt.Printf("publishEvent get rpc addr Error: %v", err)
@@ -128,7 +130,7 @@ func publishEvent(cmd *cobra.Command, args []string) {
 	}
 
 	params := &rpctypes.CreateTxIn{
-		Execer:     types.GetExecName(oraclety.OracleX, paraName),
+		Execer:     cfg.ExecName(oraclety.OracleX),
 		ActionName: oraclety.CreateEventPublishTx,
 		Payload:    []byte(fmt.Sprintf("{\"type\":\"%s\",\"subType\":\"%s\",\"time\":%d, \"content\":\"%s\", \"introduction\":\"%s\"}", ty, subType, t.Unix(), content, introduction)),
 	}
@@ -137,7 +139,7 @@ func publishEvent(cmd *cobra.Command, args []string) {
 	ctx.RunWithoutMarshal()
 }
 
-// OracleAbortEventRawTxCmd 
+// OracleAbortEventRawTxCmd       
 func OracleAbortEventRawTxCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "abort_publish_event",
@@ -158,7 +160,9 @@ func addAbortPublishEventFlags(cmd *cobra.Command) {
 }
 
 func abortPublishEvent(cmd *cobra.Command, args []string) {
-	paraName, _ := cmd.Flags().GetString("paraName")
+	title, _ := cmd.Flags().GetString("title")
+	cfg := types.GetCliSysParam(title)
+
 	rpcLaddr, err := cmd.Flags().GetString("rpc_laddr")
 	if err != nil {
 		fmt.Printf("abortPublishEvent rpc_addr Error: %v", err)
@@ -171,7 +175,7 @@ func abortPublishEvent(cmd *cobra.Command, args []string) {
 	}
 
 	params := &rpctypes.CreateTxIn{
-		Execer:     types.GetExecName(oraclety.OracleX, paraName),
+		Execer:     cfg.ExecName(oraclety.OracleX),
 		ActionName: oraclety.CreateAbortEventPublishTx,
 		Payload:    []byte(fmt.Sprintf("{\"eventID\":\"%s\"}", eventID)),
 	}
@@ -180,7 +184,7 @@ func abortPublishEvent(cmd *cobra.Command, args []string) {
 	ctx.RunWithoutMarshal()
 }
 
-// OraclePrePublishResultRawTxCmd 
+// OraclePrePublishResultRawTxCmd      
 func OraclePrePublishResultRawTxCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "prepublish_result",
@@ -215,7 +219,9 @@ func addPrePublishResultFlags(cmd *cobra.Command) {
 }
 
 func prePublishResult(cmd *cobra.Command, args []string) {
-	paraName, _ := cmd.Flags().GetString("paraName")
+	title, _ := cmd.Flags().GetString("title")
+	cfg := types.GetCliSysParam(title)
+
 	rpcLaddr, err := cmd.Flags().GetString("rpc_laddr")
 	if err != nil {
 		fmt.Printf("prePublishResult rpc_laddr Error: %v", err)
@@ -238,7 +244,7 @@ func prePublishResult(cmd *cobra.Command, args []string) {
 	}
 
 	params := &rpctypes.CreateTxIn{
-		Execer:     types.GetExecName(oraclety.OracleX, paraName),
+		Execer:     cfg.ExecName(oraclety.OracleX),
 		ActionName: oraclety.CreatePrePublishResultTx,
 		Payload:    []byte(fmt.Sprintf("{\"eventID\":\"%s\", \"source\":\"%s\", \"result\":\"%s\"}", eventID, source, result)),
 	}
@@ -247,7 +253,7 @@ func prePublishResult(cmd *cobra.Command, args []string) {
 	ctx.RunWithoutMarshal()
 }
 
-// OracleAbortPrePubResultRawTxCmd 
+// OracleAbortPrePubResultRawTxCmd           
 func OracleAbortPrePubResultRawTxCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "abort_result",
@@ -268,7 +274,9 @@ func addAbortPrePubResultFlags(cmd *cobra.Command) {
 }
 
 func abortPrePubResult(cmd *cobra.Command, args []string) {
-	paraName, _ := cmd.Flags().GetString("paraName")
+	title, _ := cmd.Flags().GetString("title")
+	cfg := types.GetCliSysParam(title)
+
 	rpcLaddr, err := cmd.Flags().GetString("rpc_laddr")
 	if err != nil {
 		fmt.Printf("abortPrePubResult rpc_laddr Error: %v", err)
@@ -281,7 +289,7 @@ func abortPrePubResult(cmd *cobra.Command, args []string) {
 	}
 
 	params := &rpctypes.CreateTxIn{
-		Execer:     types.GetExecName(oraclety.OracleX, paraName),
+		Execer:     cfg.ExecName(oraclety.OracleX),
 		ActionName: oraclety.CreateAbortResultPrePublishTx,
 		Payload:    []byte(fmt.Sprintf("{\"eventID\":\"%s\"}", eventID)),
 	}
@@ -290,7 +298,7 @@ func abortPrePubResult(cmd *cobra.Command, args []string) {
 	ctx.RunWithoutMarshal()
 }
 
-// OraclePublishResultRawTxCmd 
+// OraclePublishResultRawTxCmd       
 func OraclePublishResultRawTxCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "publish_result",
@@ -325,7 +333,9 @@ func addPublishResultFlags(cmd *cobra.Command) {
 }
 
 func publishResult(cmd *cobra.Command, args []string) {
-	paraName, _ := cmd.Flags().GetString("paraName")
+	title, _ := cmd.Flags().GetString("title")
+	cfg := types.GetCliSysParam(title)
+
 	rpcLaddr, err := cmd.Flags().GetString("rpc_laddr")
 	if err != nil {
 		fmt.Printf("publishResult rpc_laddr Error: %v", err)
@@ -348,7 +358,7 @@ func publishResult(cmd *cobra.Command, args []string) {
 	}
 
 	params := &rpctypes.CreateTxIn{
-		Execer:     types.GetExecName(oraclety.OracleX, paraName),
+		Execer:     cfg.ExecName(oraclety.OracleX),
 		ActionName: oraclety.CreateResultPublishTx,
 		Payload:    []byte(fmt.Sprintf("{\"eventID\":\"%s\", \"source\":\"%s\", \"result\":\"%s\"}", eventID, source, result)),
 	}
@@ -357,7 +367,7 @@ func publishResult(cmd *cobra.Command, args []string) {
 	ctx.RunWithoutMarshal()
 }
 
-// OracleQueryRawTxCmd 
+// OracleQueryRawTxCmd     
 func OracleQueryRawTxCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "query",

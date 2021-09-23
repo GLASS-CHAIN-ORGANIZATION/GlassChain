@@ -22,7 +22,6 @@ package mpt
 
 import (
 	"fmt"
-	"github.com/33cn/chain33/types"
 	"io"
 	"strings"
 
@@ -40,13 +39,13 @@ type node interface {
 }
 
 const (
-	// TyFullNode 
+	// TyFullNode      
 	TyFullNode = 1
-	// TyShortNode 
+	// TyShortNode       
 	TyShortNode = 2
-	// TyHashNode has 
+	// TyHashNode hash    
 	TyHashNode = 3
-	// TyValueNode valu 
+	// TyValueNode value    
 	TyValueNode = 4
 )
 
@@ -76,8 +75,12 @@ type valueNode struct {
 
 // EncodeRLP encodes a full node into the consensus RLP format.
 func (n *fullNode) EncodeProto(w io.Writer) error {
-	data := types.Encode(n.create())
-	_, err := w.Write(data)
+	node := n.create()
+	data, err := proto.Marshal(node)
+	if err != nil {
+		return err
+	}
+	_, err = w.Write(data)
 	return err
 }
 

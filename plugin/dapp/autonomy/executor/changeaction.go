@@ -13,7 +13,7 @@ import (
 )
 
 func (a *action) propChange(prob *auty.ProposalChange) (*types.Receipt, error) {
-
+	//       0,             
 	if prob == nil || len(prob.Changes) == 0 {
 		alog.Error("propChange ", "ProposalChange ChangeCfg invaild or have no modify param", prob)
 		return nil, types.ErrInvalidParam
@@ -30,13 +30,14 @@ func (a *action) propChange(prob *auty.ProposalChange) (*types.Receipt, error) {
 		alog.Error("propChange ", "addr", a.fromaddr, "execaddr", a.execaddr, "getActiveBoard failed", err)
 		return nil, err
 	}
-
+	//           
 	new, err := a.checkChangeable(act, prob.Changes)
 	if err != nil {
 		alog.Error("propChange ", "addr", a.fromaddr, "execaddr", a.execaddr, "checkChangeable failed", err)
 		return nil, err
 	}
 
+	//           ,           
 	rule, err := a.getActiveRule()
 	if err != nil {
 		alog.Error("propChange ", "addr", a.fromaddr, "execaddr", a.execaddr, "getActiveRule failed", err)
@@ -86,6 +87,7 @@ func (a *action) rvkPropChange(rvkProb *auty.RevokeProposalChange) (*types.Recei
 	}
 	pre := copyAutonomyProposalChange(cur)
 
+	//       
 	if cur.Status != auty.AutonomyStatusProposalChange {
 		err := auty.ErrProposalStatus
 		alog.Error("rvkPropChange ", "addr", a.fromaddr, "status", cur.Status, "status is not match",
@@ -138,6 +140,7 @@ func (a *action) votePropChange(voteProb *auty.VoteProposalChange) (*types.Recei
 	}
 	pre := copyAutonomyProposalChange(cur)
 
+	//       
 	if cur.Status == auty.AutonomyStatusRvkPropChange ||
 		cur.Status == auty.AutonomyStatusTmintPropChange {
 		err := auty.ErrProposalStatus
@@ -156,6 +159,7 @@ func (a *action) votePropChange(voteProb *auty.VoteProposalChange) (*types.Recei
 		return nil, err
 	}
 
+	//           
 	votes, err := a.checkVotesRecord([]string{a.fromaddr}, votesRecord(voteProb.ProposalID))
 	if err != nil {
 		alog.Error("votePropChange ", "addr", a.fromaddr, "execaddr", a.execaddr, "checkVotesRecord failed",
@@ -163,6 +167,7 @@ func (a *action) votePropChange(voteProb *auty.VoteProposalChange) (*types.Recei
 		return nil, err
 	}
 
+	//        
 	mpBd := make(map[string]struct{})
 	for _, b := range cur.Board.Boards {
 		mpBd[b] = struct{}{}
@@ -183,6 +188,7 @@ func (a *action) votePropChange(voteProb *auty.VoteProposalChange) (*types.Recei
 		return nil, err
 	}
 
+	//       
 	votes.Address = append(votes.Address, a.fromaddr)
 
 	if voteProb.Approve {
@@ -194,6 +200,7 @@ func (a *action) votePropChange(voteProb *auty.VoteProposalChange) (*types.Recei
 	var logs []*types.ReceiptLog
 	var kv []*types.KeyValue
 
+	//        ,             
 	if cur.Status == auty.AutonomyStatusProposalChange {
 		receipt, err := a.coinsAccount.ExecTransferFrozen(cur.Address, a.execaddr, a.execaddr, cur.CurRule.ProposalAmount)
 		if err != nil {
@@ -217,8 +224,10 @@ func (a *action) votePropChange(voteProb *auty.VoteProposalChange) (*types.Recei
 	}
 	kv = append(kv, &types.KeyValue{Key: key, Value: types.Encode(cur)})
 
+	//   VotesRecord
 	kv = append(kv, &types.KeyValue{Key: votesRecord(voteProb.ProposalID), Value: types.Encode(votes)})
 
+	//   activeBoard
 	if cur.VoteResult.Pass {
 		kv = append(kv, &types.KeyValue{Key: activeBoardID(), Value: types.Encode(cur.Board)})
 	}
@@ -243,7 +252,7 @@ func (a *action) tmintPropChange(tmintProb *auty.TerminateProposalChange) (*type
 
 	pre := copyAutonomyProposalChange(cur)
 
-
+	//       
 	if cur.Status == auty.AutonomyStatusTmintPropChange ||
 		cur.Status == auty.AutonomyStatusRvkPropChange {
 		err := auty.ErrProposalStatus
@@ -271,6 +280,7 @@ func (a *action) tmintPropChange(tmintProb *auty.TerminateProposalChange) (*type
 	var logs []*types.ReceiptLog
 	var kv []*types.KeyValue
 
+	//         ，                
 	if cur.Status == auty.AutonomyStatusProposalChange {
 		receipt, err := a.coinsAccount.ExecTransferFrozen(cur.Address, a.execaddr, a.execaddr, cur.CurRule.ProposalAmount)
 		if err != nil {
@@ -286,6 +296,7 @@ func (a *action) tmintPropChange(tmintProb *auty.TerminateProposalChange) (*type
 
 	kv = append(kv, &types.KeyValue{Key: propChangeID(tmintProb.ProposalID), Value: types.Encode(cur)})
 
+	//       
 	if cur.VoteResult.Pass {
 		kv = append(kv, &types.KeyValue{Key: activeBoardID(), Value: types.Encode(cur.Board)})
 	}
@@ -322,12 +333,14 @@ func (a *action) checkChangeable(act *auty.ActiveBoard, change []*auty.Change) (
 			if _, ok := mpBd[ch.Addr]; !ok {
 				return nil, auty.ErrChangeBoardAddr
 			}
+			//         
 			delete(mpBd, ch.Addr)
 			mpRbd[ch.Addr] = struct{}{}
 		} else {
 			if _, ok := mpRbd[ch.Addr]; !ok {
 				return nil, auty.ErrChangeBoardAddr
 			}
+			//         
 			delete(mpRbd, ch.Addr)
 			mpBd[ch.Addr] = struct{}{}
 		}
@@ -350,6 +363,8 @@ func (a *action) checkChangeable(act *auty.ActiveBoard, change []*auty.Change) (
 	return new, nil
 }
 
+// getReceiptLog         log
+//     ：
 func getChangeReceiptLog(pre, cur *auty.AutonomyProposalChange, ty int32) *types.ReceiptLog {
 	log := &types.ReceiptLog{}
 	log.Ty = ty

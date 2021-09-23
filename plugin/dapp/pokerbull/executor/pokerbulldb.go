@@ -9,8 +9,6 @@ import (
 	"sort"
 	"strconv"
 
-	"github.com/33cn/chain33/client"
-
 	"strings"
 
 	"github.com/33cn/chain33/account"
@@ -21,9 +19,8 @@ import (
 	pkt "github.com/33cn/plugin/plugin/dapp/pokerbull/types"
 )
 
-// Action actio 
+// Action   action  
 type Action struct {
-	api          client.QueueProtocolAPI
 	coinsAccount *account.DB
 	db           dbm.KV
 	txhash       []byte
@@ -35,20 +32,20 @@ type Action struct {
 	index        int
 }
 
-// NewAction action
+// NewAction   action
 func NewAction(pb *PokerBull, tx *types.Transaction, index int) *Action {
 	hash := tx.Hash()
 	fromaddr := tx.From()
 
-	return &Action{pb.GetAPI(), pb.GetCoinsAccount(), pb.GetStateDB(), hash, fromaddr,
+	return &Action{pb.GetCoinsAccount(), pb.GetStateDB(), hash, fromaddr,
 		pb.GetBlockTime(), pb.GetHeight(), dapp.ExecAddress(string(tx.Execer)), pb.GetLocalDB(), index}
 }
 
-// CheckExecAccountBalance 
+// CheckExecAccountBalance       
 func (action *Action) CheckExecAccountBalance(fromAddr string, ToFrozen, ToActive int64) bool {
-	//  
+	//     ，        
 	if ToFrozen == 0 {
-		ToFrozen = pkt.MinPlayValue * action.api.GetConfig().GetCoinPrecision()
+		ToFrozen = pkt.MinPlayValue
 	}
 
 	acc := action.coinsAccount.LoadExecAccount(fromAddr, action.execaddr)
@@ -58,7 +55,7 @@ func (action *Action) CheckExecAccountBalance(fromAddr string, ToFrozen, ToActiv
 	return false
 }
 
-// Key ke 
+// Key   key 
 func Key(id string) (key []byte) {
 	key = append(key, []byte("mavl-"+pkt.PokerBullX+"-")...)
 	key = append(key, []byte(id)...)
@@ -81,7 +78,7 @@ func readGame(db dbm.KV, id string) (*pkt.PokerBull, error) {
 	return &game, nil
 }
 
-// Infos gameinfo
+// Infos   gameinfo
 func Infos(db dbm.KV, infos *pkt.QueryPBGameInfos) (types.Message, error) {
 	var games []*pkt.PokerBull
 	for i := 0; i < len(infos.GameIds); i++ {
@@ -179,7 +176,7 @@ func (action *Action) getIndex(game *pkt.PokerBull) int64 {
 	return action.height*types.MaxTxsPerBlock + int64(action.index)
 }
 
-// GetReceiptLog receip 
+// GetReceiptLog   receipt  
 func (action *Action) GetReceiptLog(game *pkt.PokerBull) *types.ReceiptLog {
 	log := &types.ReceiptLog{}
 	r := &pkt.ReceiptPBGame{}
@@ -230,30 +227,30 @@ func (action *Action) calculate(game *pkt.PokerBull) *pkt.PBResult {
 	var handS HandSlice
 	for _, player := range game.Players {
 		hand := &pkt.PBHand{}
-		hand.Cards = Deal(game.Poker, player.TxHash) / 
-		hand.Result = Result(hand.Cards)             / 
+		hand.Cards = Deal(game.Poker, player.TxHash) //  
+		hand.Result = Result(hand.Cards)             //    
 		hand.Address = player.Address
 
-		/ 
+		//      
 		player.Hands = append(player.Hands, hand)
 
-		/ 
+		//            
 		handS = append(handS, hand)
 
-		/ continu player
+		//    continue     player
 		player.Ready = false
 	}
 
-	// 
+	//     
 	if !sort.IsSorted(handS) {
 		sort.Sort(handS)
 	}
 	winner := handS[len(handS)-1]
 
-	// 
+	//                
 	result := &pkt.PBResult{}
 	result.Winner = winner.Address
-	//TODO Dealer 
+	//TODO Dealer:       
 	//result.Leverage = Leverage(winner)
 	result.Hands = make([]*pkt.PBHand, len(handS))
 	copy(result.Hands, handS)
@@ -267,20 +264,20 @@ func (action *Action) calculateDealer(game *pkt.PokerBull) *pkt.PBResult {
 	var dealer *pkt.PBHand
 	for _, player := range game.Players {
 		hand := &pkt.PBHand{}
-		hand.Cards = Deal(game.Poker, player.TxHash) / 
-		hand.Result = Result(hand.Cards)             / 
+		hand.Cards = Deal(game.Poker, player.TxHash) //  
+		hand.Result = Result(hand.Cards)             //    
 		hand.Address = player.Address
 
-		/ 
+		//      
 		player.Hands = append(player.Hands, hand)
 
-		/ 
+		//            
 		handS = append(handS, hand)
 
-		/ continu player
+		//    continue     player
 		player.Ready = false
 
-		/ 
+		//    
 		if player.Address == game.DealerAddr {
 			dealer = hand
 		}
@@ -299,7 +296,7 @@ func (action *Action) calculateDealer(game *pkt.PokerBull) *pkt.PBResult {
 		}
 	}
 
-	// 
+	//                
 	result := &pkt.PBResult{}
 	result.Dealer = game.DealerAddr
 	result.DealerLeverage = Leverage(dealer)
@@ -335,7 +332,7 @@ func (action *Action) settleDealerAccount(lastAddress string, game *pkt.PokerBul
 
 	result := action.calculateDealer(game)
 	for _, hand := range result.Hands {
-		// 
+		//           
 		if lastAddress != "" && hand.Address != lastAddress {
 			receipt, err := action.coinsAccount.ExecActive(hand.Address, action.execaddr, game.GetValue()*PokerbullLeverageMax)
 			if err != nil {
@@ -347,7 +344,7 @@ func (action *Action) settleDealerAccount(lastAddress string, game *pkt.PokerBul
 			kv = append(kv, receipt.KV...)
 		}
 
-		/ 
+		//     
 		var receipt *types.Receipt
 		var err error
 		if hand.Address != result.Dealer {
@@ -383,7 +380,7 @@ func (action *Action) settleDefaultAccount(lastAddress string, game *pkt.PokerBu
 	result := action.calculate(game)
 
 	for _, player := range game.Players {
-		// 
+		//           
 		if lastAddress != "" && player.Address != lastAddress {
 			receipt, err := action.coinsAccount.ExecActive(player.GetAddress(), action.execaddr, game.GetValue()*PokerbullLeverageMax)
 			if err != nil {
@@ -395,13 +392,13 @@ func (action *Action) settleDefaultAccount(lastAddress string, game *pkt.PokerBu
 			kv = append(kv, receipt.KV...)
 		}
 
-		/ 
+		//     
 		if player.Address != result.Winner {
-			receipt, err := action.coinsAccount.ExecTransfer(player.Address, result.Winner, action.execaddr, game.GetValue() /**int64(result.Leverage)*/) //TODO Dealer 
+			receipt, err := action.coinsAccount.ExecTransfer(player.Address, result.Winner, action.execaddr, game.GetValue() /**int64(result.Leverage)*/) //TODO Dealer:       
 			if err != nil {
 				action.coinsAccount.ExecFrozen(result.Winner, action.execaddr, game.GetValue()) // rollback
 				logger.Error("GameSettleDefault.ExecTransfer", "GameID", game.GetGameId(), "addr", result.Winner,
-					"execaddr", action.execaddr, "amount", game.GetValue() /**int64(result.Leverage)*/, "err", err) //TODO Dealer 
+					"execaddr", action.execaddr, "amount", game.GetValue() /**int64(result.Leverage)*/, "err", err) //TODO Dealer:       
 				return nil, nil, err
 			}
 			logs = append(logs, receipt.Logs...)
@@ -409,16 +406,15 @@ func (action *Action) settleDefaultAccount(lastAddress string, game *pkt.PokerBu
 		}
 	}
 
-	coinPrecision := action.api.GetConfig().GetCoinPrecision()
-	// 
-	receipt := action.defaultFeeTransfer(result.Winner, pkt.DeveloperAddress, int64(pkt.DeveloperFee*float64(coinPrecision)), game.GetValue())
+	//        
+	receipt := action.defaultFeeTransfer(result.Winner, pkt.DeveloperAddress, pkt.DeveloperFee, game.GetValue())
 	if receipt != nil {
 		logs = append(logs, receipt.Logs...)
 		kv = append(kv, receipt.KV...)
 	}
 
-	// 
-	receipt = action.defaultFeeTransfer(result.Winner, pkt.PlatformAddress, int64(pkt.PlatformFee*float64(coinPrecision)), game.GetValue())
+	//       
+	receipt = action.defaultFeeTransfer(result.Winner, pkt.PlatformAddress, pkt.PlatformFee, game.GetValue())
 	if receipt != nil {
 		logs = append(logs, receipt.Logs...)
 		kv = append(kv, receipt.KV...)
@@ -427,14 +423,13 @@ func (action *Action) settleDefaultAccount(lastAddress string, game *pkt.PokerBu
 	return logs, kv, nil
 }
 
-// 
+//     
 func (action *Action) defaultFeeTransfer(winner string, feeAddr string, fee int64, value int64) *types.Receipt {
-	coinPrecision := action.api.GetConfig().GetCoinPrecision()
-	receipt, err := action.coinsAccount.ExecTransfer(winner, feeAddr, action.execaddr, (value/coinPrecision)*fee /**int64(result.Leverage)*/) //TODO Dealer 
+	receipt, err := action.coinsAccount.ExecTransfer(winner, feeAddr, action.execaddr, (value/types.Coin)*fee /**int64(result.Leverage)*/) //TODO Dealer:       
 	if err != nil {
-		action.coinsAccount.ExecFrozen(winner, action.execaddr, (value/coinPrecision)*fee) // rollback
+		action.coinsAccount.ExecFrozen(winner, action.execaddr, (value/types.Coin)*fee) // rollback
 		logger.Error("GameSettleDefault.ExecTransfer", "addr", winner, "execaddr", action.execaddr, "amount",
-			(value/coinPrecision)*fee /**int64(result.Leverage)*/, "err", err) //TODO Dealer 
+			(value/types.Coin)*fee /**int64(result.Leverage)*/, "err", err) //TODO Dealer:       
 		return nil
 	}
 
@@ -494,16 +489,16 @@ func (action *Action) checkPlayerAddressExist(pbPlayers []*pkt.PBPlayer) bool {
 	return false
 }
 
-// 
+//       
 func (action *Action) newGame(gameID string, start *pkt.PBGameStart) (*pkt.PokerBull, error) {
 	var game *pkt.PokerBull
 
-	//  
+	//      ，        
 	if start.GetValue() == 0 {
-		start.Value = pkt.MinPlayValue * action.api.GetConfig().GetCoinPrecision()
+		start.Value = pkt.MinPlayValue
 	}
 
-	//TODO 
+	//TODO              
 	if pkt.DefaultStyle == pkt.PlayStyleDealer {
 		if !action.CheckExecAccountBalance(action.fromaddr, start.GetValue()*PokerbullLeverageMax*int64(start.PlayerNum-1), 0) {
 			logger.Error("GameStart", "GameID", gameID, "addr", action.fromaddr, "execaddr", action.execaddr, "err", types.ErrNoBalance)
@@ -526,13 +521,13 @@ func (action *Action) newGame(gameID string, start *pkt.PBGameStart) (*pkt.Poker
 		Round:       1,
 	}
 
-	Shuffle(game.Poker, action.blocktime) / 
+	Shuffle(game.Poker, action.blocktime) //  
 	logger.Info(fmt.Sprintf("Create a new game %s for player %s", game.GameId, action.fromaddr))
 
 	return game, nil
 }
 
-// 
+//        
 func (action *Action) selectGameFromIds(ids []string, value int64) *pkt.PokerBull {
 	var gameRet *pkt.PokerBull
 	for num := len(ids) - 1; num > -1; num-- {
@@ -544,19 +539,19 @@ func (action *Action) selectGameFromIds(ids []string, value int64) *pkt.PokerBul
 			continue
 		}
 
-		//   locald ）
+		//       ，      （              localdb   ）
 		if int32(len(game.Players)) == game.PlayerNum {
 			continue
 		}
 
-		/ 
+		//        
 		if action.checkPlayerAddressExist(game.Players) {
 			logger.Info(fmt.Sprintf("Player %s already exist in game %s", action.fromaddr, id))
 			continue
 		}
 
-		/ 
-		if value == 0 && game.GetValue() != (pkt.MinPlayValue*action.api.GetConfig().GetCoinPrecision()) {
+		//         
+		if value == 0 && game.GetValue() != pkt.MinPlayValue {
 			if !action.CheckExecAccountBalance(action.fromaddr, game.GetValue(), 0) {
 				logger.Error("GameStart", "GameID", id, "addr", action.fromaddr, "execaddr", action.execaddr,
 					"err", types.ErrNoBalance)
@@ -589,13 +584,13 @@ func (action *Action) selectGameFromIds(ids []string, value int64) *pkt.PokerBul
 //	return true
 //}
 
-// GameStart 
+// GameStart     
 func (action *Action) GameStart(start *pkt.PBGameStart) (*types.Receipt, error) {
 	var logs []*types.ReceiptLog
 	var kv []*types.KeyValue
 
 	logger.Info(fmt.Sprintf("Pokerbull game match for %s", action.fromaddr))
-	// 
+	//     
 	if start.PlayerNum <= 0 || start.Value < 0 {
 		logger.Error("GameStart", "addr", action.fromaddr, "execaddr", action.execaddr,
 			"err", fmt.Sprintf("Invalid parameter"))
@@ -614,7 +609,7 @@ func (action *Action) GameStart(start *pkt.PBGameStart) (*types.Receipt, error) 
 		return nil, types.ErrNoBalance
 	}
 
-	// 
+	//        
 	//if action.checkPlayerExistInGame() {
 	//	logger.Error("GameStart", "addr", action.fromaddr, "execaddr", action.execaddr, "err", "Address is already in a game")
 	//	return nil, fmt.Errorf("Address is already in a game")
@@ -634,7 +629,7 @@ func (action *Action) GameStart(start *pkt.PBGameStart) (*types.Receipt, error) 
 	} else {
 		game = action.selectGameFromIds(ids, start.GetValue())
 		if game == nil {
-			//  
+			//           ，         
 			game, err = action.newGame(gameID, start)
 			if err != nil {
 				return nil, err
@@ -642,20 +637,20 @@ func (action *Action) GameStart(start *pkt.PBGameStart) (*types.Receipt, error) 
 		}
 	}
 
-	/ txhash
+	//      txhash
 	txrng, err := action.genTxRnd(action.txhash)
 	if err != nil {
 		return nil, err
 	}
 
-	/ 
+	//        
 	game.Players = append(game.Players, &pkt.PBPlayer{
 		Address: action.fromaddr,
 		TxHash:  txrng,
 		Ready:   false,
 	})
 
-	//  
+	//       ，         
 	if len(game.Players) == int(game.PlayerNum) {
 		logger.Info(fmt.Sprintf("Game starting: %s round: %d", game.GameId, game.Round))
 		logsH, kvH, err := action.settleAccount(action.fromaddr, game)
@@ -667,12 +662,12 @@ func (action *Action) GameStart(start *pkt.PBGameStart) (*types.Receipt, error) 
 
 		game.PrevIndex = game.Index
 		game.Index = action.getIndex(game)
-		game.Status = pkt.PBGameActionContinue // 
+		game.Status = pkt.PBGameActionContinue //       
 		game.PreStatus = pkt.PBGameActionStart
 		game.IsWaiting = false
 	} else {
 		logger.Info(fmt.Sprintf("Game waiting: %s round: %d", game.GameId, game.Round))
-		receipt, err := action.coinsAccount.ExecFrozen(action.fromaddr, action.execaddr, start.GetValue()*PokerbullLeverageMax) / , 
+		receipt, err := action.coinsAccount.ExecFrozen(action.fromaddr, action.execaddr, start.GetValue()*PokerbullLeverageMax) //       ,            
 		if err != nil {
 			logger.Error("GameCreate.ExecFrozen", "GameID", gameID, "addr", action.fromaddr, "execaddr", action.execaddr,
 				"amount", start.GetValue(), "err", err.Error())
@@ -712,7 +707,7 @@ func getPlayerFromAddress(players []*pkt.PBPlayer, addr string) *pkt.PBPlayer {
 	return nil
 }
 
-// GameContinue 
+// GameContinue     
 func (action *Action) GameContinue(pbcontinue *pkt.PBGameContinue) (*types.Receipt, error) {
 	var logs []*types.ReceiptLog
 	var kv []*types.KeyValue
@@ -731,7 +726,7 @@ func (action *Action) GameContinue(pbcontinue *pkt.PBGameContinue) (*types.Recei
 	}
 	logger.Info(fmt.Sprintf("Continue pokerbull game %s from %s", game.GameId, action.fromaddr))
 
-	//  
+	//     ，             
 	checkValue := game.GetValue() * PokerbullLeverageMax
 	if action.fromaddr == game.DealerAddr {
 		checkValue = checkValue * int64(game.PlayerNum-1)
@@ -742,7 +737,7 @@ func (action *Action) GameContinue(pbcontinue *pkt.PBGameContinue) (*types.Recei
 		return nil, types.ErrNoBalance
 	}
 
-	// 
+	//       
 	pbplayer := getPlayerFromAddress(game.Players, action.fromaddr)
 	if pbplayer == nil {
 		logger.Error("GameContinue", "GameID", pbcontinue.GetGameId(), "addr", action.fromaddr, "execaddr",
@@ -755,7 +750,7 @@ func (action *Action) GameContinue(pbcontinue *pkt.PBGameContinue) (*types.Recei
 		return nil, fmt.Errorf("player %s has been ready", pbplayer.Address)
 	}
 
-	/ txhash
+	//      txhash
 	txrng, err := action.genTxRnd(action.txhash)
 	if err != nil {
 		return nil, err
@@ -777,11 +772,11 @@ func (action *Action) GameContinue(pbcontinue *pkt.PBGameContinue) (*types.Recei
 		game.PreStatus = pkt.PBGameActionContinue
 	} else {
 		logger.Info(fmt.Sprintf("Game waiting: %s round: %d", game.GameId, game.Round))
-		// 
+		//       
 		if !game.IsWaiting {
 			game.Round++
 		}
-		receipt, err := action.coinsAccount.ExecFrozen(action.fromaddr, action.execaddr, game.GetValue()*PokerbullLeverageMax) /  
+		receipt, err := action.coinsAccount.ExecFrozen(action.fromaddr, action.execaddr, game.GetValue()*PokerbullLeverageMax) //       ,           
 		if err != nil {
 			logger.Error("GameCreate.ExecFrozen", "GameID", pbcontinue.GetGameId(), "addr", action.fromaddr,
 				"execaddr", action.execaddr, "amount", game.GetValue(), "err", err.Error())
@@ -805,7 +800,7 @@ func (action *Action) GameContinue(pbcontinue *pkt.PBGameContinue) (*types.Recei
 	return &types.Receipt{Ty: types.ExecOk, KV: kv, Logs: logs}, nil
 }
 
-// GameQuit 
+// GameQuit     
 func (action *Action) GameQuit(pbquit *pkt.PBGameQuit) (*types.Receipt, error) {
 	var logs []*types.ReceiptLog
 	var kv []*types.KeyValue
@@ -831,7 +826,7 @@ func (action *Action) GameQuit(pbquit *pkt.PBGameQuit) (*types.Receipt, error) {
 		}
 	}
 
-	//  
+	//         ，      
 	if game.IsWaiting {
 		if game.Status == pkt.PBGameActionStart {
 			for _, player := range game.Players {
@@ -881,34 +876,34 @@ func (action *Action) GameQuit(pbquit *pkt.PBGameQuit) (*types.Receipt, error) {
 	return &types.Receipt{Ty: types.ExecOk, KV: kv, Logs: logs}, nil
 }
 
-// GamePlay 
+// GamePlay          
 func (action *Action) GamePlay(pbplay *pkt.PBGamePlay) (*types.Receipt, error) {
 	var logs []*types.ReceiptLog
 	var kv []*types.KeyValue
 
 	logger.Info(fmt.Sprintf("Play pokerbull game %s, player:%s", pbplay.GameId, strings.Join(pbplay.Address, ",")))
-	// 
+	//       
 	if action.fromaddr != pkt.PlatformSignAddress {
 		logger.Error("Pokerbull game play", "GameID", pbplay.GetGameId(), "round", pbplay.Round, "value",
 			pbplay.Value, "players", strings.Join(pbplay.Address, ","), "err", "permission denied")
 		return nil, fmt.Errorf("game signing address not support")
 	}
 
-	// 
+	//     
 	if pbplay.Round <= 0 || pbplay.Value <= 0 {
 		logger.Error("GameStart", "addr", action.fromaddr, "execaddr", action.execaddr,
 			"err", fmt.Sprintf("Invalid parameter"))
 		return nil, types.ErrInvalidParam
 	}
 
-	// 
+	//       
 	if len(pbplay.Address) < pkt.MinPlayerNum || len(pbplay.Address) > pkt.MaxPlayerNum {
 		logger.Error("Pokerbull game play", "GameID", pbplay.GetGameId(), "round", pbplay.Round, "value",
 			pbplay.Value, "players", strings.Join(pbplay.Address, ","), "err", "invalid player number")
 		return nil, fmt.Errorf("Invalid player number")
 	}
 
-	// 
+	//         
 	for _, addr := range pbplay.Address {
 		if !action.CheckExecAccountBalance(addr, pbplay.GetValue()*PokerbullLeverageMax, 0) {
 			logger.Error("GamePlay", "addr", addr, "execaddr", action.execaddr, "id", pbplay.GetGameId(), "err", types.ErrNoBalance)
@@ -916,7 +911,7 @@ func (action *Action) GamePlay(pbplay *pkt.PBGamePlay) (*types.Receipt, error) {
 		}
 	}
 
-	//  
+	//            ，        
 	game, _ := action.readGame(pbplay.GetGameId())
 	if game != nil {
 		if game.Status == pkt.PBGameActionQuit {
@@ -937,7 +932,7 @@ func (action *Action) GamePlay(pbplay *pkt.PBGamePlay) (*types.Receipt, error) {
 			return nil, fmt.Errorf("game value error")
 		}
 
-		// 
+		//        
 		rands, err := action.genTxRnds(action.txhash, game.PlayerNum)
 		if err != nil {
 			logger.Error("Pokerbull game play", "GameID", pbplay.GetGameId(), "round", pbplay.Round, "value",
@@ -945,13 +940,13 @@ func (action *Action) GamePlay(pbplay *pkt.PBGamePlay) (*types.Receipt, error) {
 			return nil, err
 		}
 
-		// 
+		//       
 		for i, player := range game.Players {
 			player.TxHash = rands[i]
 		}
 
 		game.Round++
-		game.Status = pkt.PBGameActionContinue // 
+		game.Status = pkt.PBGameActionContinue //       
 		game.PreStatus = pkt.PBGameActionContinue
 	} else {
 		gameNew, err := action.newGame(pbplay.GameId, &pkt.PBGameStart{Value: pbplay.Value, PlayerNum: int32(len(pbplay.Address))})
@@ -962,7 +957,7 @@ func (action *Action) GamePlay(pbplay *pkt.PBGamePlay) (*types.Receipt, error) {
 		}
 		game = gameNew
 
-		// 
+		//        
 		rands, err := action.genTxRnds(action.txhash, game.PlayerNum)
 		if err != nil {
 			logger.Error("Pokerbull game play", "GameID", pbplay.GetGameId(), "round", pbplay.Round, "value",
@@ -970,7 +965,7 @@ func (action *Action) GamePlay(pbplay *pkt.PBGamePlay) (*types.Receipt, error) {
 			return nil, err
 		}
 
-		// 
+		//       
 		for i, addr := range pbplay.Address {
 			player := &pkt.PBPlayer{
 				Address: addr,
@@ -979,7 +974,7 @@ func (action *Action) GamePlay(pbplay *pkt.PBGamePlay) (*types.Receipt, error) {
 			game.Players = append(game.Players, player)
 		}
 
-		game.Status = pkt.PBGameActionQuit // 
+		game.Status = pkt.PBGameActionQuit //       
 		game.PreStatus = pkt.PBGameActionStart
 		game.QuitTime = action.blocktime
 		game.QuitTxHash = common.ToHex(action.txhash)
@@ -1009,7 +1004,7 @@ func (action *Action) GamePlay(pbplay *pkt.PBGamePlay) (*types.Receipt, error) {
 	return &types.Receipt{Ty: types.ExecOk, KV: kv, Logs: logs}, nil
 }
 
-// HandSlice 
+// HandSlice    
 type HandSlice []*pkt.PBHand
 
 func (h HandSlice) Len() int {

@@ -15,22 +15,22 @@ import (
 
 var tlog = log15.New("module", ParaX)
 
-// paracross 
+// paracross         
 const (
 
 	// TyLogParacrossCommit commit log key
 	TyLogParacrossCommit = 650
 	// TyLogParacrossCommitDone commit down key
 	TyLogParacrossCommitDone = 651
-	// record  commit ， commit 
-	// , 
+	// record   commit    ，            commit   
+	//           ,     
 	// TyLogParacrossCommitRecord commit record key
 	TyLogParacrossCommitRecord = 652
 	// TyLogParaAssetTransfer asset transfer log key
 	TyLogParaAssetTransfer = 653
 	// TyLogParaAssetWithdraw asset withdraw log key
 	TyLogParaAssetWithdraw = 654
-	/ 
+	//                
 	// TyLogParacrossMiner miner log key
 	TyLogParacrossMiner = 655
 	// TyLogParaAssetDeposit asset deposit log key
@@ -45,7 +45,7 @@ const (
 	TyLogParaSelfConsStageConfig   = 665
 	TyLogParaStageVoteDone         = 666
 	TyLogParaStageGroupUpdate      = 667
-	//TyLogParaCrossAssetTransfer 
+	//TyLogParaCrossAssetTransfer          
 	TyLogParaCrossAssetTransfer = 670
 	TyLogParaBindMinerAddr      = 671
 	TyLogParaBindMinerNode      = 672
@@ -131,7 +131,7 @@ const (
 // ParaNodeVoteStr ...
 var ParaNodeVoteStr = []string{"invalid", "yes", "no"}
 
-/ add i 
+//  addr   id     
 const (
 	// ParaApplyJoining apply for join group
 	ParaApplyJoining = iota + 1
@@ -145,7 +145,7 @@ const (
 	ParaApplyVoting
 )
 
-/ add ，add i quit id coinfroze 
+//  addr       ，addr     id quit id，     coinfrozen     
 const (
 	// ParaApplyJoined pass to add by votes
 	ParaApplyJoined = iota + 10
@@ -217,12 +217,7 @@ func createRawCommitTx(cfg *types.Chain33Config, commit *ParacrossCommitAction, 
 
 // CreateRawAssetTransferTx create asset transfer tx
 func CreateRawAssetTransferTx(cfg *types.Chain33Config, param *types.CreateTx) (*types.Transaction, error) {
-	return CreateRawAssetTransferTxExt(cfg.GetChainID(), cfg.GetMinTxFeeRate(), param)
-}
-
-// CreateRawAssetTransferTxExt create asset transfer tx
-func CreateRawAssetTransferTxExt(chainID int32, minFee int64, param *types.CreateTx) (*types.Transaction, error) {
-	// ， 
+	//                 ，                 
 	if !types.IsParaExecName(param.GetExecName()) {
 		tlog.Error("CreateRawAssetTransferTx", "exec", param.GetExecName())
 		return nil, types.ErrInvalidParam
@@ -240,13 +235,13 @@ func CreateRawAssetTransferTxExt(chainID int32, minFee int64, param *types.Creat
 		transfer.Value = v
 		transfer.Ty = ParacrossActionAssetWithdraw
 	}
-	rawtx := &types.Transaction{
+	tx := &types.Transaction{
 		Execer:  []byte(param.GetExecName()),
 		Payload: types.Encode(transfer),
 		To:      address.ExecAddress(param.GetExecName()),
 		Fee:     param.Fee,
 	}
-	tx, err := types.FormatTxExt(chainID, true, minFee, param.GetExecName(), rawtx)
+	tx, err := types.FormatTx(cfg, param.GetExecName(), tx)
 	if err != nil {
 		return nil, err
 	}
@@ -321,7 +316,7 @@ func GetDappForkHeight(cfg *types.Chain33Config, forkKey string) int64 {
 	} else {
 		forkHeight = cfg.GetDappFork(ParaX, forkKey)
 
-		// C  local，for 0 0 MaxHeight
+		// CI    ，   local，fork  0，              0，         MaxHeight
 		if cfg.IsLocal() {
 			switch forkKey {
 			case ForkCommitTx:

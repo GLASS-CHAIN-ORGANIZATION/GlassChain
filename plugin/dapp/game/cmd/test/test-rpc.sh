@@ -15,7 +15,7 @@ EXECTOR=""
 source ../dapp-test-common.sh
 
 function chain33_GetExecAddr() {
-
+    #  GAME    
     req='{"method":"Chain33.ConvertExectoAddr","params":[{"execname":"'"$1"'"}]}'
     chain33_Http "$req" ${MAIN_HTTP} '(.error|not) and (.result != null)' "$FUNCNAME"
 }

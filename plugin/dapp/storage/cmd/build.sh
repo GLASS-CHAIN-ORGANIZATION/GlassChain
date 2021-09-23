@@ -1,5 +1,5 @@
 #!/bin/sh
-# c 
+#   ci    
 strpwd=$(pwd)
 strcmd=${strpwd##*dapp/}
 strapp=${strcmd%/cmd*}

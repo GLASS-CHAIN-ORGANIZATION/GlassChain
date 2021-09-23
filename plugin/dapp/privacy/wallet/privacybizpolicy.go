@@ -19,9 +19,9 @@ import (
 
 var (
 	bizlog = log15.New("module", "wallet.privacy")
-	// MaxTxHashsPerTime 
+	// MaxTxHashsPerTime           
 	MaxTxHashsPerTime int64 = 100
-	// maxTxNumPerBlock 
+	// maxTxNumPerBlock        
 	maxTxNumPerBlock int64 = types.MaxTxsPerBlock
 )
 
@@ -29,7 +29,7 @@ func init() {
 	wcom.RegisterPolicy(privacytypes.PrivacyX, New())
 }
 
-// New 
+// New           
 func New() wcom.WalletBizPolicy {
 	return &privacyPolicy{
 		mtx:            &sync.Mutex{},
@@ -58,45 +58,45 @@ func (policy *privacyPolicy) getWalletOperate() wcom.WalletOperate {
 	return policy.walletOperate
 }
 
-// Init 
+// Init      
 func (policy *privacyPolicy) Init(walletOperate wcom.WalletOperate, sub []byte) {
 	policy.setWalletOperate(walletOperate)
-	policy.store = newStore(walletOperate.GetDBStore(), walletOperate.GetAPI().GetConfig())
-	// FTX 
+	policy.store = newStore(walletOperate.GetDBStore())
+	//         FTXO   
 	walletOperate.GetWaitGroup().Add(1)
 	go policy.checkWalletStoreData()
 }
 
-// OnCreateNewAccount 
+// OnCreateNewAccount            
 func (policy *privacyPolicy) OnCreateNewAccount(acc *types.Account) {
 	wg := policy.getWalletOperate().GetWaitGroup()
 	wg.Add(1)
 	go policy.rescanReqTxDetailByAddr(acc.Addr, wg)
 }
 
-// OnImportPrivateKey 
+// OnImportPrivateKey            
 func (policy *privacyPolicy) OnImportPrivateKey(acc *types.Account) {
 	wg := policy.getWalletOperate().GetWaitGroup()
 	wg.Add(1)
 	go policy.rescanReqTxDetailByAddr(acc.Addr, wg)
 }
 
-// OnAddBlockFinish 
+// OnAddBlockFinish               
 func (policy *privacyPolicy) OnAddBlockFinish(block *types.BlockDetail) {
 
 }
 
-// OnDeleteBlockFinish 
+// OnDeleteBlockFinish               
 func (policy *privacyPolicy) OnDeleteBlockFinish(block *types.BlockDetail) {
 
 }
 
-// OnClose 
+// OnClose            
 func (policy *privacyPolicy) OnClose() {
 
 }
 
-// OnSetQueueClient 
+// OnSetQueueClient                 
 func (policy *privacyPolicy) OnSetQueueClient() {
 	version := policy.store.getVersion()
 	if version < PRIVACYDBVERSION {
@@ -105,15 +105,15 @@ func (policy *privacyPolicy) OnSetQueueClient() {
 	}
 }
 
-// OnWalletLocked 
+// OnWalletLocked            
 func (policy *privacyPolicy) OnWalletLocked() {
 }
 
-// OnWalletUnlocked 
+// OnWalletUnlocked            
 func (policy *privacyPolicy) OnWalletUnlocked(WalletUnLock *types.WalletUnLock) {
 }
 
-// Call 
+// Call        
 func (policy *privacyPolicy) Call(funName string, in types.Message) (ret types.Message, err error) {
 	switch funName {
 	case "GetUTXOScaningFlag":
@@ -125,7 +125,7 @@ func (policy *privacyPolicy) Call(funName string, in types.Message) (ret types.M
 	return
 }
 
-// SignTransaction 
+// SignTransaction          
 func (policy *privacyPolicy) SignTransaction(key crypto.PrivKey, req *types.ReqSignRawTx) (needSysSign bool, signtxhex string, err error) {
 	needSysSign = false
 	bytes, err := common.FromHex(req.GetTxHex())
@@ -154,11 +154,11 @@ func (policy *privacyPolicy) SignTransaction(key crypto.PrivKey, req *types.ReqS
 	}
 	switch action.Ty {
 	case privacytypes.ActionPublic2Privacy:
-		//  
+		//           ，         
 		tx.Sign(int32(policy.getWalletOperate().GetSignType()), key)
 
 	case privacytypes.ActionPrivacy2Privacy, privacytypes.ActionPrivacy2Public:
-		//  
+		//         、           
 		if err = policy.signatureTx(tx, action.GetInput(), signParam.GetUtxobasics(), signParam.GetRealKeyInputs()); err != nil {
 			return
 		}
@@ -170,41 +170,31 @@ func (policy *privacyPolicy) SignTransaction(key crypto.PrivKey, req *types.ReqS
 	return
 }
 
-type privacyTxInfo struct {
-	tx          *types.Transaction
-	blockDetail *types.BlockDetail
-	actionTy    int32
-	actionName  string
-	input       *privacytypes.PrivacyInput
-	output      *privacytypes.PrivacyOutput
-	txIndex     int32
-	blockHeight int64
-	isExecOk    bool
-	isRollBack  bool
-	txHash      []byte
-	txHashHex   string
-	assetExec   string
-	assetSymbol string
-	batch       db.Batch
-}
-
 type buildStoreWalletTxDetailParam struct {
-	txInfo       *privacyTxInfo
-	addr         string
+	assetExec    string
+	tokenname    string
+	block        *types.BlockDetail
+	tx           *types.Transaction
+	index        int
+	newbatch     db.Batch
+	senderRecver string
+	isprivacy    bool
+	addDelType   int32
 	sendRecvFlag int32
+	utxos        []*privacytypes.UTXO
 }
 
-// OnAddBlockTx 
+// OnAddBlockTx            
 func (policy *privacyPolicy) OnAddBlockTx(block *types.BlockDetail, tx *types.Transaction, index int32, dbbatch db.Batch) *types.WalletTxDetail {
 	policy.addDelPrivacyTxsFromBlock(tx, index, block, dbbatch, AddTx)
-	//  
+	//          ，        
 	return nil
 }
 
-// OnDeleteBlockTx 
+// OnDeleteBlockTx            
 func (policy *privacyPolicy) OnDeleteBlockTx(block *types.BlockDetail, tx *types.Transaction, index int32, dbbatch db.Batch) *types.WalletTxDetail {
 	policy.addDelPrivacyTxsFromBlock(tx, index, block, dbbatch, DelTx)
-	//  
+	//          ，        
 	return nil
 }
 

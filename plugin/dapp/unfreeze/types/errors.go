@@ -7,14 +7,14 @@ package types
 import "errors"
 
 var (
-	// ErrUnfreezeEmptied 
+	// ErrUnfreezeEmptied       
 	ErrUnfreezeEmptied = errors.New("ErrUnfreezeEmptied")
-	// ErrUnfreezeMeans 
+	// ErrUnfreezeMeans        
 	ErrUnfreezeMeans = errors.New("ErrUnfreezeMeans")
-	// ErrUnfreezeID I 
+	// ErrUnfreezeID     ID  
 	ErrUnfreezeID = errors.New("ErrUnfreezeID")
-	// ErrNoPrivilege 
+	// ErrNoPrivilege     
 	ErrNoPrivilege = errors.New("ErrNoPrivilege")
-	// ErrTerminated 
+	// ErrTerminated        
 	ErrTerminated = errors.New("ErrTerminated")
 )

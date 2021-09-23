@@ -44,11 +44,14 @@ func (client *client) GetBlockHeaders(req *types.ReqBlocks) (*types.Headers, err
 	return headers, nil
 }
 
+//        block    seq，hash  
+//         ，      seq            ，       hash    seq  
 func (client *client) getLastBlockMainInfo() (int64, *types.Block, error) {
 	lastBlock, err := client.getLastBlockInfo()
 	if err != nil {
 		return -2, nil, err
 	}
+	//             MainHash，   switchLocalHashMatchedBlock      
 	mainSeq, err := client.GetSeqByHashOnMainChain(lastBlock.MainHash)
 	if err != nil {
 		return 0, lastBlock, nil
@@ -160,6 +163,7 @@ func (client *client) GetParaTxByHeight(req *types.ReqParaTxByHeight) (*types.Pa
 		return nil, err
 	}
 
+	//      ，    
 	if len(blocks.Items) > len(req.Items) {
 		plog.Error("GetParaTxByHeight get blocks more than req")
 		return nil, types.ErrInvalidParam

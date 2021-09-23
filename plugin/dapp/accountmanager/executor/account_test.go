@@ -39,10 +39,11 @@ var (
 )
 
 func TestAccountManager(t *testing.T) {
+	//    
 	cfg := types.NewChain33Config(types.GetDefaultCfgstring())
 	cfg.SetTitleOnlyForTest("chain33")
 	Init(et.AccountmanagerX, cfg, nil)
-	total := 100 * types.DefaultCoinPrecision
+	total := 100 * types.Coin
 	accountA := types.Account{
 		Balance: total,
 		Frozen:  0,
@@ -109,6 +110,7 @@ func TestAccountManager(t *testing.T) {
 	}
 	stateDB.Set([]byte(item3.Key), types.Encode(item3))
 
+	//  
 	tx1, err := CreateRegister(&et.Register{AccountID: "harrylee2015"}, PrivKeyB)
 	assert.Equal(t, err, nil)
 	err = Exec_Block(t, stateDB, kvdb, env, tx1)
@@ -124,28 +126,28 @@ func TestAccountManager(t *testing.T) {
 	tx3, err := CreateRegister(&et.Register{AccountID: "harrylee2020"}, PrivKeyC)
 	assert.Nil(t, err)
 	Exec_Block(t, stateDB, kvdb, env, tx3)
-
+	//  
 	tx4, err := CreateTransfer(&et.Transfer{FromAccountID: "harrylee2015", ToAccountID: "harrylee2020", Asset: &types.Asset{Exec: "coins", Symbol: "bty", Amount: 1e8}}, PrivKeyB)
 	assert.Equal(t, err, nil)
 	err = Exec_Block(t, stateDB, kvdb, env, tx4)
 	assert.Equal(t, err, nil)
-
+	//    
 	tx5, err := CreateReset(&et.ResetKey{Addr: "1MCftFynyvG2F4ED5mdHYgziDxx6vDrScs", AccountID: "harrylee2015"}, PrivKeyA)
 	assert.Equal(t, err, nil)
 	err = Exec_Block(t, stateDB, kvdb, env, tx5)
 	assert.Nil(t, err)
-
+	//         
 	tx6, err := CreateApply(&et.Apply{Op: et.RevokeReset, AccountID: "harrylee2015"}, PrivKeyB)
 	assert.Equal(t, err, nil)
 	err = Exec_Block(t, stateDB, kvdb, env, tx6)
 	assert.Equal(t, err, nil)
-
+	//    
 	tx5, err = CreateReset(&et.ResetKey{Addr: "1MCftFynyvG2F4ED5mdHYgziDxx6vDrScs", AccountID: "harrylee2015"}, PrivKeyA)
 	assert.Equal(t, err, nil)
 	err = Exec_Block(t, stateDB, kvdb, env, tx5)
 	assert.Nil(t, err)
 	time.Sleep(time.Second)
-
+	//     ，    
 	tx6, err = CreateApply(&et.Apply{Op: et.EnforceReset, AccountID: "harrylee2015"}, PrivKeyD)
 	assert.Equal(t, err, nil)
 	err = Exec_Block(t, stateDB, kvdb, env, tx6)
@@ -156,37 +158,37 @@ func TestAccountManager(t *testing.T) {
 	assert.Equal(t, err, nil)
 	balance, err := Exec_QueryBalanceByID(&et.QueryBalanceByID{AccountID: "harrylee2015", Asset: &types.Asset{Symbol: "bty", Exec: "coins"}}, stateDB, kvdb)
 	assert.Equal(t, err, nil)
-	assert.Equal(t, balance.Balance, 199*types.DefaultCoinPrecision)
+	assert.Equal(t, balance.Balance, 199*types.Coin)
 
-
+	//       
 	tx8, _ := CreateSupervise(&et.Supervise{
 		AccountIDs: []string{"harrylee2015"},
 		Op:         et.Freeze,
 	}, PrivKeyA)
 	err = Exec_Block(t, stateDB, kvdb, env, tx8)
 	assert.Equal(t, err, nil)
-
+	//      
 	accounts, err := Exec_QueryAccountsByStatus(et.Frozen, stateDB, kvdb)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, accounts.Accounts[0].Status, et.Frozen)
 
-
+	//    
 	tx9, _ := CreateSupervise(&et.Supervise{
 		AccountIDs: []string{"harrylee2015"},
 		Op:         et.UnFreeze,
 	}, PrivKeyA)
 	err = Exec_Block(t, stateDB, kvdb, env, tx9)
 	assert.Equal(t, err, nil)
-
+	//      
 	accounts, err = Exec_QueryAccountsByStatus(et.Frozen, stateDB, kvdb)
 	assert.NotEqual(t, err, nil)
 
-
+	//      
 	time.Sleep(11 * time.Second)
 	accounts, err = Exec_QueryExpiredAccounts(time.Now().Unix(), stateDB, kvdb)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, 2, len(accounts.Accounts))
-
+	//    
 	tx10, _ := CreateSupervise(&et.Supervise{
 		AccountIDs: []string{"harrylee2015"},
 		Op:         et.AddExpire,
@@ -196,7 +198,7 @@ func TestAccountManager(t *testing.T) {
 	accounts, err = Exec_QueryExpiredAccounts(time.Now().Unix(), stateDB, kvdb)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, 1, len(accounts.Accounts))
-
+	//    
 	tx11, _ := CreateSupervise(&et.Supervise{
 		AccountIDs: []string{"harrylee2015"},
 		Op:         et.Authorize,
@@ -305,7 +307,7 @@ func CreateApply(apply *et.Apply, privKey string) (tx *types.Transaction, err er
 	return tx, nil
 }
 
-
+//            
 func Exec_Block(t *testing.T, stateDB db.DB, kvdb db.KVDB, env *execEnv, txs ...*types.Transaction) error {
 	cfg := types.NewChain33Config(types.GetDefaultCfgstring())
 	cfg.SetTitleOnlyForTest("chain33")

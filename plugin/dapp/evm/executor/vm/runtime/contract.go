@@ -9,51 +9,73 @@ import (
 	"github.com/holiman/uint256"
 )
 
+// ContractRef       
 type ContractRef interface {
 	Address() common.Address
 }
 
+// AccountRef        （         ContractRef  ）
+//           ，           ，         ，           
 type AccountRef common.Address
 
+// Address               
 func (ar AccountRef) Address() common.Address { return (common.Address)(ar) }
 
+// Contract     ，                       
+//                   
 type Contract struct {
+	// CallerAddress      ，          
+	//              ，                  
 	CallerAddress common.Address
 
+	//         ，        （     ），         （     ）
 	caller ContractRef
 
+	//             
+	//   ，     （      CallCode         ，              ，   caller  ）
 	self ContractRef
 
+	// Jumpdests       ， JUMP JUMPI    
 	Jumpdests Destinations
 
 	// Locally cached result of JUMPDEST analysis
 	analysis bitvec
 
-	Code []bytecode
-
+	// Code    
+	Code []byte
+	// CodeHash     
 	CodeHash common.Hash
 
+	// CodeAddr     
 	CodeAddr *common.Address
-
+	// Input     
 	Input []byte
 
+	// Gas         Gas（            ）
 	Gas uint64
 
+	// value        ，        ，        
 	value uint64
 
+	// DelegateCall      ，        true
 	DelegateCall bool
 }
 
+// NewContract             
+//         ，                       ，             
 func NewContract(caller ContractRef, object ContractRef, value uint64, gas uint64) *Contract {
 
 	c := &Contract{CallerAddress: caller.Address(), caller: caller, self: object}
 
+	//             ，         jumpdests
+	//   ，      jumpdests
 	if parent, ok := caller.(*Contract); ok {
 		c.Jumpdests = parent.Jumpdests
 	} else {
 		c.Jumpdests = make(Destinations)
 	}
 
+	//   gas  ，         gas
 	c.Gas = gas
 	c.value = value
 
@@ -87,6 +109,7 @@ func (c *Contract) validJumpSubdest(udest uint64) bool {
 	return c.isCode(udest)
 }
 
+//      PC         ，   PUSHN       ，isCode  true
 func (c *Contract) isCode(udest uint64) bool {
 	// Do we have a contract hash already?
 	if c.CodeHash != (common.Hash{}) {
@@ -112,22 +135,28 @@ func (c *Contract) isCode(udest uint64) bool {
 	return c.analysis.codeSegment(udest)
 }
 
-
+// AsDelegate                
+//            ，             
 func (c *Contract) AsDelegate() *Contract {
 	c.DelegateCall = true
 
+	//         ，          ，      
 	parent := c.caller.(*Contract)
 
+	//             ，                       
 	c.CallerAddress = parent.CallerAddress
 
+	//         
 	c.value = parent.value
 	return c
 }
 
+// GetOp                
 func (c *Contract) GetOp(n uint64) OpCode {
 	return OpCode(c.GetByte(n))
 }
 
+// GetByte                
 func (c *Contract) GetByte(n uint64) byte {
 	if n < uint64(len(c.Code)) {
 		return c.Code[n]
@@ -136,10 +165,14 @@ func (c *Contract) GetByte(n uint64) byte {
 	return 0
 }
 
+// Caller         
+//            ，           ，      ，     caller          caller
+//             ，     caller       
 func (c *Contract) Caller() common.Address {
 	return c.CallerAddress
 }
 
+// UseGas       gas   gas  
 func (c *Contract) UseGas(gas uint64) (ok bool) {
 	if c.Gas < gas {
 		return false
@@ -148,19 +181,24 @@ func (c *Contract) UseGas(gas uint64) (ok bool) {
 	return true
 }
 
+// Address              
+//   ，     CallCode   ，                  ，        
 func (c *Contract) Address() common.Address {
 	return c.self.Address()
 }
 
+// Value          ，     
 func (c *Contract) Value() uint64 {
 	return c.value
 }
 
+// SetCode         
 func (c *Contract) SetCode(hash common.Hash, code []byte) {
 	c.Code = code
 	c.CodeHash = hash
 }
 
+// SetCallCode            
 func (c *Contract) SetCallCode(addr *common.Address, hash common.Hash, code []byte) {
 	c.Code = code
 	c.CodeHash = hash

@@ -15,6 +15,7 @@
 // BLAKE2X is a construction to compute hash values larger than 64 bytes. It
 // can produce hash values between 0 and 4 GiB.
 
+//nolint:unparam //        golangci-linter  
 package blake2b
 
 import (
@@ -24,7 +25,9 @@ import (
 )
 
 const (
+	// BlockSize  BLAKE2b    
 	BlockSize = 128
+	// Size  BLAKE2b-512 hash  
 	Size = 64
 	// Size384  The hash size of BLAKE2b-384 in bytes.
 	Size384 = 48

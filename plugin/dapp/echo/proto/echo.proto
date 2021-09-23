@@ -1,13 +1,15 @@
 syntax = "proto3";
 package echo;
-option go_package = "../types";
 
+// ping  action
 message Ping {
     string msg = 1;
 }
+// pang  action
 message Pang {
     string msg = 1;
 }
+//        Action  
 message EchoAction {
     oneof value {
         Ping ping = 1;
@@ -15,19 +17,23 @@ message EchoAction {
     }
     int32 ty = 3;
 }
+// ping         
 message PingLog {
     string msg   = 1;
     string echo  = 2;
     int32  count = 3;
 }
+// pang         
 message PangLog {
     string msg   = 1;
     string echo  = 2;
     int32  count = 3;
 }
+//       
 message Query {
     string msg = 1;
 }
+//       
 message QueryResult {
     string msg   = 1;
     int32  count = 2;

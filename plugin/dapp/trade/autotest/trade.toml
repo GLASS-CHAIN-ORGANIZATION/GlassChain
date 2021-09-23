@@ -94,7 +94,7 @@ checkItem = ["balance", "frozen"]
 fail = true
 
 
- trad sellID, DependBuyCas de SellCas sellID
+# trade      sellID, DependBuyCase     dep  SellCase sellID
 [[DependBuyCase]]
 id = "tokenBuy"
 command = "send trade buy -c 100 -f 0.01 -k 1Luh4AziYyaC5zP3hUXtXFZS873xAxm6rH"
@@ -108,7 +108,7 @@ repeat = 5
 
 
 
- 
+#       
 [[DependBuyCase]]
 id = "failBuy1"
 command = "send trade buy -c 90 -f 0.01 -k 1Luh4AziYyaC5zP3hUXtXFZS873xAxm6rH"
@@ -121,7 +121,7 @@ dep = ["tokenSell1"]
 fail = true
 
 
- sel 
+#    sell   
 [[DependBuyCase]]
 id = "failBuy2"
 command = "send trade buy -c 200 -f 0.01 -k 1Luh4AziYyaC5zP3hUXtXFZS873xAxm6rH"
@@ -137,7 +137,7 @@ fail = true
 
 
 
-#bt 
+#bty    
 [[DependBuyCase]]
 id = "failBuy3"
 command = "send trade buy -c 800 -f 0.01 -k 1Luh4AziYyaC5zP3hUXtXFZS873xAxm6rH"

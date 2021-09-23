@@ -5,7 +5,6 @@ import (
 	_ "github.com/33cn/plugin/plugin/dapp/autonomy"       //auto gen
 	_ "github.com/33cn/plugin/plugin/dapp/blackwhite"     //auto gen
 	_ "github.com/33cn/plugin/plugin/dapp/cert"           //auto gen
-	_ "github.com/33cn/plugin/plugin/dapp/coinsx"         //auto gen
 	_ "github.com/33cn/plugin/plugin/dapp/collateralize"  //auto gen
 	_ "github.com/33cn/plugin/plugin/dapp/dposvote"       //auto gen
 	_ "github.com/33cn/plugin/plugin/dapp/echo"           //auto gen
@@ -23,7 +22,6 @@ import (
 	_ "github.com/33cn/plugin/plugin/dapp/paracross"      //auto gen
 	_ "github.com/33cn/plugin/plugin/dapp/pokerbull"      //auto gen
 	_ "github.com/33cn/plugin/plugin/dapp/privacy"        //auto gen
-	_ "github.com/33cn/plugin/plugin/dapp/qbftNode"       //auto gen
 	_ "github.com/33cn/plugin/plugin/dapp/relay"          //auto gen
 	_ "github.com/33cn/plugin/plugin/dapp/retrieve"       //auto gen
 	_ "github.com/33cn/plugin/plugin/dapp/storage"        //auto gen
@@ -34,4 +32,5 @@ import (
 	_ "github.com/33cn/plugin/plugin/dapp/valnode"        //auto gen
 	_ "github.com/33cn/plugin/plugin/dapp/vote"           //auto gen
 	_ "github.com/33cn/plugin/plugin/dapp/wasm"           //auto gen
+	_ "github.com/33cn/plugin/plugin/dapp/x2ethereum"     //auto gen
 )

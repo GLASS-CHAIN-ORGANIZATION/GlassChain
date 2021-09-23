@@ -1,5 +1,6 @@
 // +build !amd64,!arm64 generic
 
+//nolint:unparam //        golangci-linter  
 package bn256
 
 func gfpCarry(a *gfP, head uint64) {

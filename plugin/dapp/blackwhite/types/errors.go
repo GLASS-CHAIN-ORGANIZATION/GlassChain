@@ -7,13 +7,14 @@ package types
 import "errors"
 
 var (
+	// ErrIncorrectStatus          
 	ErrIncorrectStatus = errors.New("ErrIncorrectStatus")
-
+	// ErrRepeatPlayerAddr     
 	ErrRepeatPlayerAddr = errors.New("ErrRepeatPlayerAddress")
-
+	// ErrNoTimeoutDone     
 	ErrNoTimeoutDone = errors.New("ErrNoTimeoutDone")
-
+	// ErrNoExistAddr      ，     
 	ErrNoExistAddr = errors.New("ErrNoExistAddress")
-
+	// ErrNoLoopSeq               
 	ErrNoLoopSeq = errors.New("ErrBlackwhiteFinalloopLessThanSeq")
 )

@@ -37,7 +37,7 @@ func IsZeroAddress(address common.Address) bool {
 	return address == common.HexToAddress(nullAddress)
 }
 
-//IsValidPassWord  8-3   
+//IsValidPassWord        ,     8-30   。     +     
 func IsValidPassWord(password string) bool {
 	pwLen := len(password)
 	if pwLen < 8 || pwLen > 30 {

@@ -179,7 +179,7 @@ func checksum(input []byte) (cksum [4]byte) {
 }
 
 func pubKeyToAddress4Bty(pub []byte) (addr string, err error) {
-	if len(pub) != 33 && len(pub) != 65 { /   
+	if len(pub) != 33 && len(pub) != 65 { //            
 		return "", fmt.Errorf("invalid public key byte")
 	}
 
@@ -194,14 +194,14 @@ func pubKeyToAddress4Bty(pub []byte) (addr string, err error) {
 	if err != nil {
 		return "", err
 	}
-	/ 
+	//     
 	hash160res := append([]byte{0}, ripemd160h.Sum([]byte(""))...)
 
-	/ 
+	//     
 	cksum := checksum(hash160res)
 	address := append(hash160res, cksum[:]...)
 
-	/ base5 
+	//    base58  
 	addr = base58.Encode(address)
 	return
 }

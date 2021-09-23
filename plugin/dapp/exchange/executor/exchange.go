@@ -7,8 +7,13 @@ import (
 	exchangetypes "github.com/33cn/plugin/plugin/dapp/exchange/types"
 )
 
-var (
+/*
+ *        
+ *         
+ */
 
+var (
+	//  
 	elog = log.New("module", "exchange.executor")
 )
 
@@ -48,13 +53,11 @@ func (e *exchange) GetDriverName() string {
 	return driverName
 }
 
-
+// CheckTx            ，     
 func (e *exchange) CheckTx(tx *types.Transaction, index int) error {
-
-	
+	//          payload,        
 	var exchange exchangetypes.ExchangeAction
 	types.Decode(tx.GetPayload(), &exchange)
-	cfg := e.GetAPI().GetConfig()
 	if exchange.Ty == exchangetypes.TyLimitOrderAction {
 		limitOrder := exchange.GetLimitOrder()
 		left := limitOrder.GetLeftAsset()
@@ -62,13 +65,13 @@ func (e *exchange) CheckTx(tx *types.Transaction, index int) error {
 		price := limitOrder.GetPrice()
 		amount := limitOrder.GetAmount()
 		op := limitOrder.GetOp()
-		if !CheckExchangeAsset(cfg.GetCoinExec(), left, right) {
+		if !CheckExchangeAsset(left, right) {
 			return exchangetypes.ErrAsset
 		}
 		if !CheckPrice(price) {
 			return exchangetypes.ErrAssetPrice
 		}
-		if !CheckAmount(amount, cfg.GetCoinPrecision()) {
+		if !CheckAmount(amount) {
 			return exchangetypes.ErrAssetAmount
 		}
 		if !CheckOp(op) {
@@ -81,7 +84,7 @@ func (e *exchange) CheckTx(tx *types.Transaction, index int) error {
 	return nil
 }
 
-
+//ExecutorOrder Exec          ExecLocal
 func (e *exchange) ExecutorOrder() int64 {
 	return drivers.ExecLocalSameTime
 }

@@ -38,6 +38,7 @@ chain33_NewAccount() {
 chain33_SendTransaction() {
     rawTx=$1
     addr=$2
+    #    
     req='{"method":"Chain33.SignRawTx","params":[{"addr":"'"$addr"'","txHex":"'"$rawTx"'","expire":"120s","fee":10000000,"index":0}]}'
     chain33_Http "$req" ${MAIN_HTTP} '(.error|not)' "Chain33.SignRawTx" ".result"
     signTx=$RETURN_RESP
@@ -46,14 +47,16 @@ chain33_SendTransaction() {
     chain33_Http "$req" ${MAIN_HTTP} '(.error|not)' "$FUNCNAME" ".result"
 
     gResp=$RETURN_RESP
+    #    
     chain33_QueryTx "$RETURN_RESP" "${MAIN_HTTP}"
 }
 
 blackwhite_BlackwhiteCreateTx() {
+    #    
     addr=$1
     req='{"method":"blackwhite.BlackwhiteCreateTx","params":[{"PlayAmount":100000000,"PlayerCount":3,"GameName":"hello","Timeout":600,"Fee":1000000}]}'
     chain33_Http "$req" ${MAIN_HTTP} '(.error|not)' "$FUNCNAME" ".result"
-
+    #    
     chain33_SendTransaction "$RETURN_RESP" "${addr}"
     gID="${gResp}"
 }
@@ -66,7 +69,7 @@ blackwhite_BlackwhitePlayTx() {
     req='{"method":"blackwhite.BlackwhitePlayTx","params":[{"gameID":"'"$gID"'","amount":100000000,"Fee":1000000,"hashValues":["'"$round1"'","'"$round2"'","'"$round3"'"]}]}'
     chain33_Http "$req" ${MAIN_HTTP} '(.error|not)' "$FUNCNAME" ".result"
 
-
+    #    
     chain33_SendTransaction "$RETURN_RESP" "${addr}"
 }
 
@@ -105,14 +108,14 @@ blackwhite_GetBlackwhiteloopResult() {
 }
 
 function run_testcases() {
-
+    #  
     sect1="123"
     black1="6vm6gJ2wvEIxC8Yc6r/N6lIU5OZk633YMnIfwcZBD0o="
     black2="6FXx5aeDSCaq1UrhLO8u0H31Hl8TpvzxuHrgGo9WeFk="
     white0="DrNPzA68XiGimZE/igx70kTPJxnIJnVf8NCGnb7XoYU="
     white1="SB5Pnf6Umf2Wba0dqyNOezq5FEqTd22WPVYAhSA6Lxs="
 
-
+    #       
     chain33_NewAccount "label188"
     gameAddr1="${glAddr}"
     chain33_NewAccount "label288"
@@ -120,19 +123,23 @@ function run_testcases() {
     chain33_NewAccount "label388"
     gameAddr3="${glAddr}"
 
+    #         
     origAddr="12qyocayNF7Lv6C9qW4avxs2E7U41fKSfv"
 
     chain33_GetAccounts "${MAIN_HTTP}"
 
+    #           
     M_HTTP=${MAIN_HTTP//8901/8801}
     chain33_SendToAddress "${origAddr}" "${gameAddr1}" 1000000000 "${M_HTTP}"
     chain33_SendToAddress "${origAddr}" "${gameAddr2}" 1000000000 "${M_HTTP}"
     chain33_SendToAddress "${origAddr}" "${gameAddr3}" 1000000000 "${M_HTTP}"
 
+    #           
     chain33_SendToAddress "${origAddr}" "${gameAddr1}" 1000000000 "${MAIN_HTTP}"
     chain33_SendToAddress "${origAddr}" "${gameAddr2}" 1000000000 "${MAIN_HTTP}"
     chain33_SendToAddress "${origAddr}" "${gameAddr3}" 1000000000 "${MAIN_HTTP}"
 
+    #        
     chain33_SendToAddress "${gameAddr1}" "${bwExecAddr}" 500000000 "${MAIN_HTTP}"
     chain33_SendToAddress "${gameAddr2}" "${bwExecAddr}" 500000000 "${MAIN_HTTP}"
     chain33_SendToAddress "${gameAddr3}" "${bwExecAddr}" 500000000 "${MAIN_HTTP}"
@@ -148,7 +155,7 @@ function run_testcases() {
     blackwhite_BlackwhiteShowTx "${gameAddr3}" "${sect1}"
 
     blackwhite_BlackwhiteTimeoutDoneTx "$gID"
-
+    #    
     blackwhite_GetBlackwhiteRoundInfo "$gID"
     blackwhite_GetBlackwhiteByStatusAndAddr "${gameAddr1}"
     blackwhite_GetBlackwhiteloopResult "$gID"

@@ -17,11 +17,13 @@ func (d *DPos) rollbackCand(cand *dty.CandidatorInfo, log *dty.ReceiptCandicator
 		return
 	}
 
+	//         ，             
 	if log.StatusChange {
 		cand.Status = log.PreStatus
 		cand.Index = cand.PreIndex
 	}
 
+	//     ，        
 	if log.VoteType == dty.VoteTypeVote {
 		for i := 0; i < len(cand.Voters); i++ {
 			if cand.Voters[i].Index == log.Vote.Index && cand.Voters[i].FromAddr == log.Vote.FromAddr && bytes.Equal(cand.Voters[i].Pubkey, log.Vote.Pubkey) {
@@ -42,7 +44,7 @@ func (d *DPos) rollbackCandVote(log *dty.ReceiptCandicator) (kvs []*types.KeyVal
 	}
 
 	if log.Status == dty.CandidatorStatusRegist {
-
+		//    ,cand     
 		err = candTable.Del(log.Pubkey)
 		if err != nil {
 			return nil, err
@@ -50,10 +52,11 @@ func (d *DPos) rollbackCandVote(log *dty.ReceiptCandicator) (kvs []*types.KeyVal
 		kvs, err = candTable.Save()
 		return kvs, err
 	} else if log.Status == dty.CandidatorStatusVoted {
-
+		//      ，    ，    
 		candInfo := log.CandInfo
 		log.CandInfo = nil
 
+		//         
 		d.rollbackCand(candInfo, log)
 
 		err = candTable.Replace(candInfo)
@@ -84,11 +87,11 @@ func (d *DPos) rollbackCandVote(log *dty.ReceiptCandicator) (kvs []*types.KeyVal
 
 		kvs = append(kvs1, kvs2...)
 	} else if log.Status == dty.CandidatorStatusCancelRegist {
-
+		//      ，           
 		candInfo := log.CandInfo
 		log.CandInfo = nil
 
-
+		//         
 		d.rollbackCand(candInfo, log)
 
 		err = candTable.Replace(candInfo)
@@ -116,7 +119,7 @@ func (d *DPos) rollbackCandVote(log *dty.ReceiptCandicator) (kvs []*types.KeyVal
 
 		kvs = append(kvs1, kvs2...)
 	} else if log.Status == dty.CandidatorStatusReRegist {
-
+		//    ,cand     
 		err = candTable.Del(log.Pubkey)
 		if err != nil {
 			return nil, err
@@ -132,6 +135,7 @@ func (d *DPos) rollbackVrf(log *dty.ReceiptVrf) (kvs []*types.KeyValue, err erro
 	if log.Status == dty.VrfStatusMRegist {
 		vrfMTable := dty.NewDposVrfMTable(d.GetLocalDB())
 
+		//    ,cand     
 		err = vrfMTable.Del([]byte(fmt.Sprintf("%018d", log.Index)))
 		if err != nil {
 			return nil, err
@@ -156,7 +160,7 @@ func (d *DPos) rollbackCBInfo(log *dty.ReceiptCB) (kvs []*types.KeyValue, err er
 	if log.Status == dty.CBStatusRecord {
 		cbTable := dty.NewDposCBTable(d.GetLocalDB())
 
-
+		//    ,cand     
 		err = cbTable.Del([]byte(fmt.Sprintf("%018d", log.Cycle)))
 		if err != nil {
 			return nil, err

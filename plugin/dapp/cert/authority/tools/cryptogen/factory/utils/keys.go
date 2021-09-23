@@ -13,8 +13,8 @@ import (
 	"encoding/pem"
 	"fmt"
 
-	pkecdsa "github.com/33cn/chain33/system/crypto/secp256r1"
-	pkesm2 "github.com/33cn/chain33/system/crypto/sm2"
+	pkecdsa "github.com/33cn/plugin/plugin/crypto/ecdsa"
+	pkesm2 "github.com/33cn/plugin/plugin/crypto/sm2"
 	"github.com/33cn/plugin/plugin/dapp/evm/executor/vm/common"
 	"github.com/pkg/errors"
 	"github.com/tjfoc/gmsm/sm2"
@@ -62,6 +62,7 @@ func PrivateKeyToByte(privateKey interface{}) ([]byte, error) {
 	}
 }
 
+// PrivateKeyToPEM    pem
 func PrivateKeyToPEM(privateKey interface{}, pwd []byte) ([]byte, error) {
 	if len(pwd) != 0 {
 		return privateKeyToEncryptedPEM(privateKey, pwd)
@@ -155,6 +156,7 @@ func privateKeyToEncryptedPEM(privateKey interface{}, pwd []byte) ([]byte, error
 	}
 }
 
+// PublicKeyToPEM    pem
 func PublicKeyToPEM(publicKey interface{}, pwd []byte) ([]byte, error) {
 	if len(pwd) != 0 {
 		return publicKeyToEncryptedPEM(publicKey, pwd)
@@ -227,6 +229,7 @@ func publicKeyToEncryptedPEM(publicKey interface{}, pwd []byte) ([]byte, error) 
 	}
 }
 
+// DERToPublicKey DER      
 func DERToPublicKey(raw []byte) (pub interface{}, err error) {
 	if len(raw) == 0 {
 		return nil, errors.New("Invalid DER. It must be different from nil")
@@ -240,6 +243,7 @@ func DERToPublicKey(raw []byte) (pub interface{}, err error) {
 	return key, err
 }
 
+// Clone     
 func Clone(src []byte) []byte {
 	clone := make([]byte, len(src))
 	copy(clone, src)

@@ -16,12 +16,12 @@ function checkParaBlockHashfun() {
 
     if [ "${height2}" -ge "${height1}" ]; then
         height=$height2
-        printf   $PARA_CLI  %d \\n" "${height}"
+        printf "    $PARA_CLI        %d \\n" "${height}"
         sleep 1
         hash=$($CLI block hash -t "${height}" | jq ".hash")
     else
         height=$height1
-        printf   $PARA_CLI4  %d \\n" "${height}"
+        printf "    $PARA_CLI4        %d \\n" "${height}"
         sleep 1
         hash=$($CLI4 block hash -t "${height}" | jq ".hash")
     fi
@@ -48,9 +48,9 @@ function checkParaBlockHashfun() {
             fi
         fi
 
-        printf   %d ，10 \n' $j
+        printf '  %d  ，10s   \n' $j
         sleep 10
-         
+        #             
         var=$(($1 - 1))
         if [ $j -ge "${var}" ]; then
             echo "====== syn para blockchain fail======"

@@ -5,11 +5,11 @@
 package wallet
 
 const (
-	// AddTx 
+	// AddTx     
 	AddTx int32 = 20001
-	// DelTx 
+	// DelTx     
 	DelTx int32 = 20002
-	// 
+	//       
 	sendTx int32 = 30001
 	recvTx int32 = 30002
 )

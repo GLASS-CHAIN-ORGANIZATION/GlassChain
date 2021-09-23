@@ -7,6 +7,36 @@ import (
 	"github.com/robertkrimen/otto"
 )
 
+/*
+//chain33           （    execer     symbol）
+function Account(execer, symbol) {
+	this.execer = execer
+	this.symbol = symbol
+}
+
+func Receipt(kvs, logs) {
+	this.kvs = kvs
+	this.logs = logs
+}
+
+var obj = new Account(execer, symbol)
+//init            (    )
+genesis_init(obj, addr string, amount int64)
+genesis_init_exec(obj, execer, addr string, amount int64)
+
+load_account(obj, addr) Account
+get_balance(obj, execer, addr) Account
+
+transfer(obj, from, to, amount) Receipt
+transfer_to_exec(obj, execer, addr, amount) Receipt
+withdraw(obj, execer, addr, amount) Receipt
+
+exec_frozen(obj, execer, addr, amount) Receipt
+exec_active(obj, execer, addr, amount) Receipt
+exec_deposit(obj, execer, addr, amount) Receipt
+exec_withdraw(obj, execer, addr, amount) Receipt
+exec_transfer(obj, execer, from, to, amount) Receipt
+*/
 func (u *js) registerAccountFunc(vm *otto.Otto) {
 	u.genesisInitExecFunc(vm)
 	u.genesisInitFunc(vm)

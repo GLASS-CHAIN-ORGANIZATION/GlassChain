@@ -8,8 +8,8 @@ import (
 )
 
 /*
- *  
- *  (localDB),  
+ *             ，     
+ *      ，    (localDB),       ，   
  */
 
 func (x *x2ethereum) ExecLocal_Eth2Chain33Lock(payload *x2eTy.Eth2Chain33, tx *types.Transaction, receiptData *types.ReceiptData, index int) (*types.LocalDBSet, error) {
@@ -68,7 +68,7 @@ func (x *x2ethereum) ExecLocal_SetConsensusThreshold(payload *x2eTy.MsgConsensus
 	return x.addAutoRollBack(tx, dbSet.KV), nil
 }
 
-/ 
+//      
 func (x *x2ethereum) addAutoRollBack(tx *types.Transaction, kv []*types.KeyValue) *types.LocalDBSet {
 	dbSet := &types.LocalDBSet{}
 	dbSet.KV = x.AddRollbackKV(tx, tx.Execer, kv)

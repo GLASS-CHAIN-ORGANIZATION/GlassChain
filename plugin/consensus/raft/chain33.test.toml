@@ -1,16 +1,24 @@
 Title="local"
 
-[crypto]
 [log]
+#     ，  debug(dbug)/info/warn/error(eror)/crit
 loglevel = "debug"
 logConsoleLevel = "info"
+#      ，    ，                
 logFile = "logs/chain33.log"
+#           （  ： ）
 maxFileSize = 300
+#              
 maxBackups = 100
+#            （  ： ）
 maxAge = 28
+#              （    UTC  ）
 localTime = true
+#           （     gz）
 compress = true
+#             
 callerFile = false
+#         
 callerFunction = false
 
 [blockchain]
@@ -53,14 +61,15 @@ poolCacheSize=10240
 
 [mempool.sub.score]
 poolCacheSize=10240
-timeParam=1      
-priceConstant=1544  
-pricePower=1    
+timeParam=1      #       
+priceConstant=1544  #                ,   unxi       ,       1e-5~= 1s
+pricePower=1     #    
 
 [mempool.sub.price]
 poolCacheSize=10240
 
 [consensus]
+#      ,  solo/raft/ticket/tendermint/pbft
 name="raft"
 minerstart=true
 genesis="14KEKbYtKKQm4wMthSK9J4La4nAiidGozt"
@@ -80,16 +89,27 @@ powLimitBits = "0x1f2fffff"
 [consensus.sub.raft]
 genesis="14KEKbYtKKQm4wMthSK9J4La4nAiidGozt"
 genesisBlockTime=1514533394
+# =============== raft       ===========================
+#     ID，raft    ，          nodeId（     1，2，3    ）
 nodeID=1
+# raft    ，                
 raftAPIPort=9121
+# raft    ，             
 isNewJoinNode=false
+# raft    ，  raft       IP   
 peersURL="http://127.0.0.1:9021"
+# raft    ，  raft        IP（     ，   raft  ）
 readOnlyPeersURL=""
 addPeersURL=""
+#raft          snapshot，   10000(           ）
 defaultSnapCount=2
+#raft        ，   1 
 writeBlockSeconds=1
+#raft leader         ，   1 
 heartbeatTick=1
+#raft leader          ，   0，        
 emptyBlockInterval=120
+# =============== raft       ===========================
 
 [store]
 name="kvdb"
@@ -124,8 +144,11 @@ saveTokenTxList=false
 genesis="14KEKbYtKKQm4wMthSK9J4La4nAiidGozt"
 
 [exec.sub.cert]
-enable=ForkLocalDBAccess
+#            
+enable=false
+#       
 cryptoPath="authdir/crypto"
+#        ，  "auth_ecdsa", "auth_sm2"
 signType="auth_ecdsa"
 
 [exec.sub.manage]
@@ -140,5 +163,7 @@ total="16htvcBNSEA7fZhAdLJphDwQRQJaHpyHTp"
 useBalance=false
 
 [metrics]
+#      metrics     
 enableMetrics=false
+#      
 dataEmitMode="influxdb"

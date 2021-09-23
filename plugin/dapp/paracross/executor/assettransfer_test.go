@@ -27,7 +27,7 @@ import (
 // para-exec addr on para 16zsMh7mvNDKPG6E9NVrPhw6zL93gWsTpR
 
 var (
-	Amount = types.DefaultCoinPrecision
+	Amount = types.Coin
 )
 
 //func para_init(title string) {
@@ -35,9 +35,9 @@ var (
 //	types.Init(title, cfg)
 //}
 
-// ,  ， 
+//       ,  1     ，      
 //    assetTransfer
-//	 
+//	               
 
 type AssetTransferTestSuite struct {
 	suite.Suite
@@ -54,7 +54,7 @@ func TestAssetTransfer(t *testing.T) {
 
 func (suite *AssetTransferTestSuite) SetupTest() {
 	suite.stateDB, _ = dbm.NewGoMemDB("state", "state", 1024)
-	// memdb KVD ， Exec ，  memdb
+	// memdb    KVDB  ，     Exec ，     memdb
 	//suite.localDB, _ = dbm.NewGoMemDB("local", "local", 1024)
 	suite.localDB = new(dbmock.KVDB)
 
@@ -129,7 +129,7 @@ func (suite *AssetTransferTestSuite) TestExecTransfer() {
 
 	toB := Nodes[1]
 
-	total := 1000 * types.DefaultCoinPrecision
+	total := 1000 * types.Coin
 	accountA := types.Account{
 		Balance: total,
 		Frozen:  0,
@@ -239,7 +239,7 @@ func (suite *AssetTransferTestSuite) TestExecTransferToken() {
 
 	toB := Nodes[1]
 
-	total := 1000 * types.DefaultCoinPrecision
+	total := 1000 * types.Coin
 	accountA := types.Account{
 		Balance: total,
 		Frozen:  0,

@@ -7,25 +7,24 @@ syntax = "proto3";
 import "common.proto";
 
 package types;
-option go_package = "../types";
 
 message Unfreeze {
-    / ID ）
+    //    ID（     ）
     string unfreezeID = 1;
-    / 
+    //    
     int64 startTime = 2;
-    / 
+    //  
     string assetExec   = 3;
     string assetSymbol = 4;
-    / 
+    //    
     int64 totalCount = 5;
-    / 
+    //     
     string initiator = 6;
-    / 
+    //     
     string beneficiary = 7;
-    / 
+    //      
     int64 remaining = 8;
-    /   ）
+    //    （   ；  ）
     string means = 9;
     oneof  meansOpt {
         FixAmount      fixAmount      = 10;
@@ -34,13 +33,13 @@ message Unfreeze {
     bool terminated = 12;
 }
 
-// 
+//          
 message FixAmount {
     int64 period = 1;
     int64 amount = 2;
 }
 
-// 
+//               
 message LeftProportion {
     int64 period        = 1;
     int64 tenThousandth = 2;
@@ -104,22 +103,22 @@ message ReqUnfreezes {
 }
 
 message ReplyUnfreeze {
-    / ID ）
+    //    ID（     ）
     string unfreezeID = 1;
-    / 
+    //    
     int64 startTime = 2;
-    / 
+    //  
     string assetExec   = 3;
     string assetSymbol = 4;
-    / 
+    //    
     int64 totalCount = 5;
-    / 
+    //     
     string initiator = 6;
-    / 
+    //     
     string beneficiary = 7;
-    / 
+    //      
     int64 remaining = 8;
-    /   ）
+    //    （   ；  ）
     string means = 9;
     oneof  meansOpt {
         FixAmount      fixAmount      = 10;
@@ -132,7 +131,7 @@ message ReplyUnfreezes {
     repeated ReplyUnfreeze unfreeze = 1;
 }
 
-// TODO 
+// TODO           
 service unfreeze {
     rpc GetUnfreezeWithdraw(ReqString) returns (ReplyQueryUnfreezeWithdraw) {}
     rpc QueryUnfreeze(ReqString) returns (Unfreeze) {}

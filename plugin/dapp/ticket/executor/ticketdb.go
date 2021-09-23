@@ -35,7 +35,7 @@ type DB struct {
 	prevstatus int32
 }
 
-//GetRealPrice 
+//GetRealPrice        
 func (t *DB) GetRealPrice(cfg *types.Chain33Config) int64 {
 	if t.GetPrice() == 0 {
 		cfg := ty.GetTicketMinerParam(cfg, cfg.GetFork("ForkChainParamV1"))
@@ -54,20 +54,20 @@ func NewDB(cfg *types.Chain33Config, id, minerAddress, returnWallet string, bloc
 	t.Status = ty.TicketOpened
 	t.IsGenesis = isGenesis
 	t.prevstatus = 0
-	//height == 0   genesis block
+	//height == 0     ，     genesis block
 	if cfg.IsFork(height, "ForkChainParamV2") && height > 0 {
 		t.Price = price
 	}
 	return t
 }
 
-//ticket ：
-//1. status == 1 (NewTicke )
-//2. status == 2  )
-//3. status == 3 (Clos )
+//ticket      ：
+//1. status == 1 (NewTicket   )
+//2. status == 2 (       )
+//3. status == 3 (Close   )
 
-//add prevStatus:   
-//list :
+//add prevStatus:        ，        
+//list      :
 //minerAddress:status:ticketId=ticketId
 
 // GetReceiptLog get receipt
@@ -149,7 +149,7 @@ func (action *Action) GenesisInit(genesis *ty.TicketGenesis) (*types.Receipt, er
 	for i := 0; i < int(genesis.Count); i++ {
 		id := prefix + fmt.Sprintf("%010d", i)
 		t := NewDB(chain33Cfg, id, genesis.MinerAddress, genesis.ReturnAddress, action.blocktime, action.height, cfg.TicketPrice, true)
-		/ 
+		//       
 		receipt, err := action.coinsAccount.ExecFrozen(genesis.ReturnAddress, action.execaddr, cfg.TicketPrice)
 		if err != nil {
 			tlog.Error("GenesisInit.Frozen", "addr", genesis.ReturnAddress, "execaddr", action.execaddr)
@@ -202,13 +202,13 @@ func (action *Action) getBind(addr string) string {
 	return bind.MinerAddress
 }
 
-//TicketBind 
+//TicketBind           
 func (action *Action) TicketBind(tbind *ty.TicketBind) (*types.Receipt, error) {
 	//todo: query address is a minered address
 	if action.fromaddr != tbind.ReturnAddress {
 		return nil, types.ErrFromAddr
 	}
-	//"" 
+	//""       
 	if len(tbind.MinerAddress) > 0 {
 		if err := address.CheckAddress(tbind.MinerAddress); err != nil {
 			return nil, err
@@ -256,7 +256,7 @@ func (action *Action) TicketOpen(topen *ty.TicketOpen) (*types.Receipt, error) {
 		}
 		t := NewDB(chain33Cfg, id, topen.MinerAddress, topen.ReturnAddress, action.blocktime, action.height, cfg.TicketPrice, false)
 
-		/ 
+		//       
 		receipt, err := action.coinsAccount.ExecFrozen(topen.ReturnAddress, action.execaddr, cfg.TicketPrice)
 		if err != nil {
 			tlog.Error("TicketOpen.Frozen", "addr", topen.ReturnAddress, "execaddr", action.execaddr, "n", topen.Count)
@@ -382,17 +382,17 @@ func (action *Action) TicketClose(tclose *ty.TicketClose) (*types.Receipt, error
 		if err != nil {
 			return nil, err
 		}
-		//ticket    
+		//ticket         2 ,   
 		if ticket.Status != ty.TicketMined && ticket.Status != ty.TicketOpened {
 			tlog.Error("ticket", "id", ticket.GetTicketId(), "status", ticket.GetStatus())
 			return nil, ty.ErrTicketClosed
 		}
 		if !ticket.IsGenesis {
-			/ 
+			//      
 			if ticket.Status == ty.TicketOpened && action.blocktime-ticket.GetCreateTime() < cfg.TicketWithdrawTime {
 				return nil, ty.ErrTime
 			}
-			/ 
+			//       
 			if ticket.Status == ty.TicketMined && action.blocktime-ticket.GetCreateTime() < cfg.TicketWithdrawTime {
 				return nil, ty.ErrTime
 			}
@@ -425,7 +425,7 @@ func (action *Action) TicketClose(tclose *ty.TicketClose) (*types.Receipt, error
 		kv = append(kv, t.GetKVSet()...)
 		logs = append(logs, receipt1.Logs...)
 		kv = append(kv, receipt1.KV...)
-		/ ticket  
+		//  ticket        ，            
 		if t.prevstatus == 2 {
 			if !chain33Cfg.IsFork(action.height, "ForkTicketFundAddrV1") {
 				receipt2, err := action.coinsAccount.ExecActive(chain33Cfg.GetFundAddr(), action.execaddr, cfg.CoinDevFund)
@@ -465,7 +465,7 @@ func Infos(db dbm.KV, tinfos *ty.TicketInfos) (types.Message, error) {
 	for i := 0; i < len(tinfos.TicketIds); i++ {
 		id := tinfos.TicketIds[i]
 		ticket, err := readTicket(db, id)
-		/  
+		//         ，          
 		if err != nil {
 			continue
 		}

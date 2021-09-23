@@ -18,17 +18,17 @@ var (
 	glog  = log.New("module", ParaX)
 	// ForkCommitTx main chain support paracross commit tx
 	ForkCommitTx = "ForkParacrossCommitTx"
-	// MainForkParacrossCommitTx ForkCommitTx 
+	// MainForkParacrossCommitTx            ForkCommitTx   
 	MainForkParacrossCommitTx = "mainForkParacrossCommitTx"
-	// ForkLoopCheckCommitTxDone don fork
+	// ForkLoopCheckCommitTxDone         done fork
 	ForkLoopCheckCommitTxDone = "ForkLoopCheckCommitTxDone"
-	// MainLoopCheckCommitTxDoneForkHeight  ForkLoopCheckCommitTxDon 
+	// MainLoopCheckCommitTxDoneForkHeight        ，     ForkLoopCheckCommitTxDone  
 	MainLoopCheckCommitTxDoneForkHeight = "mainLoopCheckCommitTxDoneForkHeight"
-	// ForkParaSelfConsStages 
+	// ForkParaSelfConsStages            
 	ForkParaSelfConsStages = "ForkParaSelfConsStages"
-	// ForkParaAssetTransferRbk 
+	// ForkParaAssetTransferRbk                 
 	ForkParaAssetTransferRbk = "ForkParaAssetTransferRbk"
-	// ForkParaFullMinerHeight 
+	// ForkParaFullMinerHeight           
 	ForkParaFullMinerHeight = "ForkParaFullMinerHeight"
 
 	// ParaConsSubConf sub
@@ -59,7 +59,7 @@ func InitFork(cfg *types.Chain33Config) {
 	cfg.RegisterDappFork(ParaX, ForkLoopCheckCommitTxDone, 3230000)
 	cfg.RegisterDappFork(ParaX, ForkParaAssetTransferRbk, 4500000)
 
-	/ 
+	//       
 	cfg.RegisterDappFork(ParaX, ForkParaSelfConsStages, types.MaxHeight)
 	cfg.RegisterDappFork(ParaX, ForkParaFullMinerHeight, types.MaxHeight)
 }
@@ -87,7 +87,7 @@ func NewType(cfg *types.Chain33Config) *ParacrossType {
 	return c
 }
 
-// GetName 
+// GetName        
 func (p *ParacrossType) GetName() string {
 	return ParaX
 }
@@ -143,7 +143,7 @@ func (p *ParacrossType) GetPayload() types.Message {
 // CreateTx paracross create tx by different action
 func (p ParacrossType) CreateTx(action string, message json.RawMessage) (*types.Transaction, error) {
 	cfg := p.GetConfig()
-	/ ParacrossAssetTransfe  AssetTransfer 
+	//    ParacrossAssetTransfer  ，   AssetTransfer　   
 	if action == "ParacrossAssetTransfer" || action == "ParacrossAssetWithdraw" {
 		var param types.CreateTx
 		err := json.Unmarshal(message, &param)
@@ -153,7 +153,7 @@ func (p ParacrossType) CreateTx(action string, message json.RawMessage) (*types.
 		}
 		return CreateRawAssetTransferTx(cfg, &param)
 	} else if action == "Transfer" || action == "Withdraw" || action == "TransferToExec" {
-		//transfer/withdraw/toExec tx.t 
+		//transfer/withdraw/toExec           tx.to  
 		return p.CreateRawTransferTx(action, message)
 	}
 	return p.ExecTypeBase.CreateTx(action, message)

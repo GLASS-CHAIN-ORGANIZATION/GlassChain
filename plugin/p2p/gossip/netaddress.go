@@ -148,21 +148,20 @@ func (na *NetAddress) DialTimeout(version int32, creds credentials.TransportCred
 	ch <- P2pComm.GrpcConfig()
 
 	var cliparm keepalive.ClientParameters
-	cliparm.Time = 15 * time.Second    //keepalive ping 
-	cliparm.Timeout = 10 * time.Second //pin ac 
-	cliparm.PermitWithoutStream = true / keepalive 
+	cliparm.Time = 15 * time.Second    //keepalive ping   
+	cliparm.Timeout = 10 * time.Second //ping    ack      
+	cliparm.PermitWithoutStream = true //  keepalive     
 	keepaliveOp := grpc.WithKeepaliveParams(cliparm)
 	timeoutOp := grpc.WithTimeout(time.Second * 3)
 	log.Debug("NetAddress", "Dial", na.String())
 	maxMsgSize := pb.MaxBlockSize + 1024*1024
-	/ SS 
+	//  SSL  
 	var secOpt grpc.DialOption
 	if creds == nil {
 		secOpt = grpc.WithInsecure()
 	} else {
 		secOpt = grpc.WithTransportCredentials(creds)
 	}
-	//grpc.WithPerRPCCredentials
 	conn, err := grpc.Dial(na.String(),
 		grpc.WithDefaultCallOptions(grpc.UseCompressor("gzip")),
 		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxMsgSize)),
@@ -172,9 +171,9 @@ func (na *NetAddress) DialTimeout(version int32, creds credentials.TransportCred
 		log.Debug("grpc DialCon", "did not connect", err, "addr", na.String())
 		return nil, err
 	}
-	//p2p version check  session
+	//p2p version check       ，    session
 
-	/ 
+	//            
 	cli := pb.NewP2PgserviceClient(conn)
 	_, err = cli.GetHeaders(context.Background(), &pb.P2PGetHeaders{StartHeight: 0, EndHeight: 0, Version: version}, grpc.FailFast(true))
 	if err != nil && !isCompressSupport(err) {
@@ -192,7 +191,7 @@ func (na *NetAddress) DialTimeout(version int32, creds credentials.TransportCred
 	}
 
 	if err != nil {
-		log.Debug("grpc DialCon Uncompressor", "connect err", err)
+		log.Debug("grpc DialCon Uncompressor", "did not connect", err)
 		if conn != nil {
 			errs := conn.Close()
 			if errs != nil {

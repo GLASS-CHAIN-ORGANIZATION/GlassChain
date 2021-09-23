@@ -4,18 +4,18 @@
 
 package gossip
 
-/ ：
-// 1.p2p na  pee stream，ping,version 
+//    ：
+// 1.p2p     nat   ，   peer stream，ping,version    
 
-//2018-3-26 
-// 1. p2p  blockhash block height
-// 2. p2 
+//2018-3-26     
+// 1. p2p       ，  blockhash   block height
+// 2.   p2p           
 
-//p2  10020, 11000
+//p2p     10020, 11000
 
-/ 
+//    
 const (
-	//p2 
+	//p2p              
 	lightBroadCastVersion = 10030
 )
 

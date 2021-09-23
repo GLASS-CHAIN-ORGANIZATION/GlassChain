@@ -73,7 +73,7 @@ func IsProphecyPending(claimID [32]byte, validator common.Address, chain33Bridge
 
 //GetBalance ...
 func GetBalance(client ethinterface.EthClientSpec, tokenAddr, owner string) (string, error) {
-	/ ERC2 
+	//  ERC20  
 	if tokenAddr != "" {
 		bridgeToken, err := generated.NewBridgeToken(common.HexToAddress(tokenAddr), client)
 		if nil != err {
@@ -92,7 +92,7 @@ func GetBalance(client ethinterface.EthClientSpec, tokenAddr, owner string) (str
 		return balance.String(), nil
 	}
 
-	/ ET 
+	//  ETH  
 	balance, err := client.BalanceAt(context.Background(), common.HexToAddress(owner), nil)
 	if nil != err {
 		return "", err

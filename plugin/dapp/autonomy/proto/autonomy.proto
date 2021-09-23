@@ -11,26 +11,30 @@ import "rule.proto";
 import "change.proto";
 
 package types;
-option go_package = "../types";
 
 // message for execs.Autonomy
 message AutonomyAction {
     oneof value {
+        //        
         ProposalBoard          propBoard      = 1;
         RevokeProposalBoard    rvkPropBoard   = 2;
         VoteProposalBoard      votePropBoard  = 3;
         TerminateProposalBoard tmintPropBoard = 4;
+        //       
         ProposalProject          propProject        = 5;
         RevokeProposalProject    rvkPropProject     = 6;
         VoteProposalProject      votePropProject    = 7;
         PubVoteProposalProject   pubVotePropProject = 8;
         TerminateProposalProject tmintPropProject   = 9;
+        //         
         ProposalRule          propRule      = 10;
         RevokeProposalRule    rvkPropRule   = 11;
         VoteProposalRule      votePropRule  = 12;
         TerminateProposalRule tmintPropRule = 13;
+        //            
         TransferFund transfer    = 14;
         Comment      commentProp = 15;
+        //          
         ProposalChange          propChange      = 16;
         RevokeProposalChange    rvkPropChange   = 17;
         VoteProposalChange      votePropChange  = 18;

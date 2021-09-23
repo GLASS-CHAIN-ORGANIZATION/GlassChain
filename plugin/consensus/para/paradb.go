@@ -12,7 +12,7 @@ import (
 )
 
 func (client *client) setLocalDb(set *types.LocalDBSet) error {
-
+	//        ，   
 	if client.isCaughtUp() {
 		set.Txid = 1
 		client.blockSyncClient.handleLocalCaughtUpMsg()
@@ -61,6 +61,7 @@ func (client *client) addLocalBlock(block *pt.ParaLocalDbBlock) error {
 	kv := &types.KeyValue{Key: key, Value: types.Encode(block)}
 	set.KV = append(set.KV, kv)
 
+	//  key    
 	key = calcTitleLastHeightKey(cfg.GetTitle())
 	kv = &types.KeyValue{Key: key, Value: types.Encode(&types.Int64{Data: block.Height})}
 	set.KV = append(set.KV, kv)
@@ -77,6 +78,7 @@ func (client *client) saveBatchLocalBlocks(blocks []*pt.ParaLocalDbBlock) error 
 		kv := &types.KeyValue{Key: key, Value: types.Encode(block)}
 		set.KV = append(set.KV, kv)
 	}
+	//save lastHeight,  key    
 	key := calcTitleLastHeightKey(cfg.GetTitle())
 	kv := &types.KeyValue{Key: key, Value: types.Encode(&types.Int64{Data: blocks[len(blocks)-1].Height})}
 	set.KV = append(set.KV, kv)
@@ -91,6 +93,7 @@ func (client *client) delLocalBlock(height int64) error {
 	kv := &types.KeyValue{Key: key, Value: nil}
 	set.KV = append(set.KV, kv)
 
+	//  key    
 	key = calcTitleLastHeightKey(cfg.GetTitle())
 	kv = &types.KeyValue{Key: key, Value: types.Encode(&types.Int64{Data: height - 1})}
 	set.KV = append(set.KV, kv)
@@ -98,6 +101,7 @@ func (client *client) delLocalBlock(height int64) error {
 	return client.setLocalDb(set)
 }
 
+// localblock        ，      block        
 func (client *client) removeLocalBlocks(curHeight int64) error {
 	cfg := client.GetAPI().GetConfig()
 	set := &types.LocalDBSet{}

@@ -5,6 +5,8 @@
 package model //nolint
 
 const (
+	// WordBitSize        ，     
 	WordBitSize = 256
+	// WordByteSize        ，      
 	WordByteSize = WordBitSize / 8
 )

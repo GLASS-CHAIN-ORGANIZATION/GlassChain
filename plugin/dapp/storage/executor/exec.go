@@ -6,8 +6,8 @@ import (
 )
 
 /*
- * 
- * （statedb （log）
+ *            
+ *       （statedb）       （log）
  */
 
 func (s *storage) Exec_ContentStorage(payload *storagetypes.ContentOnlyNotaryStorage, tx *types.Transaction, index int) (*types.Receipt, error) {

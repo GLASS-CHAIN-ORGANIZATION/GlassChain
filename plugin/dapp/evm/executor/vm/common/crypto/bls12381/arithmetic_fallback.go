@@ -33,6 +33,7 @@
 
 // +build !amd64 !blsasm,!blsadx
 
+//nolint:unparam //        golangci-linter  
 package bls12381
 
 import (

@@ -6,7 +6,6 @@ package main
 
 import (
 	"bytes"
-	"context"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -15,26 +14,19 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
-	"runtime"
 	"strconv"
-	"strings"
-	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/33cn/chain33/common"
 	"github.com/33cn/chain33/common/address"
 	"github.com/33cn/chain33/common/crypto"
-	"github.com/33cn/chain33/common/log/log15"
 	rpctypes "github.com/33cn/chain33/rpc/types"
 	"github.com/33cn/chain33/types"
 	ty "github.com/33cn/plugin/plugin/dapp/valnode/types"
-	"google.golang.org/grpc"
-	_ "google.golang.org/grpc/encoding/gzip"
 )
 
 const fee = 1e6
-const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789-=_+=/<>!@#$%^&"
+const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 var r *rand.Rand
 
@@ -50,211 +42,46 @@ func main() {
 	r = rand.New(rand.NewSource(time.Now().UnixNano()))
 	argsWithoutProg := os.Args[1:]
 	switch argsWithoutProg[0] {
-	case "-h": 
+	case "-h": //    
 		LoadHelp()
 	case "perf":
 		if len(argsWithoutProg) != 6 {
-			fmt.Print(errors.New("Parameter error").Error())
+			fmt.Print(errors.New("    ").Error())
 			return
 		}
 		Perf(argsWithoutProg[1], argsWithoutProg[2], argsWithoutProg[3], argsWithoutProg[4], argsWithoutProg[5])
 	case "put":
 		if len(argsWithoutProg) != 3 {
-			fmt.Print(errors.New("Parameter error").Error())
+			fmt.Print(errors.New("    ").Error())
 			return
 		}
 		Put(argsWithoutProg[1], argsWithoutProg[2], "")
 	case "get":
 		if len(argsWithoutProg) != 3 {
-			fmt.Print(errors.New("Parameter error").Error())
+			fmt.Print(errors.New("    ").Error())
 			return
 		}
 		Get(argsWithoutProg[1], argsWithoutProg[2])
 	case "valnode":
 		if len(argsWithoutProg) != 4 {
-			fmt.Print(errors.New("Parameter error").Error())
+			fmt.Print(errors.New("    ").Error())
 			return
 		}
 		ValNode(argsWithoutProg[1], argsWithoutProg[2], argsWithoutProg[3])
-	case "perfOld":
-		if len(argsWithoutProg) != 6 {
-			fmt.Print(errors.New("Parameter error").Error())
-			return
-		}
-		PerfOld(argsWithoutProg[1], argsWithoutProg[2], argsWithoutProg[3], argsWithoutProg[4], argsWithoutProg[5])
 	}
 }
 
 // LoadHelp ...
 func LoadHelp() {
 	fmt.Println("Available Commands:")
-	fmt.Println("perf [host, size, num, interval, duration]                   : Write data performance test, interval unit is 100 milliseconds, host format is ip:port")
-	fmt.Println("put  [ip, size]                                              : Write data")
-	fmt.Println("get  [ip, hash]                                              : Read data")
-	fmt.Println("valnode [ip, pubkey, power]                                  : Add/delete/modify tendermint node")
-	fmt.Println("perfOld [ip, size, num, interval, duration]                  : Not recommended, write data performance test, interval unit is 100 milliseconds")
+	fmt.Println("perf [ip, size, num, interval, duration]                     :        ")
+	fmt.Println("put  [ip, size]                                              :    ")
+	fmt.Println("get  [ip, hash]                                              :    ")
+	fmt.Println("valnode [ip, pubkey, power]                                  :   /  /  tendermint  ")
 }
 
-// Perf 
-func Perf(host, txsize, num, sleepinterval, totalduration string) {
-	var numThread int
-	numInt, err := strconv.Atoi(num)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		return
-	}
-	sleep, err := strconv.Atoi(sleepinterval)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		return
-	}
-	durInt, err := strconv.Atoi(totalduration)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		return
-	}
-	sizeInt, _ := strconv.Atoi(txsize)
-	if numInt < 10 {
-		numThread = 1
-	} else if numInt > 100 {
-		numThread = 10
-	} else {
-		numThread = numInt / 10
-	}
-	numThread = runtime.NumCPU()
-	ch := make(chan struct{}, numThread)
-	chSend := make(chan struct{}, numThread*2)
-	txChan := make(chan *types.Transaction, numInt)
-	//payload := RandStringBytes(sizeInt)
-	var blockHeight int64
-	total := int64(0)
-	success := int64(0)
-
-	go func() {
-		ch <- struct{}{}
-		conn := newGrpcConn(host)
-		defer conn.Close()
-		gcli := types.NewChain33Client(conn)
-		for {
-			height, err := getHeight(gcli)
-			if err != nil {
-				//conn.Close()
-				log.Error("getHeight", "err", err)
-				//conn = newGrpcConn(ip)
-				//gcli = types.NewChain33Client(conn)
-				time.Sleep(time.Second)
-			} else {
-				atomic.StoreInt64(&blockHeight, height)
-			}
-			time.Sleep(time.Millisecond * 500)
-		}
-	}()
-	<-ch
-
-	for i := 0; i < numThread; i++ {
-		go func() {
-			_, priv := genaddress()
-			for sec := 0; durInt == 0 || sec < durInt; sec++ {
-				height := atomic.LoadInt64(&blockHeight)
-				for txs := 0; txs < numInt/numThread; txs++ {
-					//Structuring a deposit transaction
-					tx := txPool.Get().(*types.Transaction)
-					tx.To = execAddr
-					tx.Fee = rand.Int63()
-					tx.Nonce = time.Now().UnixNano()
-					tx.Expire = height + types.TxHeightFlag + types.LowAllowPackHeight
-					tx.Payload = RandStringBytes(sizeInt)
-					//Transaction signature
-					tx.Sign(types.SECP256K1, priv)
-					txChan <- tx
-				}
-				if sleep > 0 {
-					time.Sleep(100 * time.Millisecond * time.Duration(sleep))
-				}
-			}
-			ch <- struct{}{}
-		}()
-	}
-
-	for i := 0; i < numThread*2; i++ {
-		go func() {
-			conn := newGrpcConn(host)
-			defer conn.Close()
-			gcli := types.NewChain33Client(conn)
-
-			for tx := range txChan {
-				_, err := gcli.SendTransaction(context.Background(), tx, grpc.UseCompressor("gzip"))
-
-				txPool.Put(tx)
-				atomic.AddInt64(&total, 1)
-				if err != nil {
-					if strings.Contains(err.Error(), "ErrTxExpire") {
-						continue
-					}
-					if strings.Contains(err.Error(), "ErrMemFull") {
-						time.Sleep(time.Second)
-						continue
-					}
-
-					log.Error("sendtx", "err", err)
-					time.Sleep(time.Second)
-					//conn.Close()
-					//conn = newGrpcConn(ip)
-					//gcli = types.NewChain33Client(conn)
-				} else {
-					atomic.AddInt64(&success, 1)
-				}
-			}
-			chSend <- struct{}{}
-		}()
-	}
-
-	for j := 0; j < numThread; j++ {
-		<-ch
-	}
-	close(txChan)
-	for k := 0; k < numThread*2; k++ {
-		<-chSend
-	}
-
-	log.Info("sendtx total tx", "total", total)
-
-	log.Info("sendtx success tx", "success", success)
-}
-
-var (
-	log      = log15.New()
-	execAddr = address.ExecAddress("user.write")
-)
-
-func getHeight(gcli types.Chain33Client) (int64, error) {
-	header, err := gcli.GetLastHeader(context.Background(), &types.ReqNil{})
-	if err != nil {
-		log.Error("getHeight", "err", err)
-		return 0, err
-	}
-	return header.Height, nil
-}
-
-var txPool = sync.Pool{
-	New: func() interface{} {
-		tx := &types.Transaction{Execer: []byte("user.write")}
-		return tx
-	},
-}
-
-func newGrpcConn(host string) *grpc.ClientConn {
-	conn, err := grpc.Dial(host, grpc.WithInsecure())
-	for err != nil {
-		log.Error("grpc dial", "err", err)
-		time.Sleep(time.Millisecond * 100)
-		conn, err = grpc.Dial(host, grpc.WithInsecure())
-	}
-	return conn
-}
-
-// PerfOld ...
-func PerfOld(ip, size, num, interval, duration string) {
+// Perf ...
+func Perf(ip, size, num, interval, duration string) {
 	var numThread int
 	numInt, err := strconv.Atoi(num)
 	if err != nil {
@@ -294,7 +121,7 @@ func PerfOld(ip, size, num, interval, duration string) {
 					Put(ip, size, common.ToHex(priv.Bytes()))
 					txCount++
 				}
-				time.Sleep(100 * time.Millisecond * time.Duration(intervalInt))
+				time.Sleep(time.Second * time.Duration(intervalInt))
 				sec += intervalInt
 			}
 			ch <- struct{}{}
@@ -318,9 +145,9 @@ func Put(ip string, size string, privkey string) {
 		privkey = common.ToHex(priv.Bytes())
 	}
 	payload := RandStringBytes(sizeInt)
-	//fmt.Println("payload:", common.ToHex(payload))
+	//fmt.Println("payload:", common.ToHex([]byte(payload)))
 
-	tx := &types.Transaction{Execer: []byte("user.write"), Payload: payload, Fee: 1e6}
+	tx := &types.Transaction{Execer: []byte("user.write"), Payload: []byte(payload), Fee: 1e6}
 	tx.To = address.ExecAddress("user.write")
 	tx.Expire = TxHeightOffset + types.TxHeightFlag
 	tx.Sign(types.SECP256K1, getprivkey(privkey))
@@ -426,13 +253,13 @@ func genaddress() (string, crypto.PrivKey) {
 }
 
 // RandStringBytes ...
-func RandStringBytes(n int) []byte {
+func RandStringBytes(n int) string {
 	b := make([]byte, n)
 	rand.Seed(time.Now().UnixNano())
 	for i := range b {
 		b[i] = letterBytes[rand.Intn(len(letterBytes))]
 	}
-	return b
+	return string(b)
 }
 
 // ValNode ...

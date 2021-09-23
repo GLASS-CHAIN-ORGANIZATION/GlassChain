@@ -43,15 +43,15 @@ var (
 	validatorNodes                  = []string{"127.0.0.1:46656"}
 	isValidator                     = false
 
-	dposDelegateNum          int64 = 3 
-	dposBlockInterval        int64 = 3 
-	dposContinueBlockNum     int64 = 6 
+	dposDelegateNum          int64 = 3 //      ，     ，            
+	dposBlockInterval        int64 = 3 //    ，   3s
+	dposContinueBlockNum     int64 = 6 //         ，         
 	dposCycle                      = dposDelegateNum * dposBlockInterval * dposContinueBlockNum
 	dposPeriod                     = dposBlockInterval * dposContinueBlockNum
 	zeroHash                 [32]byte
 	dposPort                       = "36656"
-	shuffleType              int32 = dposShuffleTypeOrderByVrfInfo 
-	whetherUpdateTopN              = false                         
+	shuffleType              int32 = dposShuffleTypeOrderByVrfInfo //shuffleType 1          ， 2    vrf          
+	whetherUpdateTopN              = false                         //    topN，   true，             topN  ;   false，            ，       
 	blockNumToUpdateDelegate int64 = 20000
 	registTopNHeightLimit    int64 = 100
 	updateTopNHeightLimit    int64 = 200
@@ -189,6 +189,7 @@ func New(cfg *types.Consensus, sub []byte) queue.Module {
 		//return nil
 	}
 
+	//    VRF，    SECP256K1      
 	cr, err := crypto.New(types.GetSignName("", types.SECP256K1))
 	if err != nil {
 		dposlog.Error("NewDPosClient", "err", err)
@@ -197,6 +198,7 @@ func New(cfg *types.Consensus, sub []byte) queue.Module {
 
 	ttypes.ConsensusCrypto = cr
 
+	//         ed25519
 	cr2, err := crypto.New(types.GetSignName("", types.ED25519))
 	if err != nil {
 		dposlog.Error("NewDPosClient", "err", err)
@@ -270,7 +272,7 @@ const DebugCatchup = false
 
 // StartConsensus a routine that make the consensus start
 func (client *Client) StartConsensus() {
-
+	//             
 	hint := time.NewTicker(5 * time.Second)
 	beg := time.Now()
 	block, err := client.RequestLastBlock()
@@ -292,6 +294,7 @@ OuterLoop:
 	}
 	hint.Stop()
 
+	//       ，    ，        ，           。
 	if !isValidator {
 		dposlog.Info("This node is not a validator,does not join the consensus, just syncs blocks from validators")
 		client.InitBlock()
@@ -370,6 +373,7 @@ OuterLoop:
 
 	client.node = node
 
+	//       ，        ，         ,              。
 	if client.isDelegator {
 		client.InitBlock()
 		time.Sleep(time.Second * 2)
@@ -408,17 +412,18 @@ func (client *Client) GetGenesisBlockTime() int64 {
 // CreateGenesisTx ...
 func (client *Client) CreateGenesisTx() (ret []*types.Transaction) {
 	var tx types.Transaction
-	tx.Execer = []byte(client.GetAPI().GetConfig().GetCoinExec())
+	tx.Execer = []byte("coins")
 	tx.To = genesis
 	//gen payload
 	g := &cty.CoinsAction_Genesis{}
 	g.Genesis = &types.AssetsGenesis{}
-	g.Genesis.Amount = 1e8 * client.GetAPI().GetConfig().GetCoinPrecision()
+	g.Genesis.Amount = 1e8 * types.Coin
 	tx.Payload = types.Encode(&cty.CoinsAction{Value: g, Ty: cty.CoinsActionGenesis})
 	ret = append(ret, &tx)
 	return
 }
 
+// CheckBlock          
 func (client *Client) CheckBlock(parent *types.Block, current *types.BlockDetail) error {
 	return nil
 }
@@ -444,6 +449,7 @@ func (client *Client) CreateBlock() {
 			emptyBlock.TxHash = zeroHash[:]
 			emptyBlock.BlockTime = client.blockTime
 			err := client.WriteBlock(lastBlock.StateHash, emptyBlock)
+			//            ，      mempool    
 			if err != nil {
 				return
 			}
@@ -461,6 +467,7 @@ func (client *Client) CreateBlock() {
 	client.AddTxsToBlock(&newblock, txs)
 	newblock.Difficulty = cfg.GetP(0).PowLimitBits
 
+	//                TxHash
 	if cfg.IsFork(newblock.Height, "ForkRootHash") {
 		newblock.Txs = types.TransactionSort(newblock.Txs)
 	}
@@ -468,6 +475,7 @@ func (client *Client) CreateBlock() {
 	newblock.BlockTime = client.blockTime
 
 	err := client.WriteBlock(lastBlock.StateHash, &newblock)
+	//            ，      mempool    
 	if err != nil {
 		return
 	}
@@ -777,6 +785,7 @@ func (client *Client) GetNode() *Node {
 	return client.node
 }
 
+//CmpBestBlock   newBlock       
 func (client *Client) CmpBestBlock(newBlock *types.Block, cmpBlock *types.Block) bool {
 	return false
 }

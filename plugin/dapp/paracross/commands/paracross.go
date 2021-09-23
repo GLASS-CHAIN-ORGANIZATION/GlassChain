@@ -7,11 +7,9 @@ package commands
 import (
 	"encoding/hex"
 	"fmt"
+	"math"
 	"os"
 	"strings"
-
-	cmdtypes "github.com/33cn/chain33/system/dapp/commands/types"
-	"github.com/pkg/errors"
 
 	"github.com/33cn/chain33/rpc/jsonclient"
 	rpctypes "github.com/33cn/chain33/rpc/types"
@@ -116,21 +114,15 @@ func createAssetWithdraw(cmd *cobra.Command, args []string) {
 }
 
 func createAssetTx(cmd *cobra.Command, isWithdraw bool) (string, error) {
-	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
-	cfg, err := cmdtypes.GetChainConfig(rpcLaddr)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, errors.Wrapf(err, "GetChainConfig"))
-		return "", err
-	}
+	title, _ := cmd.Flags().GetString("title")
+	//  cfg    FormatTx   ，     ，                ，  title        ，           
+	cfg := types.GetCliSysParam(title)
+
 	amount, _ := cmd.Flags().GetFloat64("amount")
 	if amount < 0 {
 		return "", types.ErrAmount
 	}
-	amountInt64, err := types.FormatFloatDisplay2Value(amount, cfg.CoinPrecision)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, errors.Wrapf(err, "FormatFloatDisplay2Value.amount"))
-		return "", err
-	}
+	amountInt64 := int64(math.Trunc((amount+0.0000001)*1e4)) * 1e4
 
 	toAddr, _ := cmd.Flags().GetString("to")
 	note, _ := cmd.Flags().GetString("note")
@@ -141,6 +133,7 @@ func createAssetTx(cmd *cobra.Command, isWithdraw bool) (string, error) {
 		fmt.Fprintln(os.Stderr, "title is not right, title format like `user.p.guodun.`")
 		return "", types.ErrInvalidParam
 	}
+	execName := paraName + pt.ParaX
 
 	param := types.CreateTx{
 		To:          toAddr,
@@ -150,9 +143,9 @@ func createAssetTx(cmd *cobra.Command, isWithdraw bool) (string, error) {
 		IsWithdraw:  isWithdraw,
 		IsToken:     false,
 		TokenSymbol: symbol,
-		ExecName:    types.GetExecName(pt.ParaX, paraName),
+		ExecName:    execName,
 	}
-	tx, err := pt.CreateRawAssetTransferTxExt(cfg.ChainID, cfg.MinTxFeeRate, &param)
+	tx, err := pt.CreateRawAssetTransferTx(cfg, &param)
 	if err != nil {
 		return "", err
 	}
@@ -279,22 +272,12 @@ func createCrossAssetTransfer(cmd *cobra.Command, args []string) {
 	note, _ := cmd.Flags().GetString("note")
 	symbol, _ := cmd.Flags().GetString("symbol")
 	amount, _ := cmd.Flags().GetFloat64("amount")
-	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
-	cfg, err := cmdtypes.GetChainConfig(rpcLaddr)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, errors.Wrapf(err, "GetChainConfig"))
-		return
-	}
 
 	if amount < 0 {
 		fmt.Fprintln(os.Stderr, "amount < 0")
 		return
 	}
-	amountInt64, err := types.FormatFloatDisplay2Value(amount, cfg.CoinPrecision)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, errors.Wrapf(err, "FormatFloatDisplay2Value.amount"))
-		return
-	}
+	amountInt64 := int64(math.Trunc((amount+0.0000001)*1e4)) * 1e4
 
 	paraName, _ := cmd.Flags().GetString("paraName")
 	if !strings.HasPrefix(paraName, "user.p") {
@@ -316,9 +299,10 @@ func createCrossAssetTransfer(cmd *cobra.Command, args []string) {
 		Payload:    types.MustPBToJSON(&config),
 	}
 
+	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
 	var res string
 	ctx := jsonclient.NewRPCCtx(rpcLaddr, "Chain33.CreateTransaction", params, &res)
-	_, err = ctx.RunResult()
+	_, err := ctx.RunResult()
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -374,25 +358,14 @@ func createNodeJoinTx(cmd *cobra.Command, args []string) {
 		fmt.Fprintln(os.Stderr, "paraName is not right, paraName format like `user.p.guodun.`")
 		return
 	}
-	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
-	cfg, err := cmdtypes.GetChainConfig(rpcLaddr)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, errors.Wrapf(err, "GetChainConfig"))
-		return
-	}
-	coinsInt64, err := types.FormatFloatDisplay2Value(coins, cfg.CoinPrecision)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, errors.Wrapf(err, "FormatFloatDisplay2Value.coins"))
-		return
-	}
-
-	payload := &pt.ParaNodeAddrConfig{Title: paraName, Op: 1, Addr: opAddr, CoinsFrozen: coinsInt64}
+	payload := &pt.ParaNodeAddrConfig{Title: paraName, Op: 1, Addr: opAddr, CoinsFrozen: int64(math.Trunc((coins+0.0000001)*1e4)) * 1e4}
 	params := &rpctypes.CreateTxIn{
 		Execer:     getRealExecName(paraName, pt.ParaX),
 		ActionName: "NodeConfig",
 		Payload:    types.MustPBToJSON(payload),
 	}
 
+	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
 	ctx := jsonclient.NewRPCCtx(rpcLaddr, "Chain33.CreateTransaction", params, nil)
 	ctx.RunWithoutMarshal()
 }
@@ -923,25 +896,14 @@ func nodeGroupApply(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
-	cfg, err := cmdtypes.GetChainConfig(rpcLaddr)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, errors.Wrapf(err, "GetChainConfig"))
-		return
-	}
-	coinsInt64, err := types.FormatFloatDisplay2Value(coins, cfg.CoinPrecision)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, errors.Wrapf(err, "FormatFloatDisplay2Value.coins"))
-		return
-	}
-
-	payload := &pt.ParaNodeGroupConfig{Title: paraName, Op: 1, Addrs: addrs, BlsPubKeys: blspubs, CoinsFrozen: coinsInt64}
+	payload := &pt.ParaNodeGroupConfig{Title: paraName, Op: 1, Addrs: addrs, BlsPubKeys: blspubs, CoinsFrozen: int64(math.Trunc((coins+0.0000001)*1e4)) * 1e4}
 	params := &rpctypes.CreateTxIn{
 		Execer:     getRealExecName(paraName, pt.ParaX),
 		ActionName: "NodeGroupConfig",
 		Payload:    types.MustPBToJSON(payload),
 	}
 
+	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
 	ctx := jsonclient.NewRPCCtx(rpcLaddr, "Chain33.CreateTransaction", params, nil)
 	ctx.RunWithoutMarshal()
 }
@@ -964,24 +926,15 @@ func nodeGroupApprove(cmd *cobra.Command, args []string) {
 		fmt.Fprintln(os.Stderr, "paraName is not right, paraName format like `user.p.guodun.`")
 		return
 	}
-	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
-	cfg, err := cmdtypes.GetChainConfig(rpcLaddr)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, errors.Wrapf(err, "GetChainConfig"))
-		return
-	}
-	coinsInt64, err := types.FormatFloatDisplay2Value(coins, cfg.CoinPrecision)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, errors.Wrapf(err, "FormatFloatDisplay2Value.coins"))
-		return
-	}
-	payload := &pt.ParaNodeGroupConfig{Title: paraName, Op: 2, Id: id, CoinsFrozen: coinsInt64}
+
+	payload := &pt.ParaNodeGroupConfig{Title: paraName, Op: 2, Id: id, CoinsFrozen: int64(math.Trunc((coins+0.0000001)*1e4)) * 1e4}
 	params := &rpctypes.CreateTxIn{
 		Execer:     getRealExecName(paraName, pt.ParaX),
 		ActionName: "NodeGroupConfig",
 		Payload:    types.MustPBToJSON(payload),
 	}
 
+	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
 	ctx := jsonclient.NewRPCCtx(rpcLaddr, "Chain33.CreateTransaction", params, nil)
 	ctx.RunWithoutMarshal()
 }
@@ -1044,24 +997,14 @@ func nodeGroupModify(cmd *cobra.Command, args []string) {
 		fmt.Fprintln(os.Stderr, "paraName is not right, paraName format like `user.p.guodun.`")
 		return
 	}
-	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
-	cfg, err := cmdtypes.GetChainConfig(rpcLaddr)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, errors.Wrapf(err, "GetChainConfig"))
-		return
-	}
-	coinsInt64, err := types.FormatFloatDisplay2Value(coins, cfg.CoinPrecision)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, errors.Wrapf(err, "FormatFloatDisplay2Value.coins"))
-		return
-	}
-	payload := &pt.ParaNodeGroupConfig{Title: paraName, Op: 4, CoinsFrozen: coinsInt64}
+	payload := &pt.ParaNodeGroupConfig{Title: paraName, Op: 4, CoinsFrozen: int64(math.Trunc((coins+0.0000001)*1e4)) * 1e4}
 	params := &rpctypes.CreateTxIn{
 		Execer:     getRealExecName(paraName, pt.ParaX),
 		ActionName: "NodeGroupConfig",
 		Payload:    types.MustPBToJSON(payload),
 	}
 
+	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
 	ctx := jsonclient.NewRPCCtx(rpcLaddr, "Chain33.CreateTransaction", params, nil)
 	ctx.RunWithoutMarshal()
 }
@@ -1484,7 +1427,7 @@ func GetSelfConsOneStageCmd() *cobra.Command {
 	return cmd
 }
 
-// QuerySelfStagesCmd 
+// QuerySelfStagesCmd         
 func QuerySelfStagesCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "query",

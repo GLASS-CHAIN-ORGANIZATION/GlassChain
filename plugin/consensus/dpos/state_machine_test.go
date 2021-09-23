@@ -19,9 +19,9 @@ func init() {
 	setParams(3, 3, 6)
 }
 func setParams(delegateNum int64, blockInterval int64, continueBlockNum int64) {
-	dposDelegateNum = delegateNum           
-	dposBlockInterval = blockInterval       
-	dposContinueBlockNum = continueBlockNum 
+	dposDelegateNum = delegateNum           //      ，     ，            
+	dposBlockInterval = blockInterval       //    ，   3s
+	dposContinueBlockNum = continueBlockNum //         ，         
 	dposCycle = dposDelegateNum * dposBlockInterval * dposContinueBlockNum
 	dposPeriod = dposBlockInterval * dposContinueBlockNum
 }

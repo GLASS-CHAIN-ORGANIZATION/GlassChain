@@ -6,17 +6,17 @@ import (
 )
 
 /*
-1. solo   
-2.    
+1. solo   ，          
+2.          ：  ，       ，        
 */
 
-//ParaNode 
+//ParaNode             
 type ParaNode struct {
 	Main *testnode.Chain33Mock
 	Para *testnode.Chain33Mock
 }
 
-//NewParaNode 
+//NewParaNode          
 func NewParaNode(main *testnode.Chain33Mock, para *testnode.Chain33Mock) *ParaNode {
 	if main == nil {
 		main = testnode.New("", nil)
@@ -31,7 +31,7 @@ func NewParaNode(main *testnode.Chain33Mock, para *testnode.Chain33Mock) *ParaNo
 	return &ParaNode{Main: main, Para: para}
 }
 
-//Close 
+//Close     
 func (node *ParaNode) Close() {
 	node.Para.Close()
 	node.Main.Close()

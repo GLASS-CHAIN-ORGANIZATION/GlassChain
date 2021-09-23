@@ -22,10 +22,10 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-// ,  
-// 
-//   Height 9  withdraw 
-//   Height 10 committed, 
+//       ,     1   
+//     
+//   Height 9  withdraw   
+//   Height 10  committed,       
 //
 
 type AssetWithdrawTestSuite struct {
@@ -43,7 +43,7 @@ func TestAssetWithdrawSuite(t *testing.T) {
 
 func (suite *AssetWithdrawTestSuite) SetupTest() {
 	suite.stateDB, _ = dbm.NewGoMemDB("state", "state", 1024)
-	// memdb KVD ， Exec ，  memdb
+	// memdb    KVDB  ，     Exec ，     memdb
 	//suite.localDB, _ = dbm.NewGoMemDB("local", "local", 1024)
 	suite.localDB = new(dbmock.KVDB)
 	suite.api = new(apimock.QueueProtocolAPI)
@@ -90,7 +90,7 @@ func (suite *AssetWithdrawTestSuite) SetupTest() {
 		&types.ReplyHash{Hash: MainBlockHash10}, nil)
 }
 
-// 
+//       
 func (suite *AssetWithdrawTestSuite) TestExecAssetWithdrawOnMainChain() {
 	//types.Init("test", nil)
 	suite.api = new(apimock.QueueProtocolAPI)
@@ -110,12 +110,12 @@ func (suite *AssetWithdrawTestSuite) TestExecAssetWithdrawOnMainChain() {
 	assert.Nil(suite.T(), receipt, "mainChain not exec withdraw, wait for paraChain")
 }
 
-// 
+//      
 func (suite *AssetWithdrawTestSuite) TestExecAssetWithdrawOnParaChain() {
 	// para_init(Title)
 	// make coins for transfer
 
-	total := 1000 * types.DefaultCoinPrecision
+	total := 1000 * types.Coin
 	accountA := types.Account{
 		Balance: total,
 		Frozen:  0,
@@ -148,7 +148,7 @@ func (suite *AssetWithdrawTestSuite) TestExecAssetWithdrawOnParaChain() {
 	}
 }
 
-// 
+//              
 func (suite *AssetWithdrawTestSuite) TestExecAssetWithdrawAfterPara() {
 	// types.Init("test", nil)
 	suite.api = new(apimock.QueueProtocolAPI)
@@ -159,9 +159,9 @@ func (suite *AssetWithdrawTestSuite) TestExecAssetWithdrawAfterPara() {
 	acc := account.NewCoinsAccount(chain33TestCfg)
 	acc.SetDB(suite.stateDB)
 
-	total := 10 * types.DefaultCoinPrecision
-	pp := 5 * types.DefaultCoinPrecision
-	pb := 5 * types.DefaultCoinPrecision
+	total := 10 * types.Coin
+	pp := 5 * types.Coin
+	pb := 5 * types.Coin
 	addrPara := address.ExecAddress(Title + pt.ParaX)
 	addrMain := address.ExecAddress(pt.ParaX)
 	addrB := string(Nodes[1])
@@ -229,7 +229,7 @@ func (suite *AssetWithdrawTestSuite) TestExecWithdrawFailedOnPara() {
 
 	addrPara := address.ExecAddress(Title + pt.ParaX)
 
-	total := 1000 * types.DefaultCoinPrecision
+	total := 1000 * types.Coin
 	accountA := types.Account{
 		Balance: 0,
 		Frozen:  0,

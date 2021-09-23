@@ -97,7 +97,7 @@ func (c *Paracross) saveLocalParaTxs(tx *types.Transaction, isDel bool) (*types.
 
 }
 
-/ commit t  commitDone 
+//     commit tx  ， commitDone       
 func (c *Paracross) saveLocalParaTxsFork(commitDone *pt.ReceiptParacrossDone, isDel bool) (*types.LocalDBSet, error) {
 	status := &pt.ParacrossNodeStatus{
 		MainBlockHash:   commitDone.MainBlockHash,
@@ -149,7 +149,7 @@ func (c *Paracross) udpateLocalParaTxs(paraTitle string, paraHeight int64, cross
 				clog.Crit("udpateLocalParaTxs getCrossAction failed", "error", err)
 				return nil, err
 			}
-			/  transfe 
+			//     ，            transfer  
 			if act == pt.ParacrossMainAssetTransfer || act == pt.ParacrossParaAssetWithdraw {
 				kv, err := c.updateLocalAssetTransfer(paraTx.Tx, paraHeight, success, isDel)
 				if err != nil {
@@ -157,7 +157,7 @@ func (c *Paracross) udpateLocalParaTxs(paraTitle string, paraHeight int64, cross
 				}
 				set.KV = append(set.KV, kv)
 			}
-			/  withdra 
+			//     ，             withdraw  
 			if act == pt.ParacrossMainAssetWithdraw || act == pt.ParacrossParaAssetTransfer {
 				asset, err := c.getCrossAssetTransferInfo(payload.GetCrossAssetTransfer(), paraTx.Tx, act)
 				if err != nil {
@@ -194,7 +194,7 @@ func (c *Paracross) udpateLocalParaTxs(paraTitle string, paraHeight int64, cross
 }
 
 func (c *Paracross) getAssetTransferInfo(tx *types.Transaction, coinToken string, isWithdraw bool) (*pt.ParacrossAsset, error) {
-	exec := c.GetAPI().GetConfig().GetCoinExec()
+	exec := "coins"
 	symbol := types.BTY
 	if coinToken != "" {
 		exec = "token"
@@ -223,7 +223,7 @@ func (c *Paracross) getCrossAssetTransferInfo(payload *pt.CrossAssetTransfer, tx
 	symbol := payload.AssetSymbol
 	if payload.AssetSymbol == "" {
 		symbol = types.BTY
-		exec = c.GetAPI().GetConfig().GetCoinExec()
+		exec = "coins"
 	}
 
 	amount, err := tx.Amount()
@@ -311,27 +311,27 @@ func (c *Paracross) updateLocalAssetTransfer(tx *types.Transaction, paraHeight i
 
 //IsFriend call exec is same seariase exec
 func (c *Paracross) IsFriend(myexec, writekey []byte, tx *types.Transaction) bool {
-	/ 
+	//      
 	cfg := c.GetAPI().GetConfig()
 	if cfg.IsPara() {
 		return false
 	}
-	//friend 
+	//friend           
 	if string(myexec) != c.GetDriverName() {
 		return false
 	}
-	/ （tx  paracross）
+	//          （tx      paracross）
 	if string(types.GetRealExecName(tx.Execer)) != c.GetDriverName() {
 		return false
 	}
-	/ 
+	//       
 	return c.allow(tx, 0) == nil
 }
 
 func (c *Paracross) allow(tx *types.Transaction, index int) error {
-	// : titl  asset-transfer/asset-withdraw 
+	//       :         title  asset-transfer/asset-withdraw       
 	// 1. user.p.${tilte}.${paraX}
-	// 1. payload  actionType = t/w
+	// 1. payload   actionType = t/w
 	cfg := c.GetAPI().GetConfig()
 	if !cfg.IsPara() && c.allowIsParaTx(tx.Execer) {
 		var payload pt.ParacrossAction
@@ -342,8 +342,8 @@ func (c *Paracross) allow(tx *types.Transaction, index int) error {
 		if payload.Ty == pt.ParacrossActionAssetTransfer || payload.Ty == pt.ParacrossActionAssetWithdraw {
 			return nil
 		}
-		/ feature  non  non 
-		/   for ForkRootHash ，
+		//       feature，           ，   none   ，            none   
+		//          ，                 ，         fork  ForkRootHash，             ，
 		if cfg.IsDappFork(c.GetHeight(), pt.ParaX, pt.ForkCommitTx) {
 			if payload.Ty == pt.ParacrossActionCommit || payload.Ty == pt.ParacrossActionNodeConfig ||
 				payload.Ty == pt.ParacrossActionNodeGroupApply {
@@ -361,12 +361,12 @@ func (c *Paracross) allow(tx *types.Transaction, index int) error {
 
 // Allow add paracross allow rule
 func (c *Paracross) Allow(tx *types.Transaction, index int) error {
-	/ 
+	//    
 	err := c.DriverBase.Allow(tx, index)
 	if err == nil {
 		return nil
 	}
-	//paracross 
+	//paracross      
 	return c.allow(tx, index)
 }
 

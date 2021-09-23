@@ -15,7 +15,7 @@ var (
 )
 
 // log for x2ethereum
-// lo i 
+// log  id 
 const (
 	TyUnknownLog = iota + 100
 	TyEth2Chain33Log
@@ -32,7 +32,7 @@ const (
 	TyWithdrawFromExecLog
 )
 
-// actio i name 
+// action  id name，           
 const (
 	TyUnknowAction = iota + 100
 	TyEth2Chain33Action

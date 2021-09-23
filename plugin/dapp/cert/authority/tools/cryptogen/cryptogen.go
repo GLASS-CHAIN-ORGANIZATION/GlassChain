@@ -19,7 +19,9 @@ import (
 )
 
 const (
+	// CONFIGFILENAME      
 	CONFIGFILENAME = "chain33.cryptogen.yaml"
+	// OUTPUTDIR         
 	OUTPUTDIR = "./authdir/crypto"
 )
 

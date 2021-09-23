@@ -17,12 +17,12 @@ import (
 )
 
 const (
-	maxRollbackHeight      = 10000    
-	defaultInvNumPerJob    = 20       
-	defaultJobBufferNum    = 20       
-	maxBlockSize           = 20000000 
-	downTimesFastThreshold = 450      
-	downTimesSlowThreshold = 30       
+	maxRollbackHeight      = 10000    //             
+	defaultInvNumPerJob    = 20       // 20inv task per job
+	defaultJobBufferNum    = 20       // channel buffer num for done job process
+	maxBlockSize           = 20000000 //   1000block size    20M     localdb
+	downTimesFastThreshold = 450      //    server     450 ，  20  20s   ，  7               
+	downTimesSlowThreshold = 30       //    server  30 ，    server 15 ，    
 	maxServerRspTimeout    = 15
 )
 
@@ -33,6 +33,7 @@ type connectCli struct {
 	timeout   uint32
 }
 
+//invertory           ，      MaxBlockCountPerTime
 type inventory struct {
 	start     int64
 	end       int64
@@ -176,6 +177,7 @@ func (m *multiDldClient) getConns(inv *inventory) error {
 	return nil
 }
 
+//     ，             ，      ，       
 func (m *multiDldClient) tryMultiServerDownload() {
 	curMainHeight, err := m.paraClient.GetLastHeightOnMainChain()
 	if err != nil {
@@ -183,12 +185,14 @@ func (m *multiDldClient) tryMultiServerDownload() {
 		return
 	}
 
+	//       ，         
 	_, localBlock, err := m.paraClient.switchLocalHashMatchedBlock()
 	if err != nil {
 		plog.Error("tryMultiServerDownload switch local height", "err", err.Error())
 		return
 	}
 
+	//           ， curMainHeight 10000   buffer
 	totalInvs := m.getInvs(localBlock.MainHeight+1, curMainHeight-maxRollbackHeight)
 	totalInvsNum := int64(len(totalInvs))
 	if totalInvsNum == 0 {
@@ -196,6 +200,7 @@ func (m *multiDldClient) tryMultiServerDownload() {
 		return
 	}
 
+	//    IP   
 	err = m.getConns(totalInvs[0])
 	if err != nil {
 		return
@@ -290,6 +295,7 @@ func (d *downloadJob) process() {
 			}
 			d.mDldCli.paraClient.blockSyncClient.handleLocalChangedMsg()
 		} else {
+			//block        ，     ，panic     
 			err := d.mDldCli.paraClient.procLocalAddBlocks(inv.txs)
 			if err != nil {
 				panic(err)
@@ -315,14 +321,14 @@ func (d *downloadJob) getPreVerifyBlock(inv *inventory) (*types.ParaTxDetail, er
 }
 
 func (d *downloadJob) verifyDownloadBlock(inv *inventory, blocks *types.ParaTxDetails) error {
-
+	//        
 	err := verifyMainBlocksInternal(blocks)
 	if err != nil {
 		plog.Error("verifyDownloadBlock internal", "ip", inv.connCli.ip)
 		return err
 	}
 
-
+	//         
 	verifyBlock, err := d.getPreVerifyBlock(inv)
 	if err != nil {
 		plog.Error("verifyDownloadBlock.getPreVerifyBlock", "ip", inv.connCli.ip)
@@ -351,6 +357,7 @@ func (d *downloadJob) checkInv(lastRetry, pre *types.ParaTxDetail, inv *inventor
 
 }
 
+//    job   invs       ，              ，  retry，retry     inv      ，         
 func (d *downloadJob) verifyInvs() []*inventory {
 	var retryItems []*inventory
 	pre := d.parentBlock
@@ -410,6 +417,7 @@ func requestMainBlocks(cfg *types.Chain33Config, inv *inventory) (*types.ParaTxD
 		}
 	}
 
+	//           
 	return validMainBlocks(txs), nil
 }
 
@@ -463,6 +471,7 @@ func (d *downloadJob) getInvBlocks(inv *inventory, connPool chan *connectCli) {
 			return
 		}
 
+		//save    save db，      save db
 		if inv.isSaveDb {
 			d.mDldCli.paraClient.saveBatchMainBlocks(txs)
 		} else {
@@ -502,6 +511,7 @@ func (d *downloadJob) getInvs(invs []*inventory) {
 		go d.getInvBlocks(inv, connPool)
 
 	}
+	//      
 	d.wg.Wait()
 }
 

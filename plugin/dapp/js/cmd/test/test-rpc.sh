@@ -29,6 +29,7 @@ function init() {
     exec_addr=$(curl -ksd '{"method":"Chain33.ConvertExectoAddr","params":[{"execname":"'${exec_name}'"}]}' ${MAIN_HTTP} | jq -r ".result")
     echo "exec_addr=${exec_addr}"
 
+    # json   \n \t     , "   json   ，     
     jsCode=$(sed 's/"/\\"/g' <./js/test.js | sed ':a;N;s/\n/\\n/g;ta' | sed 's/\t/\\t/g')
 }
 

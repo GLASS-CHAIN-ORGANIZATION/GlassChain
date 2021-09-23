@@ -18,7 +18,7 @@ func (t *token) ExecLocal_Transfer(payload *types.AssetsTransfer, tx *types.Tran
 	if err != nil {
 		return nil, err
 	}
-	// 
+	//         
 	//tokenlog.Info("ExecLocalTransWithdraw", "addr", tx.GetRealToAddr(), "asset", transfer.Cointoken)
 	kv := AddTokenToAssets(tx.GetRealToAddr(), t.GetLocalDB(), payload.Cointoken)
 	if kv != nil {
@@ -45,7 +45,7 @@ func (t *token) ExecLocal_Withdraw(payload *types.AssetsWithdraw, tx *types.Tran
 	if err != nil {
 		return nil, err
 	}
-	// 
+	//         
 	kv := AddTokenToAssets(tx.From(), t.GetLocalDB(), payload.Cointoken)
 	if kv != nil {
 		set.KV = append(set.KV, kv...)

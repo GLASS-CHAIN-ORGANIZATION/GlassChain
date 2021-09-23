@@ -6,11 +6,8 @@ package gossip
 
 import (
 	"bytes"
-	"context"
 	"encoding/binary"
 	"encoding/hex"
-	"errors"
-	"fmt"
 	"math/rand"
 	"net"
 	"strings"
@@ -98,31 +95,7 @@ func (c Comm) dialPeerWithAddress(addr *NetAddress, persistent bool, node *Node)
 	if persistent {
 		peer.MakePersistent()
 	}
-	//Set peer Name pee  peerName pid
-	resp, err := peer.mconn.gcli.Version2(context.Background(), &types.P2PVersion{
-		Nonce:    time.Now().Unix(),
-		Version:  node.nodeInfo.channelVersion,
-		AddrFrom: node.nodeInfo.GetExternalAddr().String(),
-		AddrRecv: addr.String(),
-	})
-	if err != nil {
-		peer.Close()
-		return nil, err
-	}
 
-	//check remote peer is self or  duplicate peer
-	_, pub := node.nodeInfo.addrBook.GetPrivPubKey()
-
-	if node.Has(resp.UserAgent) || resp.UserAgent == pub {
-		/ peerID ip i  
-		prepeer := node.GetRegisterPeer(resp.UserAgent)
-		log.Info("dialPeerWithAddress", "duplicate connect:", prepeer.Addr(), addr.String(), resp.GetUserAgent())
-		peer.Close()
-		return nil, errors.New(fmt.Sprintf("duplicate connect %v", resp.UserAgent))
-	}
-
-	node.peerStore.Store(addr.String(), resp.UserAgent)
-	peer.SetPeerName(resp.UserAgent)
 	return peer, nil
 }
 
@@ -142,10 +115,10 @@ func (c Comm) dialPeer(addr *NetAddress, node *Node) (*Peer, error) {
 	}
 	peer, err := c.dialPeerWithAddress(addr, persistent, node)
 	if err != nil {
-		log.Error("dialPeer", "peerAddr", addr.str, "err", err)
+		log.Error("dialPeer", "nodeListenAddr", node.nodeInfo.listenAddr.str, "peerAddr", addr.str, "err", err)
 		return nil, err
 	}
-	/  peer
+	//          peer
 	log.Debug("dialPeer", "peer", peer)
 	return peer, nil
 }

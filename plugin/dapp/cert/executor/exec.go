@@ -69,6 +69,7 @@ func (c *Cert) Exec_Normal(payload *ct.CertNormal, tx *types.Transaction, index 
 	var kv []*types.KeyValue
 	var receipt *types.Receipt
 
+	//  proto   signature
 	sn, err := authority.Author.GetSnFromByte(tx.Signature)
 	if err != nil {
 		clog.Error("Exec_Normal get sn from signature failed", "error", err)

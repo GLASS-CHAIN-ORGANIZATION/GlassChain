@@ -193,7 +193,7 @@ func GenerateRingSignature(datahash []byte, utxos []*privacytypes.UTXOBasic, pri
 	return &data, nil
 }
 
-// GenerateKeyImage 
+// GenerateKeyImage                      
 func GenerateKeyImage(privkey crypto.PrivKey, pubkey []byte) (*KeyImage, error) {
 	var image KeyImage
 	var pub PubKeyPrivacy
@@ -207,8 +207,8 @@ func GenerateKeyImage(privkey crypto.PrivKey, pubkey []byte) (*KeyImage, error) 
 	return &image, nil
 }
 
-// CheckRingSignature 
-// datahas 
+// CheckRingSignature           
+//     datahash    
 func CheckRingSignature(datahash []byte, signatures *types.RingSignatureItem, publickeys [][]byte, keyimage []byte) bool {
 	var image KeyImage
 	var pubs []*PubKeyPrivacy
@@ -217,7 +217,7 @@ func CheckRingSignature(datahash []byte, signatures *types.RingSignatureItem, pu
 	if signatures == nil || len(signatures.GetSignature()) != len(publickeys) {
 		return false
 	}
-	// 
+	//     
 	copy(image[:], keyimage)
 	count := len(publickeys)
 	pubs = make([]*PubKeyPrivacy, count)

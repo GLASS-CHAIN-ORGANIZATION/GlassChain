@@ -33,7 +33,9 @@ func TestJsVM(t *testing.T) {
 	mocker.Listen()
 
 	configCreator(mocker, t)
-
+	//      ,               
+	//          
+	//1.     
 	create := &jsproto.Create{
 		Code: jscode,
 		Name: "test",
@@ -52,6 +54,7 @@ func TestJsVM(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, txinfo.Receipt.Ty, int32(2))
 
+	//2.    hello   
 	call := &jsproto.Call{
 		Funcname: "hello",
 		Name:     "test",
@@ -70,6 +73,7 @@ func TestJsVM(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, txinfo.Receipt.Ty, int32(2))
 
+	//3. query     
 	call = &jsproto.Call{
 		Funcname: "hello",
 		Name:     "test",
@@ -93,10 +97,12 @@ func TestJsGame(t *testing.T) {
 	mocker.Listen()
 	err := mocker.SendHot()
 	assert.Nil(t, err)
-
+	//     
 	configCreator(mocker, t)
 
-
+	//      ,               
+	//          
+	//1.     
 	create := &jsproto.Create{
 		Code: gamecode,
 		Name: contractName,
@@ -116,11 +122,11 @@ func TestJsGame(t *testing.T) {
 	assert.Equal(t, txinfo.Receipt.Ty, int32(2))
 	block := mocker.GetLastBlock()
 	balance := mocker.GetAccount(block.StateHash, mocker.GetHotAddress()).Balance
-	assert.Equal(t, balance, 10000*types.DefaultCoinPrecision)
-
+	assert.Equal(t, balance, 10000*types.Coin)
+	//2.1      
 	reqtx := &rpctypes.CreateTx{
 		To:          address.ExecAddress("user.jsvm." + contractName),
-		Amount:      100 * types.DefaultCoinPrecision,
+		Amount:      100 * types.Coin,
 		Note:        "12312",
 		IsWithdraw:  false,
 		IsToken:     false,
@@ -136,11 +142,11 @@ func TestJsGame(t *testing.T) {
 	assert.Equal(t, txinfo.Receipt.Ty, int32(2))
 	block = mocker.GetLastBlock()
 	balance = mocker.GetExecAccount(block.StateHash, "user.jsvm."+contractName, mocker.GetHotAddress()).Balance
-	assert.Equal(t, 100*types.DefaultCoinPrecision, balance)
+	assert.Equal(t, 100*types.Coin, balance)
 
 	reqtx = &rpctypes.CreateTx{
 		To:          address.ExecAddress("user.jsvm." + contractName),
-		Amount:      100 * types.DefaultCoinPrecision,
+		Amount:      100 * types.Coin,
 		Note:        "12312",
 		IsWithdraw:  false,
 		IsToken:     false,
@@ -156,9 +162,9 @@ func TestJsGame(t *testing.T) {
 	assert.Equal(t, txinfo.Receipt.Ty, int32(2))
 	block = mocker.GetLastBlock()
 	balance = mocker.GetExecAccount(block.StateHash, "user.jsvm."+contractName, mocker.GetGenesisAddress()).Balance
-	assert.Equal(t, 100*types.DefaultCoinPrecision, balance)
+	assert.Equal(t, 100*types.Coin, balance)
 	t.Log(mocker.GetGenesisAddress())
-
+	//2.2    hello   (   ， nonce)
 	privhash := common.Sha256(mocker.GetHotKey().Bytes())
 	nonce := rand.Int63()
 	num := rand.Int63() % 10
@@ -168,7 +174,7 @@ func TestJsGame(t *testing.T) {
 	call := &jsproto.Call{
 		Funcname: "NewGame",
 		Name:     contractName,
-		Args:     fmt.Sprintf(`{"bet": %d, "randhash" : "%s"}`, 100*types.DefaultCoinPrecision, myhash),
+		Args:     fmt.Sprintf(`{"bet": %d, "randhash" : "%s"}`, 100*types.Coin, myhash),
 	}
 	req = &rpctypes.CreateTxIn{
 		Execer:     "user." + ptypes.JsX + "." + contractName,
@@ -187,7 +193,7 @@ func TestJsGame(t *testing.T) {
 	call = &jsproto.Call{
 		Funcname: "Guess",
 		Name:     contractName,
-		Args:     fmt.Sprintf(`{"bet": %d, "gameid" : "%d", "num" : %d}`, 1*types.DefaultCoinPrecision, gameid, num),
+		Args:     fmt.Sprintf(`{"bet": %d, "gameid" : "%d", "num" : %d}`, 1*types.Coin, gameid, num),
 	}
 	req = &rpctypes.CreateTxIn{
 		Execer:     "user." + ptypes.JsX + "." + contractName,
@@ -206,7 +212,7 @@ func TestJsGame(t *testing.T) {
 	call = &jsproto.Call{
 		Funcname: "Guess",
 		Name:     contractName,
-		Args:     fmt.Sprintf(`{"bet": %d, "gameid" : "%d", "num" : %d}`, 1*types.DefaultCoinPrecision, gameid, num+1),
+		Args:     fmt.Sprintf(`{"bet": %d, "gameid" : "%d", "num" : %d}`, 1*types.Coin, gameid, num+1),
 	}
 	req = &rpctypes.CreateTxIn{
 		Execer:     "user." + ptypes.JsX + "." + contractName,
@@ -241,7 +247,7 @@ func TestJsGame(t *testing.T) {
 	txinfo, err = mocker.WaitTx(hash)
 	assert.Nil(t, err)
 	assert.Equal(t, txinfo.Receipt.Ty, int32(2))
-
+	//3.1 query game     
 	call = &jsproto.Call{
 		Funcname: "ListGameByAddr",
 		Name:     contractName,
@@ -257,6 +263,7 @@ func TestJsGame(t *testing.T) {
 	assert.Nil(t, err)
 	t.Log(queryresult.Data)
 
+	//3.2 query match -> status   
 	call = &jsproto.Call{
 		Funcname: "JoinKey",
 		Name:     contractName,
@@ -289,7 +296,7 @@ func TestJsGame(t *testing.T) {
 }
 
 func configCreator(mocker *testnode.Chain33Mock, t *testing.T) {
-
+	//     
 	addr := address.PubKeyToAddress(mocker.GetHotKey().PubKey().Bytes()).String()
 	creator := &types.ModifyConfig{
 		Key:   "js-creator",

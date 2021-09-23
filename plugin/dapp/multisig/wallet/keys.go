@@ -7,7 +7,7 @@ package wallet
 import "fmt"
 
 const (
-	// MultisigAddr owne ，key:"multisig-addr-owneraddr, value [](multisigaddr,owneraddr,weight)
+	// MultisigAddr      owner           ，key:"multisig-addr-owneraddr, value [](multisigaddr,owneraddr,weight)
 	MultisigAddr = "multisig-addr-"
 )
 

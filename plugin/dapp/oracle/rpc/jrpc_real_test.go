@@ -5,26 +5,26 @@
  */
 
 /*
- ：
-1.sendAddPublisher manag 
-2.sendPublishEvent 
-3.queryEventByeventID I 
-4.sendAbortPublishEvent 
-5.sendPrePublishResult 
-6.sendAbortPublishResult 
-7.sendPublishResult 
- ：
-1  ：
+    ：
+1.sendAddPublisher   manage           
+2.sendPublishEvent       
+3.queryEventByeventID     ID      
+4.sendAbortPublishEvent       
+5.sendPrePublishResult        
+6.sendAbortPublishResult          
+7.sendPublishResult         
+    ：
+1.                   ，  ：
   [exec.sub.manage]
   superManager=["14KEKbYtKKQm4wMthSK9J4La4nAiidGozt"]
-2.TestPublishNomal 
-3.TestAbortPublishEvent 
-4.TestPrePublishResult  
-5.TestAbortPublishResult 
-6.TestPublishResult 
-7.TestQueryEventIDByStatus 
-8.TestQueryEventIDByAddrAndStatus 
-9.TestQueryEventIDByTypeAndStatus 
+2.TestPublishNomal       
+3.TestAbortPublishEvent       
+4.TestPrePublishResult       
+5.TestAbortPublishResult        
+6.TestPublishResult     
+7.TestQueryEventIDByStatus      
+8.TestQueryEventIDByAddrAndStatus         
+9.TestQueryEventIDByTypeAndStatus         
 */
 
 package rpc_test
@@ -373,7 +373,7 @@ func TestQueryEventIDByTypeAndStatus(t *testing.T) {
 }
 
 func sendAddPublisher(t *testing.T, jrpcClient *jsonclient.JSONClient, mocker *testnode.Chain33Mock) {
-	//1. createrawtransaction 
+	//1.   createrawtransaction     
 	req := &rpctypes.CreateTxIn{
 		Execer:     "manage",
 		ActionName: "Modify",
@@ -393,7 +393,7 @@ func sendAddPublisher(t *testing.T, jrpcClient *jsonclient.JSONClient, mocker *t
 
 func sendPublishEvent(t *testing.T, jrpcClient *jsonclient.JSONClient, mocker *testnode.Chain33Mock) (eventID string) {
 	ti := time.Now().AddDate(0, 0, 1)
-	//1. createrawtransaction 
+	//1.   createrawtransaction     
 	req := &rpctypes.CreateTxIn{
 		Execer:     oty.OracleX,
 		ActionName: "EventPublish",
@@ -539,7 +539,7 @@ func sendPublishResult(eventID string, t *testing.T, jrpcClient *jsonclient.JSON
 }
 
 func queryEventByeventID(eventID string, t *testing.T, jrpcClient *jsonclient.JSONClient, expectedStatus int32) {
-	/ I 
+	//   ID      
 	params := rpctypes.Query4Jrpc{
 		Execer:   oty.OracleX,
 		FuncName: oty.FuncNameQueryOracleListByIDs,
@@ -555,7 +555,7 @@ func queryEventByeventID(eventID string, t *testing.T, jrpcClient *jsonclient.JS
 
 func queryEventByStatus(t *testing.T, jrpcClient *jsonclient.JSONClient) {
 	for i := 1; i <= 5; i++ {
-		/ 
+		//     
 		params := rpctypes.Query4Jrpc{
 			Execer:   oty.OracleX,
 			FuncName: oty.FuncNameQueryEventIDByStatus,
@@ -566,7 +566,7 @@ func queryEventByStatus(t *testing.T, jrpcClient *jsonclient.JSONClient) {
 		assert.Nil(t, err)
 		assert.EqualValues(t, oty.DefaultCount, len(res.EventID))
 		lastEventID := res.EventID[oty.DefaultCount-1]
-		/ 
+		//     
 		params = rpctypes.Query4Jrpc{
 			Execer:   oty.OracleX,
 			FuncName: oty.FuncNameQueryEventIDByStatus,
@@ -576,7 +576,7 @@ func queryEventByStatus(t *testing.T, jrpcClient *jsonclient.JSONClient) {
 		assert.Nil(t, err)
 		assert.Equal(t, 10, len(res.EventID))
 		lastEventID = res.EventID[9]
-		/  
+		//         ,     
 		params = rpctypes.Query4Jrpc{
 			Execer:   oty.OracleX,
 			FuncName: oty.FuncNameQueryEventIDByStatus,
@@ -588,7 +588,7 @@ func queryEventByStatus(t *testing.T, jrpcClient *jsonclient.JSONClient) {
 }
 
 func queryEventByStatusAndAddr(t *testing.T, jrpcClient *jsonclient.JSONClient) {
-	/ 
+	//             
 	params := rpctypes.Query4Jrpc{
 		Execer:   oty.OracleX,
 		FuncName: oty.FuncNameQueryEventIDByAddrAndStatus,
@@ -599,7 +599,7 @@ func queryEventByStatusAndAddr(t *testing.T, jrpcClient *jsonclient.JSONClient) 
 	assert.Nil(t, err)
 	assert.EqualValues(t, oty.DefaultCount, len(res.EventID))
 	lastEventID := res.EventID[oty.DefaultCount-1]
-	/ 
+	//   
 	params = rpctypes.Query4Jrpc{
 		Execer:   oty.OracleX,
 		FuncName: oty.FuncNameQueryEventIDByAddrAndStatus,
@@ -610,7 +610,7 @@ func queryEventByStatusAndAddr(t *testing.T, jrpcClient *jsonclient.JSONClient) 
 	assert.Equal(t, 10, len(res.EventID))
 	lastEventID = res.EventID[9]
 
-	/ 
+	//         
 	params = rpctypes.Query4Jrpc{
 		Execer:   oty.OracleX,
 		FuncName: oty.FuncNameQueryEventIDByAddrAndStatus,
@@ -620,7 +620,7 @@ func queryEventByStatusAndAddr(t *testing.T, jrpcClient *jsonclient.JSONClient) 
 	err = jrpcClient.Call("Chain33.Query", params, &res)
 	assert.Equal(t, types.ErrNotFound, err)
 
-	/   
+	//       +  ，     
 	params = rpctypes.Query4Jrpc{
 		Execer:   oty.OracleX,
 		FuncName: oty.FuncNameQueryEventIDByAddrAndStatus,
@@ -631,7 +631,7 @@ func queryEventByStatusAndAddr(t *testing.T, jrpcClient *jsonclient.JSONClient) 
 }
 
 func queryEventByStatusAndType(t *testing.T, jrpcClient *jsonclient.JSONClient) {
-	/ 
+	//             
 	params := rpctypes.Query4Jrpc{
 		Execer:   oty.OracleX,
 		FuncName: oty.FuncNameQueryEventIDByTypeAndStatus,
@@ -642,7 +642,7 @@ func queryEventByStatusAndType(t *testing.T, jrpcClient *jsonclient.JSONClient) 
 	assert.Nil(t, err)
 	assert.EqualValues(t, oty.DefaultCount, len(res.EventID))
 	lastEventID := res.EventID[oty.DefaultCount-1]
-	/ 
+	//   
 	params = rpctypes.Query4Jrpc{
 		Execer:   oty.OracleX,
 		FuncName: oty.FuncNameQueryEventIDByTypeAndStatus,
@@ -653,7 +653,7 @@ func queryEventByStatusAndType(t *testing.T, jrpcClient *jsonclient.JSONClient) 
 	assert.Equal(t, 10, len(res.EventID))
 	lastEventID = res.EventID[9]
 
-	/ 
+	//         
 	params = rpctypes.Query4Jrpc{
 		Execer:   oty.OracleX,
 		FuncName: oty.FuncNameQueryEventIDByTypeAndStatus,
@@ -663,7 +663,7 @@ func queryEventByStatusAndType(t *testing.T, jrpcClient *jsonclient.JSONClient) 
 	err = jrpcClient.Call("Chain33.Query", params, &res)
 	assert.Equal(t, types.ErrNotFound, err)
 
-	/  
+	//       +     
 	params = rpctypes.Query4Jrpc{
 		Execer:   oty.OracleX,
 		FuncName: oty.FuncNameQueryEventIDByTypeAndStatus,

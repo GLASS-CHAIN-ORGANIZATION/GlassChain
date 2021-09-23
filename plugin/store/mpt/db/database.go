@@ -22,12 +22,12 @@ package mpt
 
 import (
 	"fmt"
-	"github.com/33cn/chain33/types"
 	"sync"
 	"time"
 
 	"github.com/33cn/chain33/common"
 	dbm "github.com/33cn/chain33/common/db"
+	proto "github.com/golang/protobuf/proto"
 )
 
 // secureKeyPrefix is the database key prefix used to store trie node preimages.
@@ -98,7 +98,11 @@ type cachedNode struct {
 }
 
 func (n *cachedNode) proto() []byte {
-	return types.Encode(n.node.create())
+	blob, err := proto.Marshal(n.node.create())
+	if err != nil {
+		panic(err)
+	}
+	return blob
 }
 
 // expandNode traverses the node hierarchy of a collapsed storage node and converts
@@ -206,7 +210,7 @@ func (db *Database) InsertBlob(hash common.Hash, blob []byte) {
 	db.insert(hash, blob, rawNode(blob))
 }
 
-/ flags  
+// flags   ，      
 func simplifyNode(n node) node {
 	switch n := n.(type) {
 	case *shortNode:
@@ -460,7 +464,7 @@ func (db *Database) Commit(node common.Hash, report bool) error {
 	start := time.Now()
 	//batch := db.diskdb.NewBatch()
 
-	// TODO 
+	// TODO             
 	batch := db.db.NewBatch(true)
 
 	// Move all of the accumulated preimages into a write batch

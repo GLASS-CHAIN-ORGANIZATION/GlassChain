@@ -120,9 +120,9 @@ func (client *Client) CreateGenesisTx() (ret []*types.Transaction) {
 //316190000 coins
 func createTicket(cfg *types.Chain33Config, minerAddr, returnAddr string, count int32, height int64) (ret []*types.Transaction) {
 	tx1 := types.Transaction{}
-	tx1.Execer = []byte(cfg.GetCoinExec())
+	tx1.Execer = []byte("coins")
 
-	//Give hotkey 10000 coins as the miner's handling fee
+	// hotkey 10000   ，  miner    
 	tx1.To = minerAddr
 	//gen payload
 	g := &cty.CoinsAction_Genesis{}
@@ -132,7 +132,7 @@ func createTicket(cfg *types.Chain33Config, minerAddr, returnAddr string, count 
 
 	tx2 := types.Transaction{}
 
-	tx2.Execer = []byte(cfg.GetCoinExec())
+	tx2.Execer = []byte("coins")
 	tx2.To = driver.ExecAddress("ticket")
 	//gen payload
 	g = &cty.CoinsAction_Genesis{}
@@ -247,12 +247,12 @@ func getPrivMap(privs []crypto.PrivKey) map[string]crypto.PrivKey {
 }
 
 func (client *Client) getMinerTx(current *types.Block) (*ty.TicketAction, error) {
-	//Check the execs of the first transaction, and the execution status
+	//         execs,       
 	if len(current.Txs) == 0 {
 		return nil, types.ErrEmptyTx
 	}
 	baseTx := current.Txs[0]
-	//Determine the transaction type and execution
+	//           
 	var ticketAction ty.TicketAction
 	err := types.Decode(baseTx.GetPayload(), &ticketAction)
 	if err != nil {
@@ -261,7 +261,7 @@ func (client *Client) getMinerTx(current *types.Block) (*ty.TicketAction, error)
 	if ticketAction.GetTy() != ty.TicketActionMiner {
 		return nil, types.ErrCoinBaseTxType
 	}
-	//Determine whether the transaction execution is OK
+	//        OK
 	if ticketAction.GetMiner() == nil {
 		return nil, ty.ErrEmptyMinerTx
 	}
@@ -277,7 +277,7 @@ func (client *Client) getMinerModify(block *types.Block) ([]byte, error) {
 }
 
 func (client *Client) getModify(beg, end int64) ([]byte, error) {
-	//Calculate modify through a certain interval
+	//        modify
 	timeSource := int64(0)
 	total := int64(0)
 	newmodify := ""
@@ -320,11 +320,11 @@ func (client *Client) CheckBlock(parent *types.Block, current *types.BlockDetail
 	if parent.Height+1 != current.Block.Height {
 		return types.ErrBlockHeight
 	}
-	//Determine whether exec is successful
+	//  exec     
 	if current.Receipts[0].Ty != types.ExecOk {
 		return types.ErrCoinBaseExecErr
 	}
-	//Is the value of check reward correct?
+	//check reward       
 	miner := ticketAction.GetMiner()
 	if miner.Reward != (cfg.CoinReward + calcTotalFee(current.Block)) {
 		return types.ErrCoinbaseReward
@@ -334,7 +334,7 @@ func (client *Client) CheckBlock(parent *types.Block, current *types.BlockDetail
 	}
 	//check modify:
 
-	//By judging the difficulty of the block Difficulty
+	//         Difficulty
 	//1. target >= currentdiff
 	//2.  current bit == target
 	target, modify, err := client.getNextTarget(parent, parent.Difficulty)
@@ -348,7 +348,7 @@ func (client *Client) CheckBlock(parent *types.Block, current *types.BlockDetail
 	if currentdiff.Sign() < 0 {
 		return types.ErrCoinBaseTarget
 	}
-	//Current difficulty
+	//    
 	currentTarget := difficulty.CompactToBig(current.Block.Difficulty)
 	if currentTarget.Cmp(difficulty.CompactToBig(miner.Bits)) != 0 {
 		tlog.Error("block error: calc tagget not the same to miner",
@@ -547,11 +547,11 @@ func (client *Client) searchTargetTicket(parent, block *types.Block) (*ty.Ticket
 			tlog.Warn("Client searchTargetTicket ticket is nil", "ticketID", ticketID)
 			continue
 		}
-		//Has reached maturity
+		//      
 		if !ticket.GetIsGenesis() && (block.BlockTime-ticket.GetCreateTime() <= ty.GetTicketMinerParam(cfg, block.Height).TicketFrozenTime) {
 			continue
 		}
-		// Find private key
+		//     
 		priv, ok := client.privmap[ticket.MinerAddress]
 		if !ok {
 			tlog.Error("Client searchTargetTicket can't find private key", "MinerAddress", ticket.MinerAddress)
@@ -563,7 +563,7 @@ func (client *Client) searchTargetTicket(parent, block *types.Block) (*ty.Ticket
 			continue
 		}
 		currentdiff := client.getCurrentTarget(block.BlockTime, ticket.TicketId, modify, privHash)
-		if currentdiff.Cmp(diff) >= 0 { //The difficulty is greater than the previous one. Note that the smaller the number, the greater the difficulty
+		if currentdiff.Cmp(diff) >= 0 { //        ，          
 			continue
 		}
 		tlog.Info("currentdiff", "hex", printBInt(currentdiff))
@@ -604,7 +604,7 @@ func (client *Client) Miner(parent, block *types.Block) error {
 	if err != nil {
 		return err
 	}
-	//Need to sort transactions first
+	//           
 	cfg := client.GetAPI().GetConfig()
 	if cfg.IsFork(block.Height, "ForkRootHash") {
 		block.Txs = types.TransactionSort(block.Txs)
@@ -618,7 +618,7 @@ func (client *Client) Miner(parent, block *types.Block) error {
 	return nil
 }
 
-//gas direct combustion
+//gas     
 func calcTotalFee(block *types.Block) (total int64) {
 	return 0
 }
@@ -679,19 +679,19 @@ func (client *Client) addMinerTx(parent, block *types.Block, diff *big.Int, priv
 
 	ticketAction.Value = &ty.TicketAction_Miner{Miner: miner}
 	ticketAction.Ty = ty.TicketActionMiner
-	//structure transaction
+	//  transaction
 	tx := client.createMinerTx(&ticketAction, priv)
 	//unshift
 	if tx == nil {
 		return ty.ErrEmptyMinerTx
 	}
 	block.Difficulty = miner.Bits
-	//Determine whether to replace or append
+	//       append
 	_, err = client.getMinerTx(block)
 	if err != nil {
 		block.Txs = append([]*types.Transaction{tx}, block.Txs...)
 	} else {
-		//ticket miner Transaction already exists
+		//ticket miner       
 		block.Txs[0] = tx
 	}
 	return nil
@@ -728,7 +728,7 @@ func (client *Client) updateBlock(block *types.Block, txHashList [][]byte) (*typ
 	newblock := *block
 	newblock.BlockTime = types.Now().Unix()
 
-	//Need to repeat tx and delete expired tx transactions
+	//     tx     tx  
 	if lastBlock.Height != newblock.Height-1 {
 		newblock.Txs = client.CheckTxDup(newblock.Txs)
 		newblock.Txs = client.CheckTxExpire(newblock.Txs, lastBlock.Height+1, newblock.BlockTime)
@@ -740,9 +740,9 @@ func (client *Client) updateBlock(block *types.Block, txHashList [][]byte) (*typ
 	if len(newblock.Txs) < int(cfg.MaxTxNumber-1) {
 		txs = client.RequestTx(int(cfg.MaxTxNumber)-1-len(newblock.Txs), txHashList)
 	}
-	//tx Update
+	//tx    
 	if len(txs) > 0 {
-		//Prevent the block from being too large
+		//      
 		txs = client.AddTxsToBlock(&newblock, txs)
 		if len(txs) > 0 {
 			txHashList = append(txHashList, getTxHashes(txs)...)
@@ -777,7 +777,9 @@ func (client *Client) CreateBlock() {
 			if err == queue.ErrIsQueueClosed {
 				break
 			}
+			//    txs,     
 			lasttime := block.BlockTime
+			//       1s  ，       ，       
 			for lasttime >= types.Now().Unix() {
 				time.Sleep(time.Second / 10)
 			}
@@ -794,11 +796,11 @@ func getTxHashes(txs []*types.Transaction) (hashes [][]byte) {
 	return hashes
 }
 
-//CmpBestBlock Compare whether newBlock is the best block or not. At present, the ticket is mainly to compare the difficulty coefficient of the mining transaction.
+//CmpBestBlock   newBlock       ，  ticket              
 func (client *Client) CmpBestBlock(newBlock *types.Block, cmpBlock *types.Block) bool {
 	cfg := client.GetAPI().GetConfig()
 
-	//newblock Difficulty coefficient of mining transaction
+	//newblock         
 	newBlockTicket, err := client.getMinerTx(newBlock)
 	if err != nil {
 		tlog.Error("CmpBestBlock:getMinerTx", "newBlockHash", common.ToHex(newBlock.Hash(cfg)))
@@ -807,7 +809,7 @@ func (client *Client) CmpBestBlock(newBlock *types.Block, cmpBlock *types.Block)
 	newBlockMiner := newBlockTicket.GetMiner()
 	newBlockDiff := client.getCurrentTarget(newBlock.BlockTime, newBlockMiner.TicketId, newBlockMiner.Modify, newBlockMiner.PrivHash)
 
-	//cmpBlock Difficulty coefficient of mining transaction
+	//cmpBlock         
 	cmpBlockTicket, err := client.getMinerTx(cmpBlock)
 	if err != nil {
 		tlog.Error("CmpBestBlock:getMinerTx", "cmpBlockHash", common.ToHex(cmpBlock.Hash(cfg)))
@@ -816,6 +818,6 @@ func (client *Client) CmpBestBlock(newBlock *types.Block, cmpBlock *types.Block)
 	cmpBlockMiner := cmpBlockTicket.GetMiner()
 	cmpBlockDiff := client.getCurrentTarget(cmpBlock.BlockTime, cmpBlockMiner.TicketId, cmpBlockMiner.Modify, cmpBlockMiner.PrivHash)
 
-	//The smaller the number, the greater the difficulty
+	//        
 	return newBlockDiff.Cmp(cmpBlockDiff) < 0
 }

@@ -9,9 +9,16 @@ import (
 	aty "github.com/33cn/plugin/plugin/dapp/accountmanager/types"
 )
 
+/*
+ *       kv   ，key           
+ *  key = keyPrefix + userKey
+ *          ，  ’-‘      
+ */
 
 const (
+	//KeyPrefixStateDB state db key    
 	KeyPrefixStateDB = "mavl-accountmanager-"
+	//KeyPrefixLocalDB local db key    
 	KeyPrefixLocalDB = "LODB-accountmanager"
 )
 
@@ -22,6 +29,7 @@ var opt_account = &table.Option{
 	Index:   []string{"status", "accountID", "addr"},
 }
 
+//              
 func calcAccountKey(accountID string) []byte {
 	key := fmt.Sprintf("%s"+"accountID:%s", KeyPrefixStateDB, accountID)
 	return []byte(key)
@@ -37,18 +45,22 @@ func NewAccountTable(kvdb db.KV) *table.Table {
 	return table
 }
 
+//AccountRow account table meta   
 type AccountRow struct {
 	*aty.Account
 }
 
+//NewAccountRow     meta   
 func NewAccountRow() *AccountRow {
 	return &AccountRow{Account: &aty.Account{}}
 }
 
+//CreateRow      (  index             ,     eventid)
 func (m *AccountRow) CreateRow() *table.Row {
 	return &table.Row{Data: &aty.Account{}}
 }
 
+//SetPayload     
 func (m *AccountRow) SetPayload(data types.Message) error {
 	if txdata, ok := data.(*aty.Account); ok {
 		m.Account = txdata
@@ -57,6 +69,7 @@ func (m *AccountRow) SetPayload(data types.Message) error {
 	return types.ErrTypeAsset
 }
 
+//Get   indexName    indexValue
 func (m *AccountRow) Get(key string) ([]byte, error) {
 	if key == "accountID" {
 		return []byte(m.AccountID), nil

@@ -13,6 +13,7 @@ import (
 )
 
 func init() {
+	//    VRF，    SECP256K1      
 	cr, err := crypto.New(types.GetSignName("", types.SECP256K1))
 	if err != nil {
 		panic("init ConsensusCrypto failed.")
@@ -28,6 +29,7 @@ func TestVote(t *testing.T) {
 
 	now := time.Now().Unix()
 	//task := dpos.DecideTaskByTime(now)
+	//  vote，   vote    
 	voteItem := &VoteItem{
 		VotedNodeAddress: privValidator.Address,
 		VotedNodeIndex:   int32(0),
@@ -72,6 +74,7 @@ func TestNotify(t *testing.T) {
 
 	now := time.Now().Unix()
 	//task := dpos.DecideTaskByTime(now)
+	//  vote，   vote    
 	voteItem := &VoteItem{
 		VotedNodeAddress: privValidator.Address,
 		VotedNodeIndex:   int32(0),

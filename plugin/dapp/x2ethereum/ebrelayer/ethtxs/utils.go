@@ -15,6 +15,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/common/math"
 	"github.com/ethereum/go-ethereum/crypto/secp256k1"
+	solsha3 "github.com/miguelmota/go-solidity-sha3"
 )
 
 //EthTxStatus ...
@@ -46,9 +47,7 @@ func SignClaim4Eth(hash common.Hash, privateKey *ecdsa.PrivateKey) ([]byte, erro
 }
 
 func prefixMessage(message common.Hash, key *ecdsa.PrivateKey) ([]byte, []byte) {
-	/ 
-	//prefixed := utils.SoliditySHA3WithPrefix(message[:])
-	var prefixed []byte
+	prefixed := solsha3.SoliditySHA3WithPrefix(message[:])
 	sig, err := secp256k1.Sign(prefixed, math.PaddedBigBytes(key.D, 32))
 	if err != nil {
 		panic(err)

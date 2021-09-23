@@ -46,7 +46,7 @@ func (ethRelayer *Relayer4Ethereum) updateTotalTxAmount2chain33(total int64) err
 	totalTx := &chain33Types.Int64{
 		Data: atomic.LoadInt64(&ethRelayer.totalTx4Eth2Chain33),
 	}
-	/ 
+	//          
 	return ethRelayer.db.Set(eth2chain33TxTotalAmount, chain33Types.Encode(totalTx))
 }
 
@@ -87,12 +87,12 @@ func (ethRelayer *Relayer4Ethereum) getLogProcHeight(key []byte) uint64 {
 	return height.Data
 }
 
-/ 
+//        
 func (ethRelayer *Relayer4Ethereum) setTxProcessed(txhash []byte) error {
 	return ethRelayer.db.Set(txhash, []byte("1"))
 }
 
-/   
+//         ，               ，        
 func (ethRelayer *Relayer4Ethereum) checkTxProcessed(txhash []byte) bool {
 	_, err := ethRelayer.db.Get(txhash)
 	return nil == err
@@ -158,7 +158,7 @@ func (ethRelayer *Relayer4Ethereum) getLastBridgeBankProcessedHeight() ebTypes.E
 	return logIndex
 }
 
-/ bridgeBankTx
+//           bridgeBankTx
 func (ethRelayer *Relayer4Ethereum) initBridgeBankTx() {
 	log, _ := ethRelayer.getEthTxEvent(0, 0)
 	if nil != log {

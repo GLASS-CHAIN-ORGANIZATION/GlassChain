@@ -1,6 +1,5 @@
 syntax = "proto3";
 package types;
-option go_package = "../types";
 
 message Norm {
     bytes normId     = 1;

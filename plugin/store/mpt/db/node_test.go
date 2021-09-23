@@ -21,9 +21,9 @@
 package mpt
 
 import (
-	"github.com/33cn/chain33/types"
 	"testing"
 
+	proto "github.com/golang/protobuf/proto"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -68,6 +68,7 @@ func TestCanUnload(t *testing.T) {
 
 func TestNodeProto(t *testing.T) {
 	n := &Node{Value: &Node_Full{Full: &FullNode{}}}
-	d := types.Encode(n)
+	d, err := proto.Marshal(n)
+	assert.Nil(t, nil, err)
 	assert.Equal(t, 2, len(d))
 }

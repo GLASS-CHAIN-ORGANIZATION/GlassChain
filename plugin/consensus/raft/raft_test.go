@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	//      store,     plugin
 	_ "github.com/33cn/chain33/system/dapp/init"
 	_ "github.com/33cn/chain33/system/mempool/init"
 	_ "github.com/33cn/chain33/system/store/init"
@@ -21,6 +22,7 @@ import (
 	_ "github.com/33cn/plugin/plugin/store/init"
 )
 
+//   ： go test -cover
 func TestRaft(t *testing.T) {
 	mock33 := testnode.New("chain33.test.toml", nil)
 	cfg := mock33.GetClient().GetConfig()

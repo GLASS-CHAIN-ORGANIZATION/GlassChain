@@ -3,15 +3,15 @@ package types
 import "strings"
 
 /*
- * k ，ke 
- * key = keyPrefix + userKey
- *  ’- 
+ *       kv   ，key           
+ *  key = keyPrefix + userKey
+ *          ，  ’-‘      
  */
 
 var (
-	//KeyPrefixStateDB state db ke 
+	//KeyPrefixStateDB state db key    
 	KeyPrefixStateDB = "mavl-x2ethereum-"
-	//KeyPrefixLocalDB local d ke 
+	//KeyPrefixLocalDB local db key    
 	KeyPrefixLocalDB = "LODB-x2ethereum-"
 )
 

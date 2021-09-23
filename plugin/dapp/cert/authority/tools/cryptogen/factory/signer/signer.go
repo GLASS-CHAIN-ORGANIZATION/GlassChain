@@ -20,6 +20,7 @@ type cspCryptoSigner struct {
 	pk  interface{}
 }
 
+// New      
 func New(csp lccsp.CSP, key lccsp.Key) (crypto.Signer, error) {
 	if csp == nil {
 		return nil, errors.New("bccsp instance must be different from nil")

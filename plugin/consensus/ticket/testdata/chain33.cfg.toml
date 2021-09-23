@@ -2,17 +2,26 @@ Title="local"
 TestNet=true
 FixTime=false
 
-[crypto]
+
 [log]
+#     ，  debug(dbug)/info/warn/error(eror)/crit
 loglevel = "debug"
 logConsoleLevel = "info"
+#      ，    ，                
 logFile = "logs/chain33.log"
+#           （  ： ）
 maxFileSize = 300
+#              
 maxBackups = 100
+#            （  ： ）
 maxAge = 28
+#              （    UTC  ）
 localTime = true
+#           （     gz）
 compress = true
+#             
 callerFile = false
+#         
 callerFunction = false
 
 [blockchain]
@@ -32,7 +41,7 @@ enableTxQuickIndex=false
 
 [p2p]
 types=["dht"]
-enable=false
+enable=true
 msgCacheSize=10240
 driver="memdb"
 dbPath="datadir/addrbook"
@@ -155,8 +164,11 @@ tokenApprs = [
 genesis="14KEKbYtKKQm4wMthSK9J4La4nAiidGozt"
 
 [exec.sub.cert]
+#            
 enable=false
+#       
 cryptoPath="authdir/crypto"
+#        ，  "auth_ecdsa", "auth_sm2"
 signType="auth_ecdsa"
 
 [exec.sub.manage]

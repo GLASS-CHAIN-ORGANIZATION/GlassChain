@@ -36,12 +36,12 @@ func InitExecutor(cfg *types.Chain33Config) {
 	types.RegistorExecutor(TokenX, NewType(cfg))
 }
 
-// TokenType 
+// TokenType         
 type TokenType struct {
 	types.ExecTypeBase
 }
 
-// NewType 
+// NewType        
 func NewType(cfg *types.Chain33Config) *TokenType {
 	c := &TokenType{}
 	c.SetChild(c)
@@ -49,17 +49,17 @@ func NewType(cfg *types.Chain33Config) *TokenType {
 	return c
 }
 
-// GetName 
+// GetName        
 func (t *TokenType) GetName() string {
 	return TokenX
 }
 
-// GetPayload token action
+// GetPayload   token action
 func (t *TokenType) GetPayload() types.Message {
 	return &TokenAction{}
 }
 
-// GetTypeMap actio nam type
+// GetTypeMap   action name  type
 func (t *TokenType) GetTypeMap() map[string]int32 {
 	return map[string]int32{
 		"Transfer":          ActionTransfer,
@@ -74,7 +74,7 @@ func (t *TokenType) GetTypeMap() map[string]int32 {
 	}
 }
 
-// GetLogMap lo 
+// GetLogMap   log       
 func (t *TokenType) GetLogMap() map[int64]*types.LogInfo {
 	return map[int64]*types.LogInfo{
 		TyLogTokenTransfer:        {Ty: reflect.TypeOf(types.ReceiptAccountTransfer{}), Name: "LogTokenTransfer"},
@@ -94,7 +94,7 @@ func (t *TokenType) GetLogMap() map[int64]*types.LogInfo {
 	}
 }
 
-// RPC_Default_Process rpc 
+// RPC_Default_Process rpc     
 func (t *TokenType) RPC_Default_Process(action string, msg interface{}) (*types.Transaction, error) {
 	var create *types.CreateTx
 	if _, ok := msg.(*types.CreateTx); !ok {
@@ -108,7 +108,7 @@ func (t *TokenType) RPC_Default_Process(action string, msg interface{}) (*types.
 	if err != nil {
 		return nil, err
 	}
-	//t  ，t to
+	//to     ,       ，to         to
 	cfg := t.GetConfig()
 	if !cfg.IsPara() {
 		tx.To = create.To
@@ -116,7 +116,7 @@ func (t *TokenType) RPC_Default_Process(action string, msg interface{}) (*types.
 	return tx, err
 }
 
-// CreateTx token 
+// CreateTx token     
 func (t *TokenType) CreateTx(action string, msg json.RawMessage) (*types.Transaction, error) {
 	tx, err := t.ExecTypeBase.CreateTx(action, msg)
 	if err != nil {

@@ -4,6 +4,7 @@
 
 // +build go1.9
 
+//nolint:unparam //        golangci-linter  
 package blake2b
 
 import (

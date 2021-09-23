@@ -1,5 +1,6 @@
 // +build gofuzz
 
+//nolint:unparam //        golangci-linter  
 package blake2b
 
 import (

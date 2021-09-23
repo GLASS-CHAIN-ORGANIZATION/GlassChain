@@ -40,7 +40,7 @@ func TestRPC_Call(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, jsonClient)
 
-	/ :
+	//  :
 	params := pty.ReqPrivacyAccount{
 		Addr:        "addr",
 		Token:       "token",

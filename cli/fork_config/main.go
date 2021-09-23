@@ -23,10 +23,10 @@ func main() {
 }
 
 /*
-	Two rules:
-	key have ".", Part1.Part2 is [fork.sub.Part1] Part2=value
-	key dont have "." [fork.system] key=value
-	Print the forks of the same paragraph together
+	    ：
+	key   ".", Part1.Part2   [fork.sub.Part1] Part2=value
+	key    "." [fork.system] key=value
+	     fork     
 		[fork.system]
 		ForkChainParamV1= 0  # ForkBlockCheck=1560000
 

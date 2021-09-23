@@ -21,28 +21,28 @@ func TestParaNode(t *testing.T) {
 	para := node.NewParaNode(nil, nil)
 	defer para.Close()
 	cfg := para.Para.GetClient().GetConfig()
-
+	//  rpc     
 	genesis := para.Main.GetGenesisAddress()
 	genesisKey := para.Main.GetGenesisKey()
 	block := para.Main.GetBlock(0)
 	acc := para.Main.GetAccount(block.StateHash, genesis)
-	assert.Equal(t, acc.Balance, 100000000*types.DefaultCoinPrecision)
+	assert.Equal(t, acc.Balance, 100000000*types.Coin)
 
 	//super acc
-	tx := util.CreateCoinsTx(cfg, genesisKey, para.Main.GetHotAddress(), 10*types.DefaultCoinPrecision)
+	tx := util.CreateCoinsTx(cfg, genesisKey, para.Main.GetHotAddress(), 10*types.Coin)
 	para.Main.SendTx(tx)
 	para.Main.Wait()
 	block = para.Main.GetLastBlock()
 	acc = para.Main.GetAccount(block.StateHash, para.Main.GetHotAddress())
-	assert.Equal(t, acc.Balance, 10*types.DefaultCoinPrecision)
+	assert.Equal(t, acc.Balance, 10*types.Coin)
 
 	//auth acc
-	tx = util.CreateCoinsTx(cfg, genesisKey, authAcc, 10*types.DefaultCoinPrecision)
+	tx = util.CreateCoinsTx(cfg, genesisKey, authAcc, 10*types.Coin)
 	para.Main.SendTx(tx)
 	para.Main.Wait()
 	block = para.Main.GetLastBlock()
 	acc = para.Main.GetAccount(block.StateHash, authAcc)
-	assert.Equal(t, acc.Balance, 10*types.DefaultCoinPrecision)
+	assert.Equal(t, acc.Balance, 10*types.Coin)
 
 	//create manage config
 	tx = util.CreateManageTx(cfg, para.Main.GetHotKey(), "paracross-nodes-user.p.guodun.", "add", "1EbDHAXpoiewjPLX9uqoz38HsKqMXayZrF")

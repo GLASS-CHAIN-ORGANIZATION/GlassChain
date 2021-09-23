@@ -11,16 +11,16 @@ import (
 
 var multisiglog = log15.New("module", "execs.multisig")
 
-// OwnerAdd : 
+// OwnerAdd :       
 var (
 	OwnerAdd     uint64 = 1
 	OwnerDel     uint64 = 2
 	OwnerModify  uint64 = 3
 	OwnerReplace uint64 = 4
-	//AccWeightOp 
+	//AccWeightOp        
 	AccWeightOp     = true
 	AccDailyLimitOp = false
-	//OwnerOperate  ，owne ，accoun 
+	//OwnerOperate         ：  ，owner  ，account  
 	OwnerOperate    uint64 = 1
 	AccountOperate  uint64 = 2
 	TransferOperate uint64 = 3
@@ -31,13 +31,13 @@ var (
 	MultiSigX            = "multisig"
 	OneDaySecond   int64 = 24 * 3600
 	MinOwnersInit        = 2
-	MinOwnersCount       = 1  / owner
-	MaxOwnersCount       = 20 / 2 owner
+	MinOwnersCount       = 1  //                owner
+	MaxOwnersCount       = 20 //             20 owner
 
 	Multisiglog = log15.New("module", MultiSigX)
 )
 
-// MultiSig actionid
+// MultiSig    actionid
 const (
 	ActionMultiSigAccCreate        = 10000
 	ActionMultiSigOwnerOperate     = 10001
@@ -47,29 +47,29 @@ const (
 	ActionMultiSigExecTransferFrom = 10005
 )
 
-/ logid
+//           logid
 const (
-	TyLogMultiSigAccCreate = 10000 / 
+	TyLogMultiSigAccCreate = 10000 //            
 
-	TyLogMultiSigOwnerAdd     = 10001 / ad owner：add weight
-	TyLogMultiSigOwnerDel     = 10002 / de owner：add weight
-	TyLogMultiSigOwnerModify  = 10003 / modif owner：preweigh currentweight
-	TyLogMultiSigOwnerReplace = 10004 / ol owne  owne ：addr+weight
+	TyLogMultiSigOwnerAdd     = 10001 //  add owner：addr weight
+	TyLogMultiSigOwnerDel     = 10002 //  del owner：addr weight
+	TyLogMultiSigOwnerModify  = 10003 //  modify owner：preweight  currentweight
+	TyLogMultiSigOwnerReplace = 10004 //  old owner   ：     owner  ：addr+weight
 
-	TyLogMultiSigAccWeightModify     = 10005 / ：preReqWeigh curReqWeight
-	TyLogMultiSigAccDailyLimitAdd    = 10006 / ad DailyLimit：Symbo DailyLimit
-	TyLogMultiSigAccDailyLimitModify = 10007 / modif DailyLimit：preDailyLimi currentDailyLimit
+	TyLogMultiSigAccWeightModify     = 10005 //            ：preReqWeight curReqWeight
+	TyLogMultiSigAccDailyLimitAdd    = 10006 //  add DailyLimit：Symbol DailyLimit
+	TyLogMultiSigAccDailyLimitModify = 10007 //  modify DailyLimit：preDailyLimit  currentDailyLimit
 
-	TyLogMultiSigConfirmTx       = 10008 / 
-	TyLogMultiSigConfirmTxRevoke = 10009 / 
+	TyLogMultiSigConfirmTx       = 10008 //           
+	TyLogMultiSigConfirmTxRevoke = 10009 //                   
 
-	TyLogDailyLimitUpdate = 10010 //DailyLimi ，DailyLimi Submi Confir 
-	TyLogMultiSigTx       = 10011 / Submi 
-	TyLogTxCountUpdate    = 10012 //txcoun Submi 
+	TyLogDailyLimitUpdate = 10010 //DailyLimit  ，DailyLimit Submit Confirm        
+	TyLogMultiSigTx       = 10011 // Submit           
+	TyLogTxCountUpdate    = 10012 //txcount   Submit               
 
 )
 
-//AccAssetsResult cl  amoun 
+//AccAssetsResult     cli   ，   amount           
 type AccAssetsResult struct {
 	Execer   string `json:"execer,omitempty"`
 	Symbol   string `json:"symbol,omitempty"`
@@ -80,7 +80,7 @@ type AccAssetsResult struct {
 	Addr     string `json:"addr,omitempty"`
 }
 
-//DailyLimitResult cli
+//DailyLimitResult          cli
 type DailyLimitResult struct {
 	Symbol     string `json:"symbol,omitempty"`
 	Execer     string `json:"execer,omitempty"`
@@ -89,7 +89,7 @@ type DailyLimitResult struct {
 	LastDay    string `json:"lastday,omitempty"`
 }
 
-//MultiSigResult cli
+//MultiSigResult            cli
 type MultiSigResult struct {
 	CreateAddr     string              `json:"createAddr,omitempty"`
 	MultiSigAddr   string              `json:"multiSigAddr,omitempty"`
@@ -99,17 +99,17 @@ type MultiSigResult struct {
 	RequiredWeight uint64              `json:"requiredWeight,omitempty"`
 }
 
-//UnSpentAssetsResult cli
+//UnSpentAssetsResult               cli
 type UnSpentAssetsResult struct {
 	Symbol  string `json:"symbol,omitempty"`
 	Execer  string `json:"execer,omitempty"`
 	UnSpent string `json:"unspent,omitempty"`
 }
 
-//IsAssetsInvalid ，Symbol  ：BTY,coins.BTY。exec types.AllowUserExe 
+//IsAssetsInvalid         ，Symbol：      ，  ：BTY,coins.BTY。exec：   types.AllowUserExec   
 func IsAssetsInvalid(exec, symbol string) error {
 
-	//exe 
+	//exec  
 	allowExeName := types.AllowUserExec
 	nameLen := len(allowExeName)
 	execValid := false
@@ -123,6 +123,6 @@ func IsAssetsInvalid(exec, symbol string) error {
 		multisiglog.Error("IsAssetsInvalid", "exec", exec)
 		return ErrInvalidExec
 	}
-	//Symbo 
+	//Symbol    
 	return nil
 }

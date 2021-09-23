@@ -9,25 +9,36 @@ import (
 	"math/big"
 )
 
+//           
 var (
+	// Big0    0
 	Big0 = big.NewInt(0)
+	// Big1    1
 	Big1 = big.NewInt(1)
+	// Big32    32
 	Big32 = big.NewInt(32)
+	// Big256    256
 	Big256 = big.NewInt(256)
+	// Big257    257
 	Big257 = big.NewInt(257)
 )
 
+// 2         
 var (
+	// TT255 2 255  
 	TT255   = BigPow(2, 255)
 	tt256   = BigPow(2, 256)
 	tt256m1 = new(big.Int).Sub(tt256, big.NewInt(1))
 )
 
 const (
+	// WordBits   big.Word          
 	WordBits = 32 << (uint64(^big.Word(0)) >> 63)
+	// WordBytes   big.Word           
 	WordBytes = WordBits / 8
 )
 
+// BigMax           
 func BigMax(x, y *big.Int) *big.Int {
 	if x.Cmp(y) < 0 {
 		return y
@@ -35,6 +46,7 @@ func BigMax(x, y *big.Int) *big.Int {
 	return x
 }
 
+// BigMin           
 func BigMin(x, y *big.Int) *big.Int {
 	if x.Cmp(y) > 0 {
 		return y
@@ -42,11 +54,13 @@ func BigMin(x, y *big.Int) *big.Int {
 	return x
 }
 
+// BigPow   a b  
 func BigPow(a, b int64) *big.Int {
 	r := big.NewInt(a)
 	return r.Exp(r, big.NewInt(b), nil)
 }
 
+// U256   
 func U256(x *big.Int) *big.Int {
 	return x.And(x, tt256m1)
 }
@@ -64,6 +78,7 @@ func S256(x *big.Int) *big.Int {
 	return new(big.Int).Sub(x, tt256)
 }
 
+// Exp     ，      ，      256   
 func Exp(base, exponent *big.Int) *big.Int {
 	result := big.NewInt(1)
 
@@ -79,6 +94,8 @@ func Exp(base, exponent *big.Int) *big.Int {
 	return result
 }
 
+// Byte big.Int      ， n        
+//   : bigint '5', padlength 32, n=31 => 5
 func Byte(bigint *big.Int, padlength, n int) byte {
 	if n >= padlength {
 		return byte(0)
@@ -86,21 +103,26 @@ func Byte(bigint *big.Int, padlength, n int) byte {
 	return bigEndianByteAt(bigint, padlength-1-n)
 }
 
+//  big.Int       ，   n        
 func bigEndianByteAt(bigint *big.Int, n int) byte {
 	words := bigint.Bits()
 
+	//   n    
 	i := n / WordBytes
 	if i >= len(words) {
 		return byte(0)
 	}
 
+	//         
 	word := words[i]
 
+	//                
 	shift := 8 * uint(n%WordBytes)
 
 	return byte(word >> shift)
 }
 
+// ReadBits       big.Int       
 func ReadBits(bigint *big.Int, buf []byte) {
 	i := len(buf)
 	for _, d := range bigint.Bits() {
@@ -112,10 +134,12 @@ func ReadBits(bigint *big.Int, buf []byte) {
 	}
 }
 
+// SafeAdd     ，      
 func SafeAdd(x, y uint64) (uint64, bool) {
 	return x + y, y > math.MaxUint64-x
 }
 
+// SafeMul     ，      
 func SafeMul(x, y uint64) (uint64, bool) {
 	if x == 0 || y == 0 {
 		return 0, false
@@ -123,6 +147,7 @@ func SafeMul(x, y uint64) (uint64, bool) {
 	return x * y, y > math.MaxUint64/x
 }
 
+// Zero        0
 func Zero(value *big.Int) bool {
 	if value == nil || value.Sign() == 0 {
 		return true

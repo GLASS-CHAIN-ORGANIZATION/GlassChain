@@ -60,9 +60,9 @@ func startHTTPService(url string, clientHost string) {
 			if !checkClient(client, clientHost) {
 				log.Error("HandlerFunc", "client", r.RemoteAddr, "expect", clientHost)
 				_, _ = w.Write([]byte(`{"errcode":"-1","result":null,"msg":"reject"}`))
-				// unbind ， 
-				//  ，  name
-				// client  ， 
+				// unbind      ，        
+				//         ，     name
+				//       client    ，           ，    
 				//unbind(client)
 				return
 			}
@@ -119,9 +119,9 @@ func checkClient(addr string, expectClient string) bool {
 	return addr == expectClient
 }
 
-/ chain3 ，AddSubscribeTxReceip  ：
-/   
-/  
+// chain33           ，AddSubscribeTxReceipt  2   ：
+//      ，         ，       
+//      ，     
 func bindOrResumePush(cfg *relayerTypes.SyncTxReceiptConfig) {
 	contract := make(map[string]bool)
 	contract["x2ethereum"] = true

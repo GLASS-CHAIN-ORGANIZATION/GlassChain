@@ -17,7 +17,7 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-//  ， 
+//     4         ，     
 
 type RewardTestSuite struct {
 	suite.Suite

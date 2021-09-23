@@ -15,7 +15,7 @@ var (
 
 // oracle action type
 const (
-	ActionEventPublish = iota + 1 / 
+	ActionEventPublish = iota + 1 //    
 	ActionResultPrePublish
 	ActionResultPublish
 	ActionEventAbort
@@ -43,31 +43,31 @@ const (
 
 // executor action and function define
 const (
-	// FuncNameQueryOracleListByIDs id OracleStatus
+	// FuncNameQueryOracleListByIDs   ids  OracleStatus
 	FuncNameQueryOracleListByIDs = "QueryOraclesByIDs"
-	// FuncNameQueryEventIDByStatus eventID
+	// FuncNameQueryEventIDByStatus       eventID
 	FuncNameQueryEventIDByStatus = "QueryEventIDsByStatus"
-	// FuncNameQueryEventIDByAddrAndStatus eventID
+	// FuncNameQueryEventIDByAddrAndStatus             eventID
 	FuncNameQueryEventIDByAddrAndStatus = "QueryEventIDsByAddrAndStatus"
-	// FuncNameQueryEventIDByTypeAndStatus eventID
+	// FuncNameQueryEventIDByTypeAndStatus            eventID
 	FuncNameQueryEventIDByTypeAndStatus = "QueryEventIDsByTypeAndStatus"
-	// CreateEventPublishTx 
+	// CreateEventPublishTx         
 	CreateEventPublishTx = "EventPublish"
-	// CreateAbortEventPublishTx 
+	// CreateAbortEventPublishTx           
 	CreateAbortEventPublishTx = "EventAbort"
-	// CreatePrePublishResultTx 
+	// CreatePrePublishResultTx            
 	CreatePrePublishResultTx = "ResultPrePublish"
-	// CreateAbortResultPrePublishTx 
+	// CreateAbortResultPrePublishTx               
 	CreateAbortResultPrePublishTx = "ResultAbort"
-	// CreateResultPublishTx 
+	// CreateResultPublishTx            
 	CreateResultPublishTx = "ResultPublish"
 )
 
 // query param define
 const (
-	// ListDESC 
+	// ListDESC   
 	ListDESC = int32(0)
-	// DefaultCount 
+	// DefaultCount           
 	DefaultCount = int32(20)
 )
 

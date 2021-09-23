@@ -47,7 +47,7 @@ func AddClaim(prophecy *x2eTy.ReceiptEthProphecy, validator string, claim string
 
 }
 
-//FindHighestClaim prophec claim claim
+//FindHighestClaim    prophecy  claim，         claim
 func FindHighestClaim(prophecy *x2eTy.ReceiptEthProphecy, validators map[string]int64) (string, int64, int64) {
 	totalClaimsPower := int64(0)
 	highestClaimPower := int64(-1)
@@ -86,7 +86,7 @@ func NewClaim(id string, validatorAddress string, content string) x2eTy.OracleCl
 	}
 }
 
-//CreateOracleClaimFromEthClaim ethchain3 OracleClai  ID
+//CreateOracleClaimFromEthClaim   ethchain33      OracleClaim  ，       ID
 func CreateOracleClaimFromEthClaim(ethClaim x2eTy.Eth2Chain33) (x2eTy.OracleClaim, error) {
 	if ethClaim.ClaimType != int64(x2eTy.LockClaimType) && ethClaim.ClaimType != int64(x2eTy.BurnClaimType) {
 		return x2eTy.OracleClaim{}, x2eTy.ErrInvalidClaimType

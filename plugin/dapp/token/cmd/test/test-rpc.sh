@@ -11,8 +11,8 @@ tokenSymbol="ABCDE"
 token_addr=""
 execName="token"
 
-# 
-#    1:  2: ）
+#          
+#        ，        （  1:        2:       ）
 function queryTransaction() {
     validator=$1
     expectRes=$2

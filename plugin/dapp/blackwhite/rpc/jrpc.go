@@ -12,6 +12,7 @@ import (
 	bw "github.com/33cn/plugin/plugin/dapp/blackwhite/types"
 )
 
+// BlackwhiteCreateTx     RPC  
 func (c *Jrpc) BlackwhiteCreateTx(parm *bw.BlackwhiteCreateTxReq, result *interface{}) error {
 	if parm == nil {
 		return types.ErrInvalidParam
@@ -30,6 +31,7 @@ func (c *Jrpc) BlackwhiteCreateTx(parm *bw.BlackwhiteCreateTxReq, result *interf
 	return nil
 }
 
+// BlackwhiteShowTx        RPC  
 func (c *Jrpc) BlackwhiteShowTx(parm *BlackwhiteShowTx, result *interface{}) error {
 	if parm == nil {
 		return types.ErrInvalidParam
@@ -46,6 +48,7 @@ func (c *Jrpc) BlackwhiteShowTx(parm *BlackwhiteShowTx, result *interface{}) err
 	return nil
 }
 
+// BlackwhitePlayTx      RPC  
 func (c *Jrpc) BlackwhitePlayTx(parm *BlackwhitePlayTx, result *interface{}) error {
 	if parm == nil {
 		return types.ErrInvalidParam
@@ -65,6 +68,7 @@ func (c *Jrpc) BlackwhitePlayTx(parm *BlackwhitePlayTx, result *interface{}) err
 	return nil
 }
 
+// BlackwhiteTimeoutDoneTx     RPC  
 func (c *Jrpc) BlackwhiteTimeoutDoneTx(parm *BlackwhiteTimeoutDoneTx, result *interface{}) error {
 	if parm == nil {
 		return types.ErrInvalidParam

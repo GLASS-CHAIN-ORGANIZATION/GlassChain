@@ -4,8 +4,10 @@
 
 package runtime
 
+// OpCode EVM     ，         ，          256 
 type OpCode byte
 
+// IsPush        
 func (op OpCode) IsPush() bool {
 	if op >= PUSH1 && op <= PUSH32 {
 		return true
@@ -13,12 +15,14 @@ func (op OpCode) IsPush() bool {
 	return false
 }
 
+// IsStaticJump        
 func (op OpCode) IsStaticJump() bool {
 	return op == JUMP
 }
 
 var opmap map[OpCode]string
 
+// String        
 func (op OpCode) String() string {
 	if opmap == nil {
 		initMap()
@@ -201,16 +205,18 @@ func initMap() {
 
 // unofficial opcodes used for parsing
 const (
+	// PUSH     
 	PUSH OpCode = 0xb0 + iota
-
+	// DUP   
 	DUP
-
+	// SWAP   
 	SWAP
 )
 
 const (
+	// STOP 0x0     
 	STOP OpCode = iota
-
+	// ADD   
 	ADD
 	// MUL op
 	MUL
@@ -235,7 +241,7 @@ const (
 )
 
 const (
-
+	// LT   、   
 	LT OpCode = iota + 0x10
 	// GT op
 	GT
@@ -269,6 +275,7 @@ const (
 )
 
 const (
+	// ADDRESS 0x30       
 	ADDRESS OpCode = 0x30 + iota
 	// BALANCE op
 	BALANCE
@@ -303,6 +310,7 @@ const (
 )
 
 const (
+	// BLOCKHASH 0x40       
 	BLOCKHASH OpCode = 0x40 + iota
 	// COINBASE op
 	COINBASE
@@ -321,6 +329,7 @@ const (
 )
 
 const (
+	// POP 0x50       
 	POP OpCode = 0x50 + iota
 	// MLOAD op
 	MLOAD
@@ -353,6 +362,7 @@ const (
 )
 
 const (
+	// PUSH1 0x60    
 	PUSH1 OpCode = 0x60 + iota
 	// PUSH2 op
 	PUSH2
@@ -483,6 +493,7 @@ const (
 )
 
 const (
+	// LOG0     
 	LOG0 OpCode = 0xa0 + iota
 	// LOG1 op
 	LOG1
@@ -495,6 +506,7 @@ const (
 )
 
 const (
+	// CREATE     
 	CREATE OpCode = 0xf0 + iota
 	// CALL op
 	CALL

@@ -8,11 +8,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"math"
 	"os"
 	"strings"
-
-	cmdtypes "github.com/33cn/chain33/system/dapp/commands/types"
-	"github.com/pkg/errors"
 
 	"github.com/33cn/chain33/rpc/jsonclient"
 	rpctypes "github.com/33cn/chain33/rpc/types"
@@ -22,7 +20,7 @@ import (
 	pty "github.com/33cn/plugin/plugin/dapp/unfreeze/types"
 )
 
-// Cmd unfreeze 
+// Cmd unfreeze       
 func Cmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "unfreeze",
@@ -69,13 +67,13 @@ func createFlag(cmd *cobra.Command) *cobra.Command {
 }
 
 func checkAmount(amount float64) error {
-	if amount < 0 || amount > float64(types.MaxCoin) {
+	if amount < 0 || amount > float64(types.MaxCoin/types.Coin) {
 		return types.ErrAmount
 	}
 	return nil
 }
 
-func getCreateFlags(cmd *cobra.Command, cfg *rpctypes.ChainConfigInfo) (*pty.UnfreezeCreate, error) {
+func getCreateFlags(cmd *cobra.Command) (*pty.UnfreezeCreate, error) {
 	beneficiary, _ := cmd.Flags().GetString("beneficiary")
 	exec, _ := cmd.Flags().GetString("asset_exec")
 	symbol, _ := cmd.Flags().GetString("asset_symbol")
@@ -85,11 +83,7 @@ func getCreateFlags(cmd *cobra.Command, cfg *rpctypes.ChainConfigInfo) (*pty.Unf
 	if err := checkAmount(total); err != nil {
 		return nil, types.ErrAmount
 	}
-	totalInt64, err := types.FormatFloatDisplay2Value(total, cfg.CoinPrecision)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, errors.Wrapf(err, "FormatFloatDisplay2Value"))
-		return nil, types.ErrAmount
-	}
+	totalInt64 := int64(math.Trunc((total+0.0000001)*1e4)) * 1e4
 
 	unfreeze := &pty.UnfreezeCreate{
 		StartTime:   startTs,
@@ -118,15 +112,10 @@ func fixAmountCmd() *cobra.Command {
 }
 
 func fixAmount(cmd *cobra.Command, args []string) {
-	paraName, _ := cmd.Flags().GetString("paraName")
-	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
+	title, _ := cmd.Flags().GetString("title")
+	cfg := types.GetCliSysParam(title)
 
-	cfg, err := cmdtypes.GetChainConfig(rpcLaddr)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, errors.Wrapf(err, "GetChainConfig"))
-		return
-	}
-	create, err := getCreateFlags(cmd, cfg)
+	create, err := getCreateFlags(cmd)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return
@@ -137,11 +126,7 @@ func fixAmount(cmd *cobra.Command, args []string) {
 		fmt.Fprintln(os.Stderr, err)
 		return
 	}
-	amountInt64, err := types.FormatFloatDisplay2Value(amount, cfg.CoinPrecision)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, errors.Wrapf(err, "FormatFloatDisplay2Value.amount"))
-		return
-	}
+	amountInt64 := int64(math.Trunc((amount+0.0000001)*1e4)) * 1e4
 	period, _ := cmd.Flags().GetInt64("period")
 
 	if period <= 0 {
@@ -158,11 +143,12 @@ func fixAmount(cmd *cobra.Command, args []string) {
 	create.MeansOpt = &pty.UnfreezeCreate_FixAmount{FixAmount: &pty.FixAmount{Period: period, Amount: amountInt64}}
 
 	params := &rpctypes.CreateTxIn{
-		Execer:     types.GetExecName(pty.UnfreezeX, paraName),
+		Execer:     cfg.ExecName(pty.UnfreezeX),
 		ActionName: "createUnfreeze",
 		Payload:    types.MustPBToJSON(create),
 	}
 
+	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
 	ctx := jsonclient.NewRPCCtx(rpcLaddr, "Chain33.CreateTransaction", params, nil)
 	ctx.RunWithoutMarshal()
 }
@@ -183,15 +169,10 @@ func leftCmd() *cobra.Command {
 }
 
 func left(cmd *cobra.Command, args []string) {
-	paraName, _ := cmd.Flags().GetString("paraName")
-	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
-	cfg, err := cmdtypes.GetChainConfig(rpcLaddr)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, errors.Wrapf(err, "GetChainConfig"))
-		return
-	}
+	title, _ := cmd.Flags().GetString("title")
+	cfg := types.GetCliSysParam(title)
 
-	create, err := getCreateFlags(cmd, cfg)
+	create, err := getCreateFlags(cmd)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return
@@ -214,11 +195,12 @@ func left(cmd *cobra.Command, args []string) {
 	}
 
 	params := &rpctypes.CreateTxIn{
-		Execer:     types.GetExecName(pty.UnfreezeX, paraName),
+		Execer:     cfg.ExecName(pty.UnfreezeX),
 		ActionName: pty.Action_CreateUnfreeze,
 		Payload:    types.MustPBToJSON(create),
 	}
 
+	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
 	ctx := jsonclient.NewRPCCtx(rpcLaddr, "Chain33.CreateTransaction", params, nil)
 	ctx.RunWithoutMarshal()
 }
@@ -272,12 +254,13 @@ func queryWithdrawCmd() *cobra.Command {
 }
 
 func withdraw(cmd *cobra.Command, args []string) {
-	paraName, _ := cmd.Flags().GetString("paraName")
+	title, _ := cmd.Flags().GetString("title")
+	cfg := types.GetCliSysParam(title)
 
 	id, _ := cmd.Flags().GetString("id")
 
 	params := &rpctypes.CreateTxIn{
-		Execer:     types.GetExecName(pty.UnfreezeX, paraName),
+		Execer:     cfg.ExecName(pty.UnfreezeX),
 		ActionName: pty.Action_WithdrawUnfreeze,
 		Payload:    types.MustPBToJSON(&pty.UnfreezeWithdraw{UnfreezeID: id}),
 	}
@@ -288,12 +271,13 @@ func withdraw(cmd *cobra.Command, args []string) {
 }
 
 func terminate(cmd *cobra.Command, args []string) {
-	paraName, _ := cmd.Flags().GetString("paraName")
+	title, _ := cmd.Flags().GetString("title")
+	cfg := types.GetCliSysParam(title)
 
 	id, _ := cmd.Flags().GetString("id")
 
 	params := &rpctypes.CreateTxIn{
-		Execer:     types.GetExecName(pty.UnfreezeX, paraName),
+		Execer:     cfg.ExecName(pty.UnfreezeX),
 		ActionName: pty.Action_TerminateUnfreeze,
 		Payload:    types.MustPBToJSON(&pty.UnfreezeTerminate{UnfreezeID: id}),
 	}

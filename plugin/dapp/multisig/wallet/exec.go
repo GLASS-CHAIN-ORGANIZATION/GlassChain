@@ -8,9 +8,9 @@ import (
 	"github.com/33cn/chain33/types"
 )
 
-//On_MultiSigAddresList owne 
+//On_MultiSigAddresList   owner           
 func (policy *multisigPolicy) On_MultiSigAddresList(req *types.ReqString) (types.Message, error) {
-	/ 
+	//                 
 	if req.Data == "" {
 		reply, err := policy.store.listOwnerAttrs()
 		if err != nil {
@@ -18,7 +18,7 @@ func (policy *multisigPolicy) On_MultiSigAddresList(req *types.ReqString) (types
 		}
 		return reply, err
 	}
-	/ owne 
+	//     owner             
 	reply, err := policy.store.listOwnerAttrsByAddr(req.Data)
 	if err != nil {
 		bizlog.Error("On_MultiSigAddresList listOwnerAttrsByAddr", "owneraddr", req.Data, "err", err)

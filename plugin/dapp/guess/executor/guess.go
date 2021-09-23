@@ -32,6 +32,7 @@ func InitExecType() {
 	ety.InitFuncList(types.ListMethod(&Guess{}))
 }
 
+//Guess    ，           
 type Guess struct {
 	drivers.DriverBase
 }
@@ -43,14 +44,17 @@ func newGuessGame() drivers.Driver {
 	return t
 }
 
+//GetName   Guess      
 func GetName() string {
 	return newGuessGame().GetName()
 }
 
+//ExecutorOrder Exec          ExecLocal
 func (g *Guess) ExecutorOrder() int64 {
 	return drivers.ExecLocalSameTime
 }
 
+//GetDriverName   Guess      
 func (g *Guess) GetDriverName() string {
 	return gty.GuessX
 }

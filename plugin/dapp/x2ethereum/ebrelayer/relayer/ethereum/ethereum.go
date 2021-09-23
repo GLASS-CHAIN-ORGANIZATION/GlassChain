@@ -92,13 +92,13 @@ func StartEthereumRelayer(rpcURL2Chain33 string, db dbm.DB, provider, registryAd
 	}
 
 	registrAddrInDB, err := ethRelayer.getBridgeRegistryAddr()
-	/ registr   
+	//     registry    ，            ，           
 	if registryAddress != "" && nil == err && registrAddrInDB != registryAddress {
 		relayerLog.Error("StartEthereumRelayer", "BridgeRegistry is setted already with value", registrAddrInDB,
 			"but now setting to", registryAddress)
 		_ = ethRelayer.setBridgeRegistryAddr(registryAddress)
 	} else if registryAddress == "" && registrAddrInDB != "" {
-		/   
+		//      ，            ，            
 		ethRelayer.bridgeRegistryAddr = common.HexToAddress(registrAddrInDB)
 	}
 	ethRelayer.eventLogIndex = ethRelayer.getLastBridgeBankProcessedHeight()
@@ -143,7 +143,7 @@ func (ethRelayer *Relayer4Ethereum) recoverDeployPara() (err error) {
 	return nil
 }
 
-//DeployContrcts 
+//DeployContrcts        
 func (ethRelayer *Relayer4Ethereum) DeployContrcts() (bridgeRegistry string, err error) {
 	bridgeRegistry = ""
 	if nil == ethRelayer.deployInfo {
@@ -162,7 +162,7 @@ func (ethRelayer *Relayer4Ethereum) DeployContrcts() (bridgeRegistry string, err
 
 	nilAddr := common.Address{}
 
-	/   
+	//           ，            ，      
 	if ethRelayer.bridgeRegistryAddr != nilAddr {
 		return bridgeRegistry, errors.New("contract deployed already")
 	}
@@ -203,7 +203,7 @@ func (ethRelayer *Relayer4Ethereum) DeployContrcts() (bridgeRegistry string, err
 	ethRelayer.x2EthContracts = x2EthContracts
 	bridgeRegistry = x2EthDeployInfo.BridgeRegistry.Address.String()
 	_ = ethRelayer.setBridgeRegistryAddr(bridgeRegistry)
-	/  
+	//        ，             
 	ethRelayer.bridgeRegistryAddr = x2EthDeployInfo.BridgeRegistry.Address
 	ethRelayer.rwLock.Unlock()
 	ethRelayer.unlockchan <- start
@@ -212,7 +212,7 @@ func (ethRelayer *Relayer4Ethereum) DeployContrcts() (bridgeRegistry string, err
 	return bridgeRegistry, nil
 }
 
-//GetBalance  
+//GetBalance ：          
 func (ethRelayer *Relayer4Ethereum) GetBalance(tokenAddr, owner string) (string, error) {
 	return ethtxs.GetBalance(ethRelayer.clientSpec, tokenAddr, owner)
 }
@@ -338,7 +338,7 @@ func (ethRelayer *Relayer4Ethereum) ShowTxReceipt(hash string) (*types.Receipt, 
 }
 
 func (ethRelayer *Relayer4Ethereum) proc() {
-	/ 
+	//      
 	relayerLog.Info("Please unlock or import private key for Ethereum relayer")
 	nilAddr := common.Address{}
 	if nilAddr != ethRelayer.bridgeRegistryAddr {
@@ -368,7 +368,7 @@ func (ethRelayer *Relayer4Ethereum) proc() {
 		if nil != privateKey4Chain33 && nilAddr != ethRelayer.bridgeRegistryAddr {
 			relayerLog.Info("Ethereum relayer starts to run...")
 			ethRelayer.prePareSubscribeEvent()
-			/ bridgeBan 
+			// bridgeBank    
 			ethRelayer.subscribeEvent()
 			ethRelayer.filterLogEvents()
 			relayerLog.Info("Ethereum relayer starts to process online log event...")
@@ -405,7 +405,7 @@ func (ethRelayer *Relayer4Ethereum) procNewHeight(ctx context.Context, continueF
 
 	currentHeight := head.Number.Uint64()
 	relayerLog.Info("procNewHeight", "currentHeight", currentHeight)
-	/ 1 logEven 
+	//       10 logEvent    
 	fetchCnt := int32(10)
 	for ethRelayer.eventLogIndex.Height+uint64(ethRelayer.maturityDegree)+1 <= currentHeight {
 		logs, err := ethRelayer.getNextValidEthTxEventLogs(ethRelayer.eventLogIndex.Height, ethRelayer.eventLogIndex.Index, fetchCnt)
@@ -427,13 +427,13 @@ func (ethRelayer *Relayer4Ethereum) procNewHeight(ctx context.Context, continueF
 			//firstHeight := logs[0].BlockNumber
 			lastHeight := logs[cnt-1].BlockNumber
 			index := logs[cnt-1].TxIndex
-			/  
+			//             ，     
 			ethRelayer.setBridgeBankProcessedHeight(lastHeight, uint32(index))
 			ethRelayer.eventLogIndex.Height = lastHeight
 			ethRelayer.eventLogIndex.Index = uint32(index)
 		}
 
-		/ even 1  
+		//       event      10 ，    
 		if cnt < fetchCnt {
 			return
 		}
@@ -441,10 +441,10 @@ func (ethRelayer *Relayer4Ethereum) procNewHeight(ctx context.Context, continueF
 }
 
 func (ethRelayer *Relayer4Ethereum) storeBridgeBankLogs(vLog types.Log, setBlockNumber bool) {
-	//lock  (ETH/ERC20----->chain33) 
-	//burn  (chain33 token----->chain33) chain3 withdra  chain3 unloc 
+	//lock,     (ETH/ERC20----->chain33)     
+	//burn,     (chain33 token----->chain33)   chain33  withdraw  ，   chain33   unlock  
 	if vLog.Topics[0].Hex() == ethRelayer.bridgeBankEventLockSig {
-		/  
+		//         ，                 
 		relayerLog.Info("Relayer4Ethereum storeBridgeBankLogs", "^_^ ^_^ Received bridgeBankLog for event", "lock",
 			"Block number:", vLog.BlockNumber, "tx Index", vLog.TxIndex, "log Index", vLog.Index, "Tx hash:", vLog.TxHash.Hex())
 		if err := ethRelayer.setEthTxEvent(vLog); nil != err {
@@ -458,7 +458,7 @@ func (ethRelayer *Relayer4Ethereum) storeBridgeBankLogs(vLog types.Log, setBlock
 		}
 	}
 
-	/ 
+	//                
 	if setBlockNumber {
 		if err := ethRelayer.setHeight4BridgeBankLogAt(vLog.BlockNumber); nil != err {
 			panic(err.Error())
@@ -479,20 +479,20 @@ func (ethRelayer *Relayer4Ethereum) procBridgeBankLogs(vLog types.Log) {
 		}
 	}()
 
-	/ 
+	//                     
 	receipt, err := ethRelayer.clientSpec.TransactionReceipt(context.Background(), vLog.TxHash)
 	if nil != err {
 		relayerLog.Error("procBridgeBankLogs", "Failed to get tx receipt with hash", vLog.TxHash.String())
 		return
 	}
 
-	/ 
+	//             
 	if receipt.Status != types.ReceiptStatusSuccessful {
 		relayerLog.Error("procBridgeBankLogs", "tx not successful with status", receipt.Status)
 		return
 	}
 
-	//lock  (ETH/ERC20----->chain33) 
+	//lock,     (ETH/ERC20----->chain33)     
 	if vLog.Topics[0].Hex() == ethRelayer.bridgeBankEventLockSig {
 		eventName := events.LogLock.String()
 		relayerLog.Info("Relayer4Ethereum proc", "Going to process", eventName,
@@ -504,7 +504,7 @@ func (ethRelayer *Relayer4Ethereum) procBridgeBankLogs(vLog types.Log) {
 			panic(errinfo)
 		}
 	} else if vLog.Topics[0].Hex() == ethRelayer.bridgeBankEventBurnSig {
-		//burn  (chain33 token----->chain33) chain3 withdra  chain3 unloc 
+		//burn,     (chain33 token----->chain33)   chain33  withdraw  ，   chain33   unlock  
 		eventName := events.LogChain33TokenBurn.String()
 		relayerLog.Info("Relayer4Ethereum proc", "Going to process", eventName,
 			"Block number:", vLog.BlockNumber, "Tx hash:", vLog.TxHash.Hex())
@@ -545,7 +545,7 @@ func (ethRelayer *Relayer4Ethereum) filterLogEvents() {
 		case vLog := <-bridgeBankLog:
 			ethRelayer.storeBridgeBankLogs(vLog, true)
 		case vLog := <-ethRelayer.bridgeBankLog:
-			/  pani   
+			//           ，         panic ，           ，              
 			ethRelayer.storeBridgeBankLogs(vLog, false)
 		case <-done:
 			relayerLog.Info("Finshed offline logs processed")
@@ -603,13 +603,13 @@ func (ethRelayer *Relayer4Ethereum) filterLogEventsProc(logchan chan<- types.Log
 
 func (ethRelayer *Relayer4Ethereum) prePareSubscribeEvent() {
 	var eventName string
-	//bridgeBan 
+	//bridgeBank  
 	contactAbi := ethtxs.LoadABI(ethtxs.BridgeBankABI)
 	ethRelayer.bridgeBankAbi = contactAbi
 	eventName = events.LogLock.String()
-	ethRelayer.bridgeBankEventLockSig = contactAbi.Events[eventName].ID.Hex()
+	ethRelayer.bridgeBankEventLockSig = contactAbi.Events[eventName].ID().Hex()
 	eventName = events.LogChain33TokenBurn.String()
-	ethRelayer.bridgeBankEventBurnSig = contactAbi.Events[eventName].ID.Hex()
+	ethRelayer.bridgeBankEventBurnSig = contactAbi.Events[eventName].ID().Hex()
 	ethRelayer.bridgeBankAddr = ethRelayer.x2EthDeployInfo.BridgeBank.Address
 }
 
@@ -713,7 +713,7 @@ func (ethRelayer *Relayer4Ethereum) handleLogLockEvent(clientChainID *big.Int, c
 	}
 	relayerLog.Info("handleLogLockEvent", "RelayLockToChain33 with hash", txhash)
 
-	/ hash 
+	//    hash，    
 	atomic.AddInt64(&ethRelayer.totalTx4Eth2Chain33, 1)
 	txIndex := atomic.LoadInt64(&ethRelayer.totalTx4Eth2Chain33)
 	if err = ethRelayer.updateTotalTxAmount2chain33(txIndex); nil != err {
@@ -771,7 +771,7 @@ func (ethRelayer *Relayer4Ethereum) handleLogBurnEvent(clientChainID *big.Int, c
 	}
 	relayerLog.Info("handleLogLockEvent", "RelayBurnToChain33 with hash", txhash)
 
-	/ hash 
+	//    hash，    
 	atomic.AddInt64(&ethRelayer.totalTx4Eth2Chain33, 1)
 	txIndex := atomic.LoadInt64(&ethRelayer.totalTx4Eth2Chain33)
 	if err = ethRelayer.updateTotalTxAmount2chain33(txIndex); nil != err {

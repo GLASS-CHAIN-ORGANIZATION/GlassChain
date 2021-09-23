@@ -33,11 +33,11 @@ var relayerLog = log.New("module", "chain33_relayer")
 type Relayer4Chain33 struct {
 	syncTxReceipts      *syncTx.TxReceipts
 	ethClient           ethinterface.EthClientSpec
-	rpcLaddr            string / blockchai rp 
+	rpcLaddr            string //      blockchain    rpc  
 	fetchHeightPeriodMs int64
 	db                  dbm.DB
-	lastHeight4Tx       int64 / 
-	matDegree           int32 /          heightSync2App    matDegress   height
+	lastHeight4Tx       int64 //                  
+	matDegree           int32 //            heightSync2App    matDegress   height
 	//passphase            string
 	privateKey4Ethereum  *ecdsa.PrivateKey
 	ethSender            ethCommon.Address
@@ -129,7 +129,7 @@ func (chain33Relayer *Relayer4Chain33) getCurrentHeight() int64 {
 }
 
 func (chain33Relayer *Relayer4Chain33) onNewHeightProc(currentHeight int64) {
-	/ 
+	//           
 	chain33Relayer.rwLock.Lock()
 	for chain33Relayer.statusCheckedIndex < chain33Relayer.totalTx4Chain33ToEth {
 		index := chain33Relayer.statusCheckedIndex + 1
@@ -139,8 +139,8 @@ func (chain33Relayer *Relayer4Chain33) onNewHeightProc(currentHeight int64) {
 			break
 		}
 		status := relayerTx.GetEthTxStatus(chain33Relayer.ethClient, txhash)
-		/  pendin   
-		//TODO   
+		//               ，          pending  ，         ，               
+		//TODO:               ，                ，         
 		if status == relayerTx.EthTxPending.String() {
 			break
 		}
@@ -149,7 +149,7 @@ func (chain33Relayer *Relayer4Chain33) onNewHeightProc(currentHeight int64) {
 		_ = chain33Relayer.setStatusCheckedIndex(chain33Relayer.statusCheckedIndex)
 	}
 	chain33Relayer.rwLock.Unlock()
-	/  
+	//         ，     
 	//  +++++++++||++++++++++++||++++++++++||
 	//           ^             ^           ^
 	// lastHeight4Tx    matDegress   currentHeight
@@ -168,7 +168,7 @@ func (chain33Relayer *Relayer4Chain33) onNewHeightProc(currentHeight int64) {
 
 		txs := TxReceipts.Tx
 		for i, tx := range txs {
-			/ ln  ：user.p.xxx.lns) 
+			//     lns   (     ：user.p.xxx.lns)，           
 			if 0 != bytes.Compare(tx.Execer, []byte(relayerTx.X2Eth)) &&
 				(len(tx.Execer) > 4 && string(tx.Execer[(len(tx.Execer)-4):]) != "."+relayerTx.X2Eth) {
 				relayerLog.Debug("onNewHeightProc, the tx is not x2ethereum", "Execer", string(tx.Execer), "height:", TxReceipts.Height)
@@ -214,7 +214,7 @@ func (chain33Relayer *Relayer4Chain33) handleBurnLockMsg(claimEvent events.Event
 	// Parse the witnessed event's data into a new Chain33Msg
 	chain33Msg := relayerTx.ParseBurnLockTxReceipt(claimEvent, receipt)
 	if nil == chain33Msg {
-		/  
+		//         ，    
 		relayerLog.Error("handleBurnLockMsg", "Received failed tx with hash", ethCommon.Bytes2Hex(chain33TxHash))
 		return nil
 	}
@@ -228,7 +228,7 @@ func (chain33Relayer *Relayer4Chain33) handleBurnLockMsg(claimEvent events.Event
 		return err
 	}
 
-	/ hash 
+	//    hash，    
 	atomic.AddInt64(&chain33Relayer.totalTx4Chain33ToEth, 1)
 	txIndex := atomic.LoadInt64(&chain33Relayer.totalTx4Chain33ToEth)
 	if err = chain33Relayer.updateTotalTxAmount2Eth(txIndex); nil != err {

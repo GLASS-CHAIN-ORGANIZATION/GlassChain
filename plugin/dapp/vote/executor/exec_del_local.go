@@ -5,10 +5,10 @@ import (
 )
 
 /*
- * 
+ *                 
  */
 
-// ExecDelLocal localdb k 
+// ExecDelLocal localdb kv        
 func (v *vote) ExecDelLocal(tx *types.Transaction, receipt *types.ReceiptData, index int) (*types.LocalDBSet, error) {
 	kvs, err := v.DelRollbackKV(tx, tx.Execer)
 	if err != nil {

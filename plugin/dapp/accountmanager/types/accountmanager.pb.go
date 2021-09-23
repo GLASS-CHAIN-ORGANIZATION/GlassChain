@@ -188,6 +188,7 @@ func (*AccountmanagerAction) XXX_OneofWrappers() []interface{} {
 	}
 }
 
+//  
 type Register struct {
 	AccountID            string   `protobuf:"bytes,1,opt,name=accountID,proto3" json:"accountID,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -227,6 +228,7 @@ func (m *Register) GetAccountID() string {
 	return ""
 }
 
+//    
 type ResetKey struct {
 	AccountID            string   `protobuf:"bytes,1,opt,name=accountID,proto3" json:"accountID,omitempty"`
 	Addr                 string   `protobuf:"bytes,2,opt,name=addr,proto3" json:"addr,omitempty"`
@@ -274,8 +276,10 @@ func (m *ResetKey) GetAddr() string {
 	return ""
 }
 
+//      
 type Apply struct {
 	AccountID string `protobuf:"bytes,1,opt,name=accountID,proto3" json:"accountID,omitempty"`
+	//  ， 1         , 2       ，        
 	Op                   int32    `protobuf:"varint,2,opt,name=op,proto3" json:"op,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -321,11 +325,13 @@ func (m *Apply) GetOp() int32 {
 	return 0
 }
 
+//          
 type Transfer struct {
+	//          
 	Asset *types.Asset `protobuf:"bytes,1,opt,name=asset,proto3" json:"asset,omitempty"`
-
+	// from  
 	FromAccountID string `protobuf:"bytes,2,opt,name=fromAccountID,proto3" json:"fromAccountID,omitempty"`
-
+	// to  
 	ToAccountID          string   `protobuf:"bytes,3,opt,name=toAccountID,proto3" json:"toAccountID,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -378,11 +384,13 @@ func (m *Transfer) GetToAccountID() string {
 	return ""
 }
 
+//       
 type Supervise struct {
+	//    
 	AccountIDs []string `protobuf:"bytes,1,rep,name=accountIDs,proto3" json:"accountIDs,omitempty"`
-
+	//  ， 1   ，2   ，3     ,4   
 	Op int32 `protobuf:"varint,2,opt,name=op,proto3" json:"op,omitempty"`
-
+	//0  ,             ，           
 	Level                int32    `protobuf:"varint,3,opt,name=level,proto3" json:"level,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -436,23 +444,23 @@ func (m *Supervise) GetLevel() int32 {
 }
 
 type Account struct {
-
+	//    
 	AccountID string `protobuf:"bytes,1,opt,name=accountID,proto3" json:"accountID,omitempty"`
-
+	//  
 	Addr string `protobuf:"bytes,2,opt,name=addr,proto3" json:"addr,omitempty"`
-
+	//       
 	PrevAddr string `protobuf:"bytes,3,opt,name=prevAddr,proto3" json:"prevAddr,omitempty"`
-
+	//     0   ， 1    , 2     3,    
 	Status int32 `protobuf:"varint,4,opt,name=status,proto3" json:"status,omitempty"`
-
+	//     0  ,             ，           
 	Level int32 `protobuf:"varint,5,opt,name=level,proto3" json:"level,omitempty"`
-
+	//    
 	CreateTime int64 `protobuf:"varint,6,opt,name=createTime,proto3" json:"createTime,omitempty"`
-
+	//    
 	ExpireTime int64 `protobuf:"varint,7,opt,name=expireTime,proto3" json:"expireTime,omitempty"`
-
+	//    
 	LockTime int64 `protobuf:"varint,8,opt,name=lockTime,proto3" json:"lockTime,omitempty"`
-
+	//    
 	Index                int64    `protobuf:"varint,9,opt,name=index,proto3" json:"index,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -688,6 +696,7 @@ func (m *TransferReceipt) GetIndex() int64 {
 	return 0
 }
 
+//    
 type SuperviseReceipt struct {
 	Accounts             []*Account `protobuf:"bytes,1,rep,name=accounts,proto3" json:"accounts,omitempty"`
 	Op                   int32      `protobuf:"varint,2,opt,name=op,proto3" json:"op,omitempty"`
@@ -745,9 +754,10 @@ func (m *SuperviseReceipt) GetIndex() int64 {
 
 type QueryExpiredAccounts struct {
 	PrimaryKey string `protobuf:"bytes,1,opt,name=primaryKey,proto3" json:"primaryKey,omitempty"`
-
+	//           ，   
 	ExpiredTime int64 `protobuf:"varint,2,opt,name=expiredTime,proto3" json:"expiredTime,omitempty"`
-
+	//         ，    10 
+	// 0  ，1  ，    
 	Direction            int32    `protobuf:"varint,3,opt,name=direction,proto3" json:"direction,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -801,11 +811,11 @@ func (m *QueryExpiredAccounts) GetDirection() int32 {
 }
 
 type QueryAccountsByStatus struct {
-
+	//     1   ， 2    , 3    
 	Status int32 `protobuf:"varint,1,opt,name=status,proto3" json:"status,omitempty"`
-
+	//     
 	PrimaryKey string `protobuf:"bytes,3,opt,name=primaryKey,proto3" json:"primaryKey,omitempty"`
-
+	// 0  ，1  ，    
 	Direction            int32    `protobuf:"varint,5,opt,name=direction,proto3" json:"direction,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`

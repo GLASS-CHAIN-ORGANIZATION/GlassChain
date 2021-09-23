@@ -73,68 +73,68 @@ function paracross_QueryMainAssetBalance() {
 }
 
 function paracross_Transfer_Withdraw_Inner() {
-    #    counter == 2
+    #    ，                  ，    counter == 2
     local count=0
-    #fromAddr  
+    #fromAddr          
     local from_addr="$1"
-    #privkey 
+    #privkey     
     local privkey="$2"
-    #paracrossAddr 
+    #paracrossAddr     
     local paracross_addr="$3"
-     
+    #  
     local execer_name="$4"
-    #amount_save 
+    #amount_save        
     local amount_save=1000000
-    #amount_should 
+    #amount_should      
     local amount_should=27000
-    #withdraw_should 
+    #withdraw_should      
     local withdraw_should=13000
-     
+    #        
     local para_balance_before
-     
+    #        
     local para_balance_after
-     
+    #        
     local para_balance_withdraw_after
-     
+    #       
     local main_balance_before
-     
+    #       
     local main_balance_after
-     
+    #       
     local main_balance_withdraw_after
 
-     
+    #      
     local tx_hash
-     
+    #         
     local para_amount_real
-     
+    #         
     local para_withdraw_real
-     
+    #        
     local main_amount_real
-     
+    #        
     local main_withdraw_real
 
-    #2  
+    #2         
     tx_hash=$(curl -ksd '{"method":"Chain33.CreateRawTransaction","params":[{"to":"'"$paracross_addr"'","amount":'$amount_save'}]}' ${UNIT_HTTP} | jq -r ".result")
     chain33_SignAndSendTx "$tx_hash" "$privkey" ${UNIT_HTTP}
 
-    #1. 
+    #1.            
     para_balance_before=$(paracross_QueryParaBalance "$from_addr" "paracross")
     echo "para before transferring:$para_balance_before"
     main_balance_before=$(paracross_QueryMainBalance "$from_addr")
     echo "main before transferring:$main_balance_before"
 
-    #3  
+    #3             
     tx_hash=$(curl -ksd '{"method":"Chain33.CreateTransaction","params":[{"execer":"'"$execer_name"'","actionName":"ParacrossAssetTransfer","payload":{"execName":"'"$execer_name"'","to":"'"$from_addr"'","amount":'$amount_should'}}]}' ${UNIT_HTTP} | jq -r ".result")
     chain33_SignAndSendTx "$tx_hash" "$privkey" ${UNIT_HTTP}
 
-    #4 
+    #4          
     local times=200
     while true; do
         para_balance_after=$(paracross_QueryParaBalance "$from_addr" "paracross")
         echo "para after transferring:$para_balance_after"
         main_balance_after=$(paracross_QueryMainBalance "$from_addr")
         echo "main after transferring:$main_balance_after"
-        #real_amount  
+        #real_amount        
         para_amount_real=$((para_balance_after - para_balance_before))
         main_amount_real=$((main_balance_before - main_balance_after))
         #echo $amount_real
@@ -151,18 +151,18 @@ function paracross_Transfer_Withdraw_Inner() {
         fi
     done
 
-    #5 
+    #5   
     tx_hash=$(curl -ksd '{"method":"Chain33.CreateTransaction","params":[{"execer":"'"$execer_name"'","actionName":"ParacrossAssetWithdraw","payload":{"IsWithdraw":true,"execName":"'"$execer_name"'","to":"'"$from_addr"'","amount":'$withdraw_should'}}]}' ${UNIT_HTTP} | jq -r ".result")
     chain33_SignAndSendTx "$tx_hash" "$privkey" ${UNIT_HTTP}
 
-    #6 
+    #6          
     local times=200
     while true; do
         para_balance_withdraw_after=$(paracross_QueryParaBalance "$from_addr" "paracross")
         echo "para after withdrawing :$para_balance_withdraw_after"
         main_balance_withdraw_after=$(paracross_QueryMainBalance "$from_addr")
         echo "main after withdrawing :$main_balance_withdraw_after"
-         
+        #      
         para_withdraw_real=$((para_balance_after - para_balance_withdraw_after))
         main_withdraw_real=$((main_balance_withdraw_after - main_balance_after))
         if [ "$withdraw_should" != "$para_withdraw_real" ] && [ "$withdraw_should" != "$main_withdraw_real" ]; then
@@ -185,11 +185,11 @@ function paracross_Transfer_Withdraw_Inner() {
 }
 
 function paracross_Transfer_Withdraw() {
-    #fromAddr  
+    #fromAddr          
     local from_addr="12qyocayNF7Lv6C9qW4avxs2E7U41fKSfv"
-    #privkey 
+    #privkey     
     local privkey="4257D8692EF7FE13C68B65D6A52F03933DB2FA5CE8FAF210B5B8B80C721CED01"
-    #paracrossAddr 
+    #paracrossAddr     
     local paracross_addr="1HPkPopVe3ERfvaAgedDtJQ792taZFEHCe"
     #execer
     local execer_name="user.p.para.paracross"
@@ -247,7 +247,7 @@ function paracross_txgroupex() {
     local paracross_execer_name="$para_title.paracross"
     local trade_exec_name="$para_title.trade"
 
-    #  
+    #             
     req='"method":"Chain33.CreateTransaction","params":[{"execer":"'"${paracross_execer_name}"'","actionName":"CrossAssetTransfer","payload":{"assetExec":"'"${coins_exec}"'","assetSymbol":"'"${bty_symbol}"'","toAddr":"'"${para_test_addr}"'","amount":'${amount_transfer}'}}]'
     echo "$req"
     resp=$(curl -ksd "{$req}" "${para_ip}")
@@ -259,7 +259,7 @@ function paracross_txgroupex() {
     fi
     tx_hash_asset=$(jq -r ".result" <<<"$resp")
 
-    #  
+    #                
     req='"method":"Chain33.CreateTransaction","params":[{"execer":"'"${paracross_execer_name}"'","actionName":"TransferToExec","payload":{"execName":"'"${paracross_execer_name}"'","to":"'"${trade_exec_addr}"'","amount":'${amount_trade}', "cointoken":"coins.bty"}}]'
     echo "$req"
     resp=$(curl -ksd "{$req}" "${para_ip}")
@@ -290,7 +290,7 @@ function paracross_txgroupex() {
     chain33_SendTx "${tx_sign2}" "${para_ip}"
 }
 
-  
+#            ,        
 function paracross_testTxGroupFail() {
     local para_ip=$1
 
@@ -304,12 +304,12 @@ function paracross_testTxGroupFail() {
 
     #execer
     local trade_exec_addr="12bihjzbaYWjcpDiiy9SuAWeqNksQdiN13"
-         
+    #      １ ,     ８      ,          
     local amount_trade=800000000
     local amount_transfer=100000000
     local amount_left=500000000
 
-      
+    #   ５ 
     left_exec_val=$(paracross_QueryMainBalance "${para_test_addr}")
     if [ "${left_exec_val}" != $amount_left ]; then
         echo "paracross_testTxGroupFail left main paracross failed, get=$left_exec_val,expec=$amount_left"
@@ -318,7 +318,7 @@ function paracross_testTxGroupFail() {
 
     paracross_txgroupex "${amount_transfer}" "${amount_trade}" "${para_ip}" "user.p.para" "coins" "bty"
 
-       transfe trad  
+    #         ５ ，  transfer trade ２       
     local count=0
     local times=300
     local paracross_execer_name="user.p.para.paracross"
@@ -348,7 +348,7 @@ function paracross_testTxGroupFail() {
     echo_rst "$FUNCNAME" "$rst"
 }
 
- paraAssetWithdraw fail, game i  CreateNoBlanaceTx  
+#  paraAssetWithdraw fail,        game　   ip       ，           CreateNoBlanaceTxs       ，           
 function paracross_testParaAssetWithdrawFail() {
     local para_ip=$1
 
@@ -361,12 +361,12 @@ function paracross_testParaAssetWithdrawFail() {
 
     #execer
     local trade_exec_addr="12bihjzbaYWjcpDiiy9SuAWeqNksQdiN13"
-     １  800  
+    #      １0 ,     8000      ,          
     local amount_trade=800000000000
     local amount_transfer=1000000000
     local amount_left=10000000000
 
-      
+    #   ５ 
     left_exec_val=$(paracross_QueryMainAssetBalance "${game_token_test_addr}" "paracross") "user.p.game.coins.para"
     if [ "${left_exec_val}" != $amount_left ]; then
         echo "paracross_testTxGroupFail left main paracross failed, get=$left_exec_val,expec=$amount_left"
@@ -375,7 +375,7 @@ function paracross_testParaAssetWithdrawFail() {
 
     paracross_txgroupex "${amount_transfer}" "${amount_trade}" "${para_ip}" "user.p.game" "paracross" "user.p.game.coins.para"
 
-       transfe trad  
+    #         ５ ，  transfer trade ２       
     local count=0
     local times=300
     while true; do
@@ -612,13 +612,13 @@ function main() {
     IS_PARA=$(echo '"'"${UNIT_HTTP}"'"' | jq '.|contains("8901")')
 
     if [ $# -eq 4 ] && [ -n "$2" ] && [ -n "$3" ] && [ -n "$4" ]; then
-        #fromAddr  
+        #fromAddr          
         local from_addr="$2"
-        #privkey 
+        #privkey     
         local privkey="$3"
         #execer
         local execer_name="$4"
-        #paracrossAddr 
+        #paracrossAddr     
         local paracross_addr="1HPkPopVe3ERfvaAgedDtJQ792taZFEHCe"
 
         echo "=========== # start cross transfer monitor ============="

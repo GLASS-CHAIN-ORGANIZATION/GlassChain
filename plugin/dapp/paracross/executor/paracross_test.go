@@ -26,7 +26,7 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-//  ， 
+//     4         ，     
 const (
 	SignedType = types.SECP256K1
 )
@@ -94,7 +94,7 @@ func init() {
 func (suite *CommitTestSuite) SetupSuite() {
 
 	suite.stateDB, _ = dbm.NewGoMemDB("state", "state", 1024)
-	// memdb KVD ， Exec ，  memdb
+	// memdb    KVDB  ，     Exec ，     memdb
 	//suite.localDB, _ = dbm.NewGoMemDB("local", "local", 1024)
 	suite.localDB = new(dbmock.KVDB)
 	suite.api = new(apimock.QueueProtocolAPI)
@@ -478,7 +478,7 @@ func (s *VoteTestSuite) SetupSuite() {
 	s.exec.SetAPI(api)
 
 	s.stateDB, _ = dbm.NewGoMemDB("state", "state", 1024)
-	// memdb KVD ， Exec ，  memdb
+	// memdb    KVDB  ，     Exec ，     memdb
 	//s.localDB, _ = dbm.NewGoMemDB("local", "local", 1024)
 	s.localDB = new(dbmock.KVDB)
 

@@ -211,7 +211,7 @@ func TestTypeCheck(t *testing.T) {
 		{"uint16[3]", nil, [4]uint16{1, 2, 3}, "abi: cannot use [4]uint16 as type [3]uint16 as argument"},
 		{"uint16[3]", nil, []uint16{1, 2, 3}, ""},
 		{"uint16[3]", nil, []uint16{1, 2, 3, 4}, "abi: cannot use [4]uint16 as type [3]uint16 as argument"},
-
+		//   chain33 evm Hash160Address     
 		{"address[]", nil, []common.Hash160Address{{1}}, ""},
 		{"address[1]", nil, []common.Hash160Address{{1}}, ""},
 		{"address[1]", nil, [1]common.Hash160Address{{1}}, ""},
@@ -260,7 +260,7 @@ func TestTypeCheck(t *testing.T) {
 		{"string", nil, []byte{}, "abi: cannot use slice as type string as argument"},
 		{"bytes32[]", nil, [][32]byte{{}}, ""},
 		{"function", nil, [24]byte{}, ""},
-
+		//   chain33 evm Hash160Address     
 		{"bytes20", nil, common.Hash160Address{}, ""},
 		{"address", nil, [20]byte{}, ""},
 		{"address", nil, common.Hash160Address{}, ""},

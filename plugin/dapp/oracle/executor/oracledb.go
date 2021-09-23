@@ -94,11 +94,11 @@ func (action *oracleAction) eventPublish(event *oty.EventPublish) (*types.Receip
 
 	eventID := common.ToHex(action.txhash)
 
-	// 
+	//                 
 	if event.Time <= action.blocktime {
 		return nil, oty.ErrTimeMustBeFuture
 	}
-	// 
+	//         
 	if !isEventPublisher(action.fromaddr, action.db, false) {
 		return nil, oty.ErrNoPrivilege
 	}
@@ -129,7 +129,7 @@ func (action *oracleAction) eventAbort(event *oty.EventAbort) (*types.Receipt, e
 	var kv []*types.KeyValue
 	var receipt *types.Receipt
 
-	/ 
+	//             
 	if !isEventPublisher(action.fromaddr, action.db, false) {
 		return nil, oty.ErrNoPrivilege
 	}
@@ -166,7 +166,7 @@ func (action *oracleAction) resultPrePublish(event *oty.ResultPrePublish) (*type
 	var kv []*types.KeyValue
 	var receipt *types.Receipt
 
-	/ 
+	//             
 	if !isEventPublisher(action.fromaddr, action.db, false) {
 		return nil, oty.ErrNoPrivilege
 	}
@@ -205,7 +205,7 @@ func (action *oracleAction) resultAbort(event *oty.ResultAbort) (*types.Receipt,
 	var kv []*types.KeyValue
 	var receipt *types.Receipt
 
-	/ 
+	//              
 	if !isEventPublisher(action.fromaddr, action.db, false) {
 		return nil, oty.ErrNoPrivilege
 	}
@@ -244,7 +244,7 @@ func (action *oracleAction) resultPublish(event *oty.ResultPublish) (*types.Rece
 	var kv []*types.KeyValue
 	var receipt *types.Receipt
 
-	/ 
+	//              
 	if !isEventPublisher(action.fromaddr, action.db, false) {
 		return nil, oty.ErrNoPrivilege
 	}
@@ -359,7 +359,7 @@ func updateStatus(ora *OracleDB, curIndex int64, addr string, status int32) {
 	ora.Status.Status = status
 }
 
-// getOracleLisByIDs eventinfo
+// getOracleLisByIDs   eventinfo
 func getOracleLisByIDs(db dbm.KV, infos *oty.QueryOracleInfos) (types.Message, error) {
 	if len(infos.EventID) == 0 {
 		return nil, oty.ErrParamNeedIDs

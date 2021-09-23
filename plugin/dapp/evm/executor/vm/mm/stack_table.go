@@ -11,9 +11,11 @@ import (
 )
 
 type (
+	// StackValidationFunc               
 	StackValidationFunc func(*Stack) error
 )
 
+// MakeStackFunc           （                 ）
 func MakeStackFunc(pop, push int) StackValidationFunc {
 	return func(stack *Stack) error {
 		if err := stack.Require(pop); err != nil {
@@ -27,31 +29,33 @@ func MakeStackFunc(pop, push int) StackValidationFunc {
 	}
 }
 
+// MakeDupStackFunc            
 func MakeDupStackFunc(n int) StackValidationFunc {
 	return MakeStackFunc(n, n+1)
 }
 
+// MakeSwapStackFunc            
 func MakeSwapStackFunc(n int) StackValidationFunc {
 	return MakeStackFunc(n, n)
 }
 
-func minSwapStack(n int) int {
-	return minStack(n, n)
-}
-func maxSwapStack(n int) int {
-	return maxStack(n, n)
-}
+//func MinSwapStack(n int) int {
+//	return MinStack(n, n)
+//}
+//func MaxSwapStack(n int) int {
+//	return MaxStack(n, n)
+//}
+//
+//func MinDupStack(n int) int {
+//	return MinStack(n, n+1)
+//}
+//func MaxDupStack(n int) int {
+//	return MaxStack(n, n+1)
+//}
 
-func minDupStack(n int) int {
-	return minStack(n, n+1)
-}
-func maxDupStack(n int) int {
-	return maxStack(n, n+1)
-}
-
-func maxStack(pop, push int) int {
-	return int(params.StackLimit) + pop - push
-}
-func minStack(pops, push int) int {
-	return pops
-}
+//func MaxStack(pop, push int) int {
+//	return int(params.StackLimit) + pop - push
+//}
+//func MinStack(pops, push int) int {
+//	return pops
+//}

@@ -4,6 +4,6 @@
 
 package gossip
 
-//p2p ：
-/  。
-//p2p ：
+//p2p     ：
+//                ，        。
+//p2p      ：

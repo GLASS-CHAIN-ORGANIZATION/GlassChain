@@ -45,7 +45,7 @@ func NewType(cfg *types.Chain33Config) *ValNodeType {
 	return c
 }
 
-// GetName 
+// GetName        
 func (t *ValNodeType) GetName() string {
 	return ValNodeX
 }

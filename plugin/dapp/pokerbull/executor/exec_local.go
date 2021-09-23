@@ -10,13 +10,13 @@ import (
 )
 
 func (c *PokerBull) updateIndex(log *pkt.ReceiptPBGame) (kvs []*types.KeyValue) {
-	/ Actio 
+	//     Action     
 	kvs = append(kvs, addPBGameStatusAndPlayer(log.Status, log.PlayerNum, log.Value, log.Index, log.GameId))
 	kvs = append(kvs, addPBGameStatusIndexKey(log.Status, log.GameId, log.Index))
 	kvs = append(kvs, addPBGameAddrIndexKey(log.Status, log.Addr, log.GameId, log.Index))
 
 	/*
-		/ 
+		//    
 		if log.Status == pkt.PBGameActionStart {
 			kvs = append(kvs, delPBGameStatusAndPlayer(pkt.PBGameActionStart, log.PlayerNum, log.Value, log.PrevIndex))
 			kvs = append(kvs, delPBGameStatusIndexKey(pkt.PBGameActionStart, log.PrevIndex))
@@ -37,7 +37,7 @@ func (c *PokerBull) updateIndex(log *pkt.ReceiptPBGame) (kvs []*types.KeyValue) 
 
 		}*/
 
-	/  
+	//    ，          
 	if !log.IsWaiting {
 		for _, v := range log.Players {
 			if v != log.Addr {
@@ -61,7 +61,7 @@ func (c *PokerBull) execLocal(receipt *types.ReceiptData) (*types.LocalDBSet, er
 			var Gamelog pkt.ReceiptPBGame
 			err := types.Decode(item.Log, &Gamelog)
 			if err != nil {
-				panic(err) /  
+				panic(err) //     ，      
 			}
 			kv := c.updateIndex(&Gamelog)
 			dbSet.KV = append(dbSet.KV, kv...)
@@ -70,22 +70,22 @@ func (c *PokerBull) execLocal(receipt *types.ReceiptData) (*types.LocalDBSet, er
 	return dbSet, nil
 }
 
-// ExecLocal_Start loca 
+// ExecLocal_Start       local  
 func (c *PokerBull) ExecLocal_Start(payload *pkt.PBGameStart, tx *types.Transaction, receiptData *types.ReceiptData, index int) (*types.LocalDBSet, error) {
 	return c.execLocal(receiptData)
 }
 
-// ExecLocal_Continue loca 
+// ExecLocal_Continue       local  
 func (c *PokerBull) ExecLocal_Continue(payload *pkt.PBGameContinue, tx *types.Transaction, receiptData *types.ReceiptData, index int) (*types.LocalDBSet, error) {
 	return c.execLocal(receiptData)
 }
 
-// ExecLocal_Quit loca 
+// ExecLocal_Quit       local  
 func (c *PokerBull) ExecLocal_Quit(payload *pkt.PBGameQuit, tx *types.Transaction, receiptData *types.ReceiptData, index int) (*types.LocalDBSet, error) {
 	return c.execLocal(receiptData)
 }
 
-// ExecLocal_Play loca 
+// ExecLocal_Play        local  
 func (c *PokerBull) ExecLocal_Play(payload *pkt.PBGamePlay, tx *types.Transaction, receiptData *types.ReceiptData, index int) (*types.LocalDBSet, error) {
 	return c.execLocal(receiptData)
 }

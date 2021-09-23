@@ -1,26 +1,25 @@
 Title="user.p.para."
 CoinSymbol="paracoin"
 
-[crypto]
 [log]
-#  debug(dbug)/info/warn/error(eror)/crit
+#     ，  debug(dbug)/info/warn/error(eror)/crit
 loglevel = "debug"
 logConsoleLevel = "info"
-#   
+#      ，    ，                
 logFile = "logs/chain33.para.log"
-#   ）
+#           （  ： ）
 maxFileSize = 300
-# 
+#              
 maxBackups = 100
-#   ）
+#            （  ： ）
 maxAge = 28
-#  UT ）
+#              （    UTC  ）
 localTime = true
-#  gz）
+#           （     gz）
 compress = false
-# 
+#             
 callerFile = false
-# 
+#         
 callerFunction = false
 
 
@@ -55,7 +54,7 @@ grpcLogFile="grpc33.log"
 
 
 [rpc]
-# 
+#          
 jrpcBindAddr="0.0.0.0:8901"
 grpcBindAddr="0.0.0.0:8902"
 whitelist=["localhost","127.0.0.1","0.0.0.0"]
@@ -73,7 +72,7 @@ maxTxNumPerAccount=10000
 name="para"
 genesisBlockTime=1514533394
 genesis="14KEKbYtKKQm4wMthSK9J4La4nAiidGozt"
-minerExecs=["paracross"]     
+minerExecs=["paracross"]    #      
 
 [mver.consensus]
 fundKeyAddr = "1BQXS6TxaYYG5mADaWij4AxhZZUTpw95a5"
@@ -88,22 +87,22 @@ coinDevFund = 12
 
 [consensus.sub.para]
 ParaRemoteGrpcClient = "localhost:8802"
- 
+#             
 startHeight=20
-  
+#      ，   
 writeBlockSeconds=2
 
 mainBlockHashForkHeight=1
 mainForkParacrossCommitTx=5
 mainParaSelfConsensusForkHeight=300
-    
+#    ，             ，          ，       
 authAccount="1KSBd17H7ZK8iT37aJztFB22XGwsPTdwE4"
-   2
+#                    ，         ，   2
 waitBlocks4CommitMsg=2
- 
+#      
 genesisAmount=100000000
 selfConsensEnablePreContract=["0-1000"]
-  
+#               ，         
 emptyBlockInterval=["0:4"]
 
 
@@ -157,9 +156,9 @@ tokenApprs = [
 
 
 [exec.sub.cert]
-# 
+#            
 enable=false
-# 
+#       
 cryptoPath="authdir/crypto"
-#  "auth_ecdsa", "auth_sm2"
+#        ，  "auth_ecdsa", "auth_sm2"
 signType="auth_ecdsa"

@@ -25,30 +25,37 @@ var (
 	alog   = log.New("module", "authority")
 	cpuNum = runtime.NumCPU()
 
+	// Author        
 	Author = &Authority{}
 
+	// IsAuthEnable           
 	IsAuthEnable = false
 )
 
+// Authority          
 type Authority struct {
+	//       
 	cryptoPath string
+	// certByte  
 	authConfig *core.AuthConfig
-
+	//    
 	validator core.Validator
-
+	//     
 	signType int
-
+	//       
 	validCertCache [][]byte
-
+	//       
 	HistoryCertCache *HistoryCertData
 }
 
+// HistoryCertData       
 type HistoryCertData struct {
 	CryptoCfg *core.AuthConfig
 	CurHeight int64
 	NxtHeight int64
 }
 
+// Init    auth
 func (auth *Authority) Init(conf *ty.Authority) error {
 	if conf == nil || !conf.Enable {
 		return nil
@@ -88,6 +95,7 @@ func (auth *Authority) Init(conf *ty.Authority) error {
 	return nil
 }
 
+// newAuthConfig store    authConfig  
 func newAuthConfig(store *types.HistoryCertStore) *core.AuthConfig {
 	ret := &core.AuthConfig{}
 	ret.RootCerts = make([][]byte, len(store.Rootcerts))
@@ -108,17 +116,19 @@ func newAuthConfig(store *types.HistoryCertStore) *core.AuthConfig {
 	return ret
 }
 
+// ReloadCert               ，      
 func (auth *Authority) ReloadCert(store *types.HistoryCertStore) error {
 	if !IsAuthEnable {
 		return nil
 	}
 
+	//            
 	if len(store.Rootcerts) == 0 {
 		auth.authConfig = nil
 		auth.validator, _ = core.NewNoneValidator()
 	} else {
 		auth.authConfig = newAuthConfig(store)
-
+		//      
 		vldt, err := core.GetLocalValidator(auth.authConfig, auth.signType)
 		if err != nil {
 			return err
@@ -126,13 +136,16 @@ func (auth *Authority) ReloadCert(store *types.HistoryCertStore) error {
 		auth.validator = vldt
 	}
 
+	//         
 	auth.validCertCache = auth.validCertCache[:0]
 
+	//         
 	auth.HistoryCertCache = &HistoryCertData{auth.authConfig, store.CurHeigth, store.NxtHeight}
 
 	return nil
 }
 
+// ReloadCertByHeght    authdir        ，      
 func (auth *Authority) ReloadCertByHeght(currentHeight int64) error {
 	if !IsAuthEnable {
 		return nil
@@ -145,20 +158,25 @@ func (auth *Authority) ReloadCertByHeght(currentHeight int64) error {
 	}
 	auth.authConfig = authConfig
 
+	//      
 	vldt, err := core.GetLocalValidator(auth.authConfig, auth.signType)
 	if err != nil {
 		return err
 	}
 	auth.validator = vldt
 
+	//         
 	auth.validCertCache = auth.validCertCache[:0]
 
+	//         
 	auth.HistoryCertCache = &HistoryCertData{auth.authConfig, currentHeight, -1}
 
 	return nil
 }
 
+// ValidateCerts       
 func (auth *Authority) ValidateCerts(task []*types.Signature) bool {
+	//FIXME               ，           
 	done := make(chan struct{})
 	defer close(done)
 
@@ -218,19 +236,22 @@ func (auth *Authority) task(done <-chan struct{}, taskes <-chan *types.Signature
 	}
 }
 
+// Validate     
 func (auth *Authority) Validate(signature *types.Signature) error {
-
+	//  proto   signature
 	cert, err := auth.validator.GetCertFromSignature(signature.Signature)
 	if err != nil {
 		return err
 	}
 
+	//           
 	for _, v := range auth.validCertCache {
 		if bytes.Equal(v, cert) {
 			return nil
 		}
 	}
 
+	//   
 	err = auth.validator.Validate(cert, signature.GetPubkey())
 	if err != nil {
 		alog.Error(fmt.Sprintf("validate cert failed. %s", err.Error()))
@@ -241,11 +262,13 @@ func (auth *Authority) Validate(signature *types.Signature) error {
 	return nil
 }
 
+// GetSnFromSig        
 func (auth *Authority) GetSnFromByte(signature *types.Signature) ([]byte, error) {
 	return auth.validator.GetCertSnFromSignature(signature.Signature)
 
 }
 
+// ToHistoryCertStore       store        
 func (certdata *HistoryCertData) ToHistoryCertStore(store *types.HistoryCertStore) {
 	if store == nil {
 		alog.Error("Convert cert data to cert store failed")
@@ -271,18 +294,21 @@ func (certdata *HistoryCertData) ToHistoryCertStore(store *types.HistoryCertStor
 	store.NxtHeight = certdata.NxtHeight
 }
 
+// User            
 type User struct {
 	ID   string
 	Cert []byte
 	Key  crypto.PrivKey
 }
 
+// UserLoader SKD  user  
 type UserLoader struct {
 	configPath string
 	userMap    map[string]*User
 	signType   int
 }
 
+// Init userloader   
 func (loader *UserLoader) Init(configPath string, signType string) error {
 	loader.configPath = configPath
 	loader.userMap = make(map[string]*User)
@@ -353,6 +379,7 @@ func (loader *UserLoader) genCryptoPriv(keyBytes []byte) (crypto.PrivKey, error)
 	return priv, nil
 }
 
+// Get        user  
 func (loader *UserLoader) Get(userName, orgName string) (*User, error) {
 	keyvalue := fmt.Sprintf("%s@%s-cert.pem", userName, orgName)
 	user, ok := loader.userMap[keyvalue]

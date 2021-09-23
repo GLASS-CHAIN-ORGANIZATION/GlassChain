@@ -15,6 +15,7 @@ var (
 	PrivKeyB = "0x19c069234f9d3e61135fefbeb7791b149cdf6af536f26bebb310d4cd22c3fee4" // 1JRNjdEqp4LJ5fqycUBm9ayCKSeeskgMKR
 )
 
+//      ，              
 func main() {
 	cli = test.NewGRPCCli("localhost:8802")
 	go buy()
@@ -27,11 +28,11 @@ func sell() {
 		LeftAsset:  &et.Asset{Symbol: "bty", Execer: "coins"},
 		RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"},
 		Price:      1,
-		Amount:     types.DefaultCoinPrecision,
+		Amount:     types.Coin,
 		Op:         et.OpSell,
 	}
 	ety := types.LoadExecutorType(et.ExchangeX)
-
+	//   2000  ，  2000*1=2000   bty
 	for i := 0; i < 2000; i++ {
 		fmt.Println("sell ", i)
 		tx, err := ety.Create("LimitOrder", req)
@@ -47,11 +48,11 @@ func buy() {
 		LeftAsset:  &et.Asset{Symbol: "bty", Execer: "coins"},
 		RightAsset: &et.Asset{Execer: "token", Symbol: "CCNY"},
 		Price:      1,
-		Amount:     types.DefaultCoinPrecision,
+		Amount:     types.Coin,
 		Op:         et.OpBuy,
 	}
 	ety := types.LoadExecutorType(et.ExchangeX)
-
+	//   2000  ，  2000*1=2000   ccny
 	for i := 0; i < 2000; i++ {
 		fmt.Println("buy ", i)
 		tx, err := ety.Create("LimitOrder", req)

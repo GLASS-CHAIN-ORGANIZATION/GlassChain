@@ -9,5 +9,5 @@ import (
 type Cli interface {
 	Send(tx *types.Transaction, hexKey string) ([]*types.ReceiptLog, error)
 	Query(fn string, msg proto.Message) ([]byte, error)
-	GetExecAccount(addr string, exec string, symbol string) (*types.Account, error) 
+	GetExecAccount(addr string, exec string, symbol string) (*types.Account, error) //    addr       exec        symbol    
 }

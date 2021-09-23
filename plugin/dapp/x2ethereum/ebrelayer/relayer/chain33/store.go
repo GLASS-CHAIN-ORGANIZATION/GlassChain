@@ -26,7 +26,7 @@ func (chain33Relayer *Relayer4Chain33) updateTotalTxAmount2Eth(total int64) erro
 	totalTx := &types.Int64{
 		Data: atomic.LoadInt64(&chain33Relayer.totalTx4Chain33ToEth),
 	}
-	/ 
+	//          
 	return chain33Relayer.db.Set(chain33ToEthBurnLockTxTotalAmount, types.Encode(totalTx))
 }
 
@@ -72,7 +72,7 @@ func (chain33Relayer *Relayer4Chain33) getStatusCheckedIndex() int64 {
 	return index
 }
 
-/ ap 
+//       app   
 func (chain33Relayer *Relayer4Chain33) loadLastSyncHeight() int64 {
 	height, err := utils.LoadInt64FromDB(lastSyncHeightPrefix, chain33Relayer.db)
 	if nil != err && err != types.ErrHeightNotExist {

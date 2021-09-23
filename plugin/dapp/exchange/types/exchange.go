@@ -6,7 +6,13 @@ import (
 	"github.com/33cn/chain33/types"
 )
 
+/*
+ *         
+ *   action      log  ，          
+ *    action log   id   name      
+ */
 
+// action  id name，           
 const (
 	TyUnknowAction = iota + 200
 	TyLimitOrderAction
@@ -23,6 +29,7 @@ const (
 	FuncNameQueryOrderList        = "QueryOrderList"
 )
 
+// log  id 
 const (
 	TyUnknownLog = iota + 200
 	TyLimitOrderLog
@@ -51,17 +58,22 @@ const (
 )
 
 const (
+	//Count   list    
 	Count = int32(10)
+	//MaxMatchCount         
 	MaxMatchCount = 100
 )
 
 var (
+	//ExchangeX        
 	ExchangeX = "exchange"
+	//  actionMap
 	actionMap = map[string]int32{
 		NameLimitOrderAction:  TyLimitOrderAction,
 		NameMarketOrderAction: TyMarketOrderAction,
 		NameRevokeOrderAction: TyRevokeOrderAction,
 	}
+	//  log id   log     ，       log  
 	logMap = map[int64]*types.LogInfo{
 		TyLimitOrderLog:  {Ty: reflect.TypeOf(ReceiptExchange{}), Name: "TyLimitOrderLog"},
 		TyMarketOrderLog: {Ty: reflect.TypeOf(ReceiptExchange{}), Name: "TyMarketOrderLog"},
@@ -73,7 +85,7 @@ var (
 // init defines a register function
 func init() {
 	types.AllowUserExec = append(types.AllowUserExec, []byte(ExchangeX))
-
+	//        
 	types.RegFork(ExchangeX, InitFork)
 	types.RegExec(ExchangeX, InitExecutor)
 }
@@ -101,15 +113,17 @@ func NewType(cfg *types.Chain33Config) *ExchangeType {
 	return c
 }
 
-
+// GetPayload     action  
 func (e *ExchangeType) GetPayload() types.Message {
 	return &ExchangeAction{}
 }
 
+// GetTypeMap     action id name  
 func (e *ExchangeType) GetTypeMap() map[string]int32 {
 	return actionMap
 }
 
+// GetLogMap     log    
 func (e *ExchangeType) GetLogMap() map[int64]*types.LogInfo {
 	return logMap
 }

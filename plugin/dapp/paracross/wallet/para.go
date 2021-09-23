@@ -31,7 +31,7 @@ func New() wcom.WalletBizPolicy {
 	return &ParaPolicy{mtx: &sync.Mutex{}}
 }
 
-// ParaPolicy 
+// ParaPolicy    
 type ParaPolicy struct {
 	mtx           *sync.Mutex
 	walletOperate wcom.WalletOperate
@@ -70,7 +70,7 @@ func (policy *ParaPolicy) OnWalletLocked() {
 	bizlog.Info("OnWalletLocked", "IsWalletLock", walletsatus.IsWalletLock)
 }
 
-/  
+//      ，                   
 func (policy *ParaPolicy) resetTimeout(Timeout int64) {
 	if policy.minertimeout == nil {
 		policy.minertimeout = time.AfterFunc(time.Second*time.Duration(Timeout), func() {
@@ -85,7 +85,7 @@ func (policy *ParaPolicy) resetTimeout(Timeout int64) {
 	}
 }
 
-// OnWalletUnlocked process unlock event walle 
+// OnWalletUnlocked process unlock event,   wallet 
 func (policy *ParaPolicy) OnWalletUnlocked(param *types.WalletUnLock) {
 	if !param.WalletOrTicket {
 		if param.Timeout != 0 {
@@ -100,19 +100,19 @@ func (policy *ParaPolicy) OnWalletUnlocked(param *types.WalletUnLock) {
 
 }
 
-// OnCreateNewAccount par 
+// OnCreateNewAccount   para        
 func (policy *ParaPolicy) OnCreateNewAccount(acc *types.Account) {
 	NotifyConsensus(policy.getAPI(), "CreateNewAccount", types.Encode(acc))
 	bizlog.Info("OnCreateNewAccount", "Addr", acc.Addr)
 }
 
-// OnImportPrivateKey par 
+// OnImportPrivateKey   para        
 func (policy *ParaPolicy) OnImportPrivateKey(acc *types.Account) {
 	NotifyConsensus(policy.getAPI(), "CreateNewAccount", types.Encode(acc))
 	bizlog.Info("OnImportPrivateKey", "Addr", acc.Addr)
 }
 
-// NotifyConsensus par 
+// NotifyConsensus   para          
 func NotifyConsensus(api client.QueueProtocolAPI, FuncName string, param []byte) {
 	bizlog.Info("Wallet Notify Consensus")
 	api.Notify("consensus", types.EventConsensusQuery, &types.ChainExecutor{

@@ -4,7 +4,7 @@
 
 package wallet
 
-// MaxCountPerTime: 
+// MaxCountPerTime:              
 const (
 	MaxCountPerTime int64 = 100
 )

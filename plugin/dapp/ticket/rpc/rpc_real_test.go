@@ -18,7 +18,7 @@ import (
 )
 
 func TestNewTicket(t *testing.T) {
-	/  hotwallet )
+	//  (   hotwallet     )
 	cfg := types.NewChain33Config(types.GetDefaultCfgstring())
 	cfg.GetModuleConfig().Consensus.Name = "ticket"
 	mocker := testnode.NewWithConfig(cfg, nil)

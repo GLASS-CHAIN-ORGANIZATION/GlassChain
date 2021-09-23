@@ -12,7 +12,7 @@ import (
 	"fmt"
 	"math/big"
 
-	auth "github.com/33cn/chain33/system/crypto/secp256r1"
+	auth "github.com/33cn/plugin/plugin/crypto/ecdsa"
 )
 
 type ecdsaSigner struct{}
@@ -32,10 +32,12 @@ func signECDSA(k *ecdsa.PrivateKey, digest []byte, opts SignerOpts) (signature [
 	return MarshalECDSASignature(r, s)
 }
 
+// ECDSASignature ECDSA    
 type ECDSASignature struct {
 	R, S *big.Int
 }
 
+// MarshalECDSASignature   ECDSA    
 func MarshalECDSASignature(r, s *big.Int) ([]byte, error) {
 	return asn1.Marshal(ECDSASignature{r, s})
 }

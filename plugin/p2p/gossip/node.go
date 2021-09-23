@@ -24,11 +24,11 @@ import (
 	"github.com/33cn/plugin/plugin/p2p/gossip/nat"
 )
 
-// Nod 
-// 1 GRPC Server
-// 2 
-// 3 
-// 4  
+//   Node  
+// 1.    GRPC Server
+// 2.      
+// 3.      
+// 4.      ，      
 
 // Start Node server
 func (n *Node) Start() {
@@ -44,7 +44,7 @@ func (n *Node) Start() {
 
 // Close node server
 func (n *Node) Close() {
-	/ 
+	//    
 	if !atomic.CompareAndSwapInt32(&n.closed, 0, 1) {
 		return
 	}
@@ -74,13 +74,12 @@ type Node struct {
 	omtx       sync.Mutex
 	nodeInfo   *NodeInfo
 	cmtx       sync.Mutex
-	cacheBound map[string]*Peer //peerId-->peer
-	outBound   map[string]*Peer //peerId-->peer
+	cacheBound map[string]*Peer
+	outBound   map[string]*Peer
 	server     *listener
 	listenPort int
 	innerSeeds sync.Map
 	cfgSeeds   sync.Map
-	peerStore  sync.Map //peerIp-->PeerName
 	closed     int32
 	pubsub     *pubsub.PubSub
 	chainCfg   *types.Chain33Config
@@ -124,7 +123,7 @@ func NewNode(mgr *p2p.Manager, mcfg *subConfig) (*Node, error) {
 	}
 	node.nodeInfo = NewNodeInfo(cfg.GetModuleConfig().P2P, mcfg)
 	node.chainCfg = cfg
-	if mcfg.EnableTls { /  tl 
+	if mcfg.EnableTls { //    ，   tls   
 		var err error
 		node.nodeInfo.cliCreds, err = credentials.NewClientTLSFromFile(cfg.GetModuleConfig().RPC.CertFile, "")
 		if err != nil {
@@ -162,7 +161,7 @@ func (n *Node) natOk() bool {
 }
 
 func (n *Node) doNat() {
-	/    1380 
+	//       ，        0   ，  13802  
 	for {
 		if n.Size() > 0 {
 			break
@@ -181,14 +180,14 @@ func (n *Node) doNat() {
 		return
 	}
 	log.Info("node inside")
-	/   
+	//   ，       ，       
 	if !n.nodeInfo.OutSide() && !n.nodeInfo.cfg.IsSeed && n.nodeInfo.cfg.ServerStart {
 
 		go n.natMapPort()
 		if !n.natOk() {
 			log.Info("doNat", "Nat", "Faild")
 		} else {
-			/  
+			//       ，        
 			for {
 				if n.Size() > 0 {
 					break
@@ -197,7 +196,7 @@ func (n *Node) doNat() {
 			}
 
 			p2pcli := NewNormalP2PCli()
-			/  
+			//                +    
 			if p2pcli.CheckPeerNatOk(n.nodeInfo.GetExternalAddr().String(), n.nodeInfo) ||
 				p2pcli.CheckPeerNatOk(fmt.Sprintf("%v:%v", n.nodeInfo.GetExternalAddr().IP.String(), n.listenPort), n.nodeInfo) {
 				n.nodeInfo.SetServiceTy(Service)
@@ -222,16 +221,15 @@ func (n *Node) doNat() {
 func (n *Node) addPeer(pr *Peer) {
 	n.omtx.Lock()
 	defer n.omtx.Unlock()
-	if peer, ok := n.outBound[pr.GetPeerName()]; ok {
+	if peer, ok := n.outBound[pr.Addr()]; ok {
 		log.Info("AddPeer", "delete peer", pr.Addr())
 		n.nodeInfo.addrBook.RemoveAddr(peer.Addr())
-		delete(n.outBound, pr.GetPeerName())
+		delete(n.outBound, pr.Addr())
 		peer.Close()
 
 	}
-
-	log.Debug("AddPeer", "peer", pr.Addr(), "pid:", pr.GetPeerName())
-	n.outBound[pr.GetPeerName()] = pr
+	log.Debug("AddPeer", "peer", pr.Addr())
+	n.outBound[pr.Addr()] = pr
 	pr.Start()
 }
 
@@ -239,26 +237,21 @@ func (n *Node) addPeer(pr *Peer) {
 func (n *Node) AddCachePeer(pr *Peer) {
 	n.cmtx.Lock()
 	defer n.cmtx.Unlock()
-	n.cacheBound[pr.GetPeerName()] = pr
+	n.cacheBound[pr.Addr()] = pr
 }
 
 // RemoveCachePeer remove cacheBound by addr
-func (n *Node) RemoveCachePeer(peerName string) {
+func (n *Node) RemoveCachePeer(addr string) {
 	n.cmtx.Lock()
 	defer n.cmtx.Unlock()
-	peer, ok := n.cacheBound[peerName]
-	if ok {
-		peer.Close()
-	}
-
-	delete(n.cacheBound, peerName)
+	delete(n.cacheBound, addr)
 }
 
 // HasCacheBound peer whether exists according to address
-func (n *Node) HasCacheBound(peerName string) bool {
+func (n *Node) HasCacheBound(addr string) bool {
 	n.cmtx.Lock()
 	defer n.cmtx.Unlock()
-	_, ok := n.cacheBound[peerName]
+	_, ok := n.cacheBound[addr]
 	return ok
 
 }
@@ -292,18 +285,18 @@ func (n *Node) Size() int {
 }
 
 // Has peer whether exists according to address
-func (n *Node) Has(peerName string) bool {
+func (n *Node) Has(paddr string) bool {
 	n.omtx.Lock()
 	defer n.omtx.Unlock()
-	_, ok := n.outBound[peerName]
+	_, ok := n.outBound[paddr]
 	return ok
 }
 
 // GetRegisterPeer return one peer according to paddr
-func (n *Node) GetRegisterPeer(peerName string) *Peer {
+func (n *Node) GetRegisterPeer(paddr string) *Peer {
 	n.omtx.Lock()
 	defer n.omtx.Unlock()
-	if peer, ok := n.outBound[peerName]; ok {
+	if peer, ok := n.outBound[paddr]; ok {
 		return peer
 	}
 	return nil
@@ -331,22 +324,21 @@ func (n *Node) GetActivePeers() (map[string]*Peer, map[string]*types.Peer) {
 
 	var peers = make(map[string]*Peer)
 	for _, peer := range regPeers {
-		peerName := peer.GetPeerName()
-		if _, ok := infos[peerName]; ok {
+		name := peer.GetPeerName()
+		if _, ok := infos[name]; ok {
 
-			peers[peerName] = peer
+			peers[name] = peer
 		}
 	}
 	return peers, infos
 }
-func (n *Node) remove(peerName string) {
+func (n *Node) remove(peerAddr string) {
 
 	n.omtx.Lock()
 	defer n.omtx.Unlock()
-
-	peer, ok := n.outBound[peerName]
+	peer, ok := n.outBound[peerAddr]
 	if ok {
-		delete(n.outBound, peerName)
+		delete(n.outBound, peerAddr)
 		peer.Close()
 	}
 }
@@ -354,15 +346,15 @@ func (n *Node) remove(peerName string) {
 func (n *Node) removeAll() {
 	n.omtx.Lock()
 	defer n.omtx.Unlock()
-	for peerName, peer := range n.outBound {
-		delete(n.outBound, peerName)
+	for addr, peer := range n.outBound {
+		delete(n.outBound, addr)
 		peer.Close()
 	}
 }
 
 func (n *Node) monitor() {
 	go n.monitorErrPeer()
-	/ , seed 
+	//    ,    seeds    
 	go n.monitorCfgSeeds()
 	if !n.nodeInfo.cfg.FixedSeed {
 		go n.getAddrFromOnline()
@@ -402,8 +394,8 @@ func (n *Node) detectNodeAddr() {
 			//goto SET_ADDR
 		}
 
-		/ nat,getSelfExternalAddr  localaddr 
-		if externalIP == "" {
+		//  nat,getSelfExternalAddr            ，  localaddr        
+		if len(externalIP) == 0 {
 			externalIP = laddr
 		}
 
@@ -426,7 +418,7 @@ func (n *Node) detectNodeAddr() {
 
 		externaladdr = fmt.Sprintf("%v:%v", externalIP, externalPort)
 		log.Debug("DetectionNodeAddr", "AddBlackList", externaladdr)
-		n.nodeInfo.blacklist.Add(externaladdr, 0) /  self
+		n.nodeInfo.blacklist.Add(externaladdr, 0) //                ，    self
 		if exaddr, err := NewNetAddressString(externaladdr); err == nil {
 			n.nodeInfo.SetExternalAddr(exaddr)
 			n.nodeInfo.addrBook.AddOurAddress(exaddr)
@@ -454,9 +446,9 @@ func (n *Node) natMapPort() {
 		time.Sleep(time.Second)
 	}
 	var err error
-	if len(P2pComm.AddrRouteble([]string{n.nodeInfo.GetExternalAddr().String()}, n.nodeInfo.channelVersion, n.nodeInfo.cliCreds)) != 0 { / 
+	if len(P2pComm.AddrRouteble([]string{n.nodeInfo.GetExternalAddr().String()}, n.nodeInfo.channelVersion, n.nodeInfo.cliCreds)) != 0 { //            
 		log.Info("natMapPort", "addr", "routeble")
-		p2pcli := NewNormalP2PCli() / I 
+		p2pcli := NewNormalP2PCli() //      IP           
 		ok := p2pcli.CheckSelf(n.nodeInfo.GetExternalAddr().String(), n.nodeInfo)
 		if !ok {
 			log.Info("natMapPort", "port is used", n.nodeInfo.GetExternalAddr().String())
@@ -467,10 +459,10 @@ func (n *Node) natMapPort() {
 	_, nodename := n.nodeInfo.addrBook.GetPrivPubKey()
 	log.Info("natMapPort", "netport", n.nodeInfo.GetExternalAddr().Port)
 	for i := 0; i < tryMapPortTimes; i++ {
-		/ 4 
+		//       48  
 		err = nat.Any().AddMapping("TCP", int(n.nodeInfo.GetExternalAddr().Port), n.listenPort, nodename[:8], time.Hour*48)
 		if err != nil {
-			if i > tryMapPortTimes/2 { / 
+			if i > tryMapPortTimes/2 { //                               
 				log.Warn("TryNatMapPortFailed", "tryTimes", i, "err", err.Error())
 				n.flushNodePort(uint16(n.listenPort), uint16(rand.Intn(64512)+1023))
 
@@ -483,7 +475,7 @@ func (n *Node) natMapPort() {
 	}
 
 	if err != nil {
-		/ 
+		//    
 		log.Warn("NatMapPort", "Nat", "Faild")
 		n.flushNodePort(uint16(n.listenPort), uint16(n.listenPort))
 		n.nodeInfo.natResultChain <- false
@@ -491,7 +483,7 @@ func (n *Node) natMapPort() {
 	}
 
 	err = n.nodeInfo.addrBook.bookDb.Set([]byte(externalPortTag),
-		P2pComm.Int32ToBytes(int32(n.nodeInfo.GetExternalAddr().Port))) / db
+		P2pComm.Int32ToBytes(int32(n.nodeInfo.GetExternalAddr().Port))) //            db
 	if err != nil {
 		log.Error("NatMapPort", "dbErr", err)
 		return
@@ -536,13 +528,13 @@ func (n *Node) verifyP2PChannel(channel int32) bool {
 	return channel == n.nodeInfo.cfg.Channel
 }
 
-/ , , 
+//                ,           ,            
 func (n *Node) isInBoundPeer(peerName string) (bool, *innerpeer) {
 
 	if n.server == nil || n.server.p2pserver == nil {
 		return false, nil
 	}
-	/ 
+	//        
 	info := n.server.p2pserver.getInBoundPeerInfo(peerName)
 	return info != nil, info
 }

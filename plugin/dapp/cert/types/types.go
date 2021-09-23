@@ -33,11 +33,12 @@ func InitExecutor(cfg *types.Chain33Config) {
 	types.RegistorExecutor(CertX, NewType(cfg))
 }
 
-
+// CertType cert       
 type CertType struct {
 	types.ExecTypeBase
 }
 
+// NewType   cert    
 func NewType(cfg *types.Chain33Config) *CertType {
 	c := &CertType{}
 	c.SetChild(c)
@@ -45,18 +46,22 @@ func NewType(cfg *types.Chain33Config) *CertType {
 	return c
 }
 
+// GetPayload   payload
 func (b *CertType) GetPayload() types.Message {
 	return &CertAction{}
 }
 
+// GetName       
 func (b *CertType) GetName() string {
 	return CertX
 }
 
+// GetLogMap   logmap
 func (b *CertType) GetLogMap() map[int64]*types.LogInfo {
 	return nil
 }
 
+// GetTypeMap     map
 func (b *CertType) GetTypeMap() map[string]int32 {
 	return actionName
 }

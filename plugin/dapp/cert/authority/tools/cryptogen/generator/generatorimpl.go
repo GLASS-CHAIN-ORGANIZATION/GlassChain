@@ -26,6 +26,7 @@ import (
 	"github.com/tjfoc/gmsm/sm2"
 )
 
+// EcdsaCA ecdsa CA  
 type EcdsaCA struct {
 	Name       string
 	Signer     crypto.Signer
@@ -33,6 +34,7 @@ type EcdsaCA struct {
 	CertConfig *CertConfig
 }
 
+// SM2CA SM2 CA  
 type SM2CA struct {
 	Name       string
 	Signer     crypto.Signer
@@ -41,6 +43,7 @@ type SM2CA struct {
 	CertConfig *CertConfig
 }
 
+// NewCA       CA   
 func NewCA(baseDir string, cacfg *CertConfig, signType int) (CAGenerator, error) {
 	if signType == ty.AuthECDSA {
 		return newEcdsaCA(baseDir, cacfg)
@@ -100,6 +103,7 @@ func newEcdsaCA(baseDir string, certConfig *CertConfig) (*EcdsaCA, error) {
 	return ca, nil
 }
 
+// SignCertificate     
 func (ca *EcdsaCA) SignCertificate(baseDir, fileName string, sans []string, pub interface{}, isCA bool) (*x509.Certificate, error) {
 	template := x509Template(ca.CertConfig.CA.Expire)
 	if isCA {
@@ -133,6 +137,7 @@ func (ca *EcdsaCA) SignCertificate(baseDir, fileName string, sans []string, pub 
 	return cert, nil
 }
 
+// GenerateLocalOrg       
 func (ca *EcdsaCA) GenerateLocalOrg(baseDir, fileName string, orgCfg *CertConfig) (CAGenerator, error) {
 	err := createFolderStructure(baseDir, true)
 	if err != nil {
@@ -174,6 +179,7 @@ func (ca *EcdsaCA) GenerateLocalOrg(baseDir, fileName string, orgCfg *CertConfig
 	return orgCA, nil
 }
 
+// GenerateLocalUser       
 func (ca *EcdsaCA) GenerateLocalUser(baseDir, fileName string) error {
 	err := createFolderStructure(baseDir, false)
 	if err != nil {
@@ -287,6 +293,7 @@ func newSM2CA(baseDir string, certConfig *CertConfig) (*SM2CA, error) {
 	return ca, nil
 }
 
+// SignCertificate     
 func (ca *SM2CA) SignCertificate(baseDir, fileName string, sans []string, pub interface{}, isCA bool) (*x509.Certificate, error) {
 	template := x509Template(ca.CertConfig.CA.Expire)
 	if isCA {
@@ -321,6 +328,7 @@ func (ca *SM2CA) SignCertificate(baseDir, fileName string, sans []string, pub in
 	return utils.ParseSm2CertificateToX509(cert), nil
 }
 
+// GenerateLocalOrg       
 func (ca *SM2CA) GenerateLocalOrg(baseDir, fileName string, orgCfg *CertConfig) (CAGenerator, error) {
 	err := createFolderStructure(baseDir, true)
 	if err != nil {
@@ -362,6 +370,7 @@ func (ca *SM2CA) GenerateLocalOrg(baseDir, fileName string, orgCfg *CertConfig) 
 	return orgCA, nil
 }
 
+// GenerateLocalUser       
 func (ca *SM2CA) GenerateLocalUser(baseDir, fileName string) error {
 	err := createFolderStructure(baseDir, false)
 	if err != nil {

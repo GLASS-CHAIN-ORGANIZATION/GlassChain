@@ -60,6 +60,7 @@ func (c *Collateralize) CheckReceiptExecOk() bool {
 	return true
 }
 
+// ExecutorOrder   localdb EnableRead
 func (c *Collateralize) ExecutorOrder() int64 {
 	cfg := c.GetAPI().GetConfig()
 	if cfg.IsFork(c.GetHeight(), "ForkLocalDBAccess") {

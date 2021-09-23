@@ -15,7 +15,7 @@ import (
 var mlog = log.New("module", "mempool.para")
 var topic = "mempool"
 
-//Mempool mempool 
+//Mempool mempool    
 type Mempool struct {
 	key         string
 	wg          sync.WaitGroup
@@ -24,14 +24,14 @@ type Mempool struct {
 	isclose     int32
 }
 
-//NewMempool mempool 
+//NewMempool   mempool   
 func NewMempool(cfg *types.Mempool) *Mempool {
 	pool := &Mempool{}
 	pool.key = topic
 	return pool
 }
 
-//SetQueueClient mempoo 
+//SetQueueClient    mempool  
 func (mem *Mempool) SetQueueClient(client queue.Client) {
 	mem.client = client
 	mem.client.Sub(mem.key)
@@ -50,7 +50,7 @@ func (mem *Mempool) SetQueueClient(client queue.Client) {
 			case types.EventGetProperFee:
 				reply, err = mem.mainGrpcCli.GetProperFee(context.Background(), &types.ReqProperFee{})
 			case types.EventGetMempoolSize:
-				// EventGetMempoolSize mempoo 
+				//     EventGetMempoolSize：  mempool  
 				size := types.Conf(client.GetConfig(), "config.mempool").GInt("poolCacheSize")
 				msg.Reply(mem.client.NewMessage("rpc", types.EventMempoolSize, &types.MempoolSize{Size: size}))
 				continue

@@ -41,7 +41,7 @@ func (s *StorageAction) GetKVSet(payload proto.Message) (kvset []*types.KeyValue
 //ContentStorage ...
 func (s *StorageAction) ContentStorage(payload *ety.ContentOnlyNotaryStorage) (*types.Receipt, error) {
 
-	//TODO  
+	//TODO               ，                    
 	var logs []*types.ReceiptLog
 	var kvs []*types.KeyValue
 	cfg := s.api.GetConfig()
@@ -255,7 +255,7 @@ func QueryStorage(statedb, localdb dbm.KV, txHash string) (*ety.Storage, error) 
 	if txHash == "" {
 		return nil, fmt.Errorf("txhash can't equail nil")
 	}
-	/ locald   
+	//  localdb   ，    ，           
 	storage, err := QueryStorageFromLocalDB(localdb, txHash)
 	if err != nil {
 		return QueryStorageByTxHash(statedb, txHash)
@@ -279,7 +279,7 @@ func BatchQueryStorage(statedb, localdb dbm.KV, in *ety.BatchQueryStorage) (type
 	return &storage, nil
 }
 
-//QueryStorageFromLocalDB tabl  K 
+//QueryStorageFromLocalDB   table              ，    KV  
 func QueryStorageFromLocalDB(localdb dbm.KV, key string) (*ety.Storage, error) {
 	data, err := localdb.Get(getLocalDBKey(key))
 	if err != nil {

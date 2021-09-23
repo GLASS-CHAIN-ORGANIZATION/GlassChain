@@ -5,17 +5,17 @@
 package executor
 
 /*
-privac ，
+privacy            ，
 
- ：
-1  ：public address -> one-time addrss
-2   one-time address -> one-time address；
-3 ， ：one-time address -> public address
+           ：
+1）             ， ：public address -> one-time addrss
+2）    ，                  one-time address -> one-time address；
+3）            ，  ：one-time address -> public address
 
- ：
-1 coi toke  balanc privac ；
-2  (A,B) ，balanc ；
-3 ，
+    ：
+1）      coin token     ，       balance   privacy     ；
+2）            ，              (A,B),      ，balance           ；
+3）    ，
 
 */
 
@@ -41,7 +41,7 @@ var driverName = "privacy"
 // Init initialize executor driver
 func Init(name string, cfg *types.Chain33Config, sub []byte) {
 	drivers.Register(cfg, GetName(), newPrivacy, cfg.GetDappFork(driverName, "Enable"))
-	//   
+	//                 ，           ，        
 	//drivers.Register(newPrivacy().GetName(), newPrivacy, 0)
 	InitExecType()
 }
@@ -148,9 +148,9 @@ func (p *privacy) getGlobalUtxoIndex(req *pty.ReqUTXOGlobalIndex) (types.Message
 	return utxoGlobalIndexResp, nil
 }
 
-//ShowAmountsOfUTXO amoun utxo amou UTXO 
-/ 
-/ UTXO 1,3,5,10,20,30,100...
+//ShowAmountsOfUTXO     amount    utxo，             amout    UTXO,              
+//             
+//             UTXO, 1,3,5,10,20,30,100...
 func (p *privacy) ShowAmountsOfUTXO(reqtoken *pty.ReqPrivacyToken) (types.Message, error) {
 	querydb := p.GetLocalDB()
 
@@ -177,7 +177,7 @@ func (p *privacy) ShowAmountsOfUTXO(reqtoken *pty.ReqPrivacyToken) (types.Messag
 	return replyAmounts, nil
 }
 
-//ShowUTXOs4SpecifiedAmount UTX   hash 
+//ShowUTXOs4SpecifiedAmount          UTXO     ，     ，  hash，         
 func (p *privacy) ShowUTXOs4SpecifiedAmount(reqtoken *pty.ReqPrivacyToken) (types.Message, error) {
 	querydb := p.GetLocalDB()
 
@@ -217,14 +217,14 @@ func (p *privacy) CheckTx(tx *types.Transaction, index int) error {
 		return nil
 	}
 	input := action.GetInput()
-	/ , inpu 
+	//           , input     
 	if len(input.GetKeyinput()) == 0 {
 		privacylog.Error("PrivacyTrading CheckTx", "txhash", txhashstr)
 		return pty.ErrNilUtxoInput
 	}
 
 	output := action.GetOutput()
-	/ utx 
+	//      utxo  
 	if action.GetPrivacy2Privacy() != nil && len(output.GetKeyoutput()) == 0 {
 		privacylog.Error("PrivacyTrading CheckTx", "txhash", txhashstr)
 		return pty.ErrNilUtxoOutput
@@ -236,7 +236,6 @@ func (p *privacy) CheckTx(tx *types.Transaction, index int) error {
 		return pty.ErrRingSign
 	}
 
-	cfg := p.GetAPI().GetConfig()
 	totalInput := int64(0)
 	keyinput := input.GetKeyinput()
 	keyImages := make([][]byte, len(keyinput))
@@ -254,7 +253,7 @@ func (p *privacy) CheckTx(tx *types.Transaction, index int) error {
 	if !res {
 		if errIndex >= 0 && errIndex < int32(len(keyinput)) {
 			input := keyinput[errIndex]
-			privacylog.Error("PrivacyTrading CheckTx", "txhash", txhashstr, "UTXO spent already errindex", errIndex, "utxo amout", input.Amount/cfg.GetCoinPrecision(), "utxo keyimage", common.ToHex(input.KeyImage))
+			privacylog.Error("PrivacyTrading CheckTx", "txhash", txhashstr, "UTXO spent already errindex", errIndex, "utxo amout", input.Amount/types.Coin, "utxo keyimage", common.ToHex(input.KeyImage))
 		}
 		privacylog.Error("PrivacyTrading CheckTx", "txhash", txhashstr, "err", "checkUTXOValid failed ")
 		return pty.ErrDoubleSpendOccur
@@ -269,19 +268,19 @@ func (p *privacy) CheckTx(tx *types.Transaction, index int) error {
 		return pty.ErrPubkeysOfUTXO
 	}
 
-	/ coin , assertExe 
-
-	if !cfg.IsPara() && (assertExec == "" || assertExec == cfg.GetCoinExec()) {
+	//    coins            , assertExec        
+	cfg := p.GetAPI().GetConfig()
+	if !cfg.IsPara() && (assertExec == "" || assertExec == "coins") {
 
 		totalOutput := int64(0)
 		for _, output := range output.GetKeyoutput() {
 			totalOutput += output.GetAmount()
 		}
-		if tx.Fee < pty.PrivacyTxFee*cfg.GetCoinPrecision() {
-			privacylog.Error("PrivacyTrading CheckTx", "txhash", txhashstr, "fee set:", tx.Fee, "required:", pty.PrivacyTxFee*cfg.GetCoinPrecision(), " error ErrPrivacyTxFeeNotEnough")
+		if tx.Fee < pty.PrivacyTxFee {
+			privacylog.Error("PrivacyTrading CheckTx", "txhash", txhashstr, "fee set:", tx.Fee, "required:", pty.PrivacyTxFee, " error ErrPrivacyTxFeeNotEnough")
 			return pty.ErrPrivacyTxFeeNotEnough
 		}
-		/   utx  UTXO 
+		//            ，        utxo  ,          UTXO,         
 		var feeAmount int64
 		if action.Ty == pty.ActionPrivacy2Privacy {
 			feeAmount = totalInput - totalOutput
@@ -289,8 +288,8 @@ func (p *privacy) CheckTx(tx *types.Transaction, index int) error {
 			feeAmount = totalInput - totalOutput - action.GetPrivacy2Public().Amount
 		}
 
-		if feeAmount < pty.PrivacyTxFee*cfg.GetCoinPrecision() {
-			privacylog.Error("PrivacyTrading CheckTx", "txhash", txhashstr, "fee available:", feeAmount, "required:", pty.PrivacyTxFee*cfg.GetCoinPrecision())
+		if feeAmount < pty.PrivacyTxFee {
+			privacylog.Error("PrivacyTrading CheckTx", "txhash", txhashstr, "fee available:", feeAmount, "required:", pty.PrivacyTxFee)
 			return pty.ErrPrivacyTxFeeNotEnough
 		}
 	}
@@ -308,7 +307,7 @@ func batchGet(stateDB db.KV, keyImages [][]byte) (values [][]byte, err error) {
 	return values, nil
 }
 
-/ keyImag   true false
+//  keyImage        ，        ，  true，     false
 func (p *privacy) checkUTXOValid(keyImages [][]byte) (bool, int32) {
 	stateDB := p.GetStateDB()
 	values, err := batchGet(stateDB, keyImages)

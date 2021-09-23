@@ -14,7 +14,7 @@ import (
 	"golang.org/x/net/context"
 )
 
-//  
+//             ，          
 func (g *channelClient) ShowPrivacyKey(ctx context.Context, in *types.ReqString) (*pty.ReplyPrivacyPkPair, error) {
 	data, err := g.ExecWalletFunc(pty.PrivacyX, "ShowPrivacyKey", in)
 	if err != nil {
@@ -23,7 +23,7 @@ func (g *channelClient) ShowPrivacyKey(ctx context.Context, in *types.ReqString)
 	return data.(*pty.ReplyPrivacyPkPair), nil
 }
 
-// UTX UTX 
+//   UTXO      UTXO    
 func (g *channelClient) RescanUtxos(ctx context.Context, in *pty.ReqRescanUtxos) (*pty.RepRescanUtxos, error) {
 	data, err := g.ExecWalletFunc(pty.PrivacyX, "RescanUtxos", in)
 	if err != nil {
@@ -32,7 +32,7 @@ func (g *channelClient) RescanUtxos(ctx context.Context, in *pty.ReqRescanUtxos)
 	return data.(*pty.RepRescanUtxos), nil
 }
 
-// 
+//       
 func (g *channelClient) EnablePrivacy(ctx context.Context, in *pty.ReqEnablePrivacy) (*pty.RepEnablePrivacy, error) {
 	data, err := g.ExecWalletFunc(pty.PrivacyX, "EnablePrivacy", in)
 	if err != nil {
@@ -95,8 +95,7 @@ func (c *Jrpc) GetPrivacyTxByAddr(in *pty.ReqPrivacyTransactionList, result *int
 		return err
 	}
 	var txdetails rpctypes.WalletTxDetails
-	cfg := c.cli.GetConfig()
-	err = rpctypes.ConvertWalletTxDetailToJSON(reply.(*types.WalletTxDetails), &txdetails, cfg.GetCoinExec(), cfg.GetCoinPrecision())
+	err = rpctypes.ConvertWalletTxDetailToJSON(reply.(*types.WalletTxDetails), &txdetails)
 	if err != nil {
 		return err
 	}

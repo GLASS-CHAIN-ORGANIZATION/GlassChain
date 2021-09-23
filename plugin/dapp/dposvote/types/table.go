@@ -22,6 +22,7 @@ var optDposVoter = &table.Option{
 	Index:   []string{"addr", "pubkey"},
 }
 
+//NewDposVoteTable    
 func NewDposVoteTable(kvdb db.KV) *table.Table {
 	rowmeta := NewDposVoterRow()
 	table, err := table.NewTable(rowmeta, kvdb, optDposVoter)
@@ -31,18 +32,22 @@ func NewDposVoteTable(kvdb db.KV) *table.Table {
 	return table
 }
 
+//DposVoterRow table meta   
 type DposVoterRow struct {
 	*DposVoter
 }
 
+//NewDposVoterRow     meta   
 func NewDposVoterRow() *DposVoterRow {
 	return &DposVoterRow{DposVoter: &DposVoter{}}
 }
 
+//CreateRow      
 func (tx *DposVoterRow) CreateRow() *table.Row {
 	return &table.Row{Data: &DposVoter{}}
 }
 
+//SetPayload     
 func (tx *DposVoterRow) SetPayload(data types.Message) error {
 	if txdata, ok := data.(*DposVoter); ok {
 		tx.DposVoter = txdata
@@ -51,6 +56,7 @@ func (tx *DposVoterRow) SetPayload(data types.Message) error {
 	return types.ErrTypeAsset
 }
 
+//Get   indexName    indexValue
 func (tx *DposVoterRow) Get(key string) ([]byte, error) {
 	if key == "index" {
 		return []byte(fmt.Sprintf("%018d", tx.Index)), nil
@@ -70,6 +76,7 @@ var optDposCandidator = &table.Option{
 	Index:   []string{"status"},
 }
 
+//NewDposCandidatorTable    
 func NewDposCandidatorTable(kvdb db.KV) *table.Table {
 	rowmeta := NewDposCandidatorRow()
 	table, err := table.NewTable(rowmeta, kvdb, optDposCandidator)
@@ -79,18 +86,22 @@ func NewDposCandidatorTable(kvdb db.KV) *table.Table {
 	return table
 }
 
+//DposCandidatorRow table meta   
 type DposCandidatorRow struct {
 	*CandidatorInfo
 }
 
+//NewDposCandidatorRow     meta   
 func NewDposCandidatorRow() *DposCandidatorRow {
 	return &DposCandidatorRow{CandidatorInfo: &CandidatorInfo{}}
 }
 
+//CreateRow      
 func (tx *DposCandidatorRow) CreateRow() *table.Row {
 	return &table.Row{Data: &CandidatorInfo{}}
 }
 
+//SetPayload     
 func (tx *DposCandidatorRow) SetPayload(data types.Message) error {
 	if txdata, ok := data.(*CandidatorInfo); ok {
 		tx.CandidatorInfo = txdata
@@ -99,6 +110,7 @@ func (tx *DposCandidatorRow) SetPayload(data types.Message) error {
 	return types.ErrTypeAsset
 }
 
+//Get   indexName    indexValue
 func (tx *DposCandidatorRow) Get(key string) ([]byte, error) {
 	if key == "pubkey" {
 		return tx.Pubkey, nil
@@ -116,6 +128,7 @@ var optDposVrfm = &table.Option{
 	Index:   []string{"pubkey_cycle", "cycle"},
 }
 
+//NewDposVrfMTable    
 func NewDposVrfMTable(kvdb db.KV) *table.Table {
 	rowmeta := NewDposVrfMRow()
 	table, err := table.NewTable(rowmeta, kvdb, optDposVrfm)
@@ -125,18 +138,22 @@ func NewDposVrfMTable(kvdb db.KV) *table.Table {
 	return table
 }
 
+//DposVrfMRow table meta   
 type DposVrfMRow struct {
 	*DposVrfM
 }
 
+//NewDposVrfMRow     meta   
 func NewDposVrfMRow() *DposVrfMRow {
 	return &DposVrfMRow{DposVrfM: &DposVrfM{}}
 }
 
+//CreateRow      
 func (tx *DposVrfMRow) CreateRow() *table.Row {
 	return &table.Row{Data: &DposVrfM{}}
 }
 
+//SetPayload     
 func (tx *DposVrfMRow) SetPayload(data types.Message) error {
 	if txdata, ok := data.(*DposVrfM); ok {
 		tx.DposVrfM = txdata
@@ -145,6 +162,7 @@ func (tx *DposVrfMRow) SetPayload(data types.Message) error {
 	return types.ErrTypeAsset
 }
 
+//Get   indexName    indexValue
 func (tx *DposVrfMRow) Get(key string) ([]byte, error) {
 	if key == "index" {
 		return []byte(fmt.Sprintf("%018d", tx.Index)), nil
@@ -164,6 +182,7 @@ var optDposVrfrp = &table.Option{
 	Index:   []string{"pubkey_cycle", "cycle"},
 }
 
+//NewDposVrfRPTable    
 func NewDposVrfRPTable(kvdb db.KV) *table.Table {
 	rowmeta := NewDposVrfRPRow()
 	table, err := table.NewTable(rowmeta, kvdb, optDposVrfrp)
@@ -173,18 +192,22 @@ func NewDposVrfRPTable(kvdb db.KV) *table.Table {
 	return table
 }
 
+//DposVrfRPRow table meta   
 type DposVrfRPRow struct {
 	*DposVrfRP
 }
 
+//NewDposVrfRPRow     meta   
 func NewDposVrfRPRow() *DposVrfRPRow {
 	return &DposVrfRPRow{DposVrfRP: &DposVrfRP{}}
 }
 
+//CreateRow      
 func (tx *DposVrfRPRow) CreateRow() *table.Row {
 	return &table.Row{Data: &DposVrfRP{}}
 }
 
+//SetPayload     
 func (tx *DposVrfRPRow) SetPayload(data types.Message) error {
 	if txdata, ok := data.(*DposVrfRP); ok {
 		tx.DposVrfRP = txdata
@@ -193,6 +216,7 @@ func (tx *DposVrfRPRow) SetPayload(data types.Message) error {
 	return types.ErrTypeAsset
 }
 
+//Get   indexName    indexValue
 func (tx *DposVrfRPRow) Get(key string) ([]byte, error) {
 	if key == "index" {
 		return []byte(fmt.Sprintf("%018d", tx.Index)), nil
@@ -212,6 +236,7 @@ var optDposCb = &table.Option{
 	Index:   []string{"height", "hash"},
 }
 
+//NewDposCBTable    
 func NewDposCBTable(kvdb db.KV) *table.Table {
 	rowmeta := NewDposCBRow()
 	table, err := table.NewTable(rowmeta, kvdb, optDposCb)
@@ -221,18 +246,22 @@ func NewDposCBTable(kvdb db.KV) *table.Table {
 	return table
 }
 
+//DposCBRow table meta   
 type DposCBRow struct {
 	*DposCycleBoundaryInfo
 }
 
+//NewDposCBRow     meta   
 func NewDposCBRow() *DposCBRow {
 	return &DposCBRow{DposCycleBoundaryInfo: &DposCycleBoundaryInfo{}}
 }
 
+//CreateRow      
 func (tx *DposCBRow) CreateRow() *table.Row {
 	return &table.Row{Data: &DposCycleBoundaryInfo{}}
 }
 
+//SetPayload     
 func (tx *DposCBRow) SetPayload(data types.Message) error {
 	if txdata, ok := data.(*DposCycleBoundaryInfo); ok {
 		tx.DposCycleBoundaryInfo = txdata
@@ -241,6 +270,7 @@ func (tx *DposCBRow) SetPayload(data types.Message) error {
 	return types.ErrTypeAsset
 }
 
+//Get   indexName    indexValue
 func (tx *DposCBRow) Get(key string) ([]byte, error) {
 	if key == "cycle" {
 		return []byte(fmt.Sprintf("%018d", tx.Cycle)), nil

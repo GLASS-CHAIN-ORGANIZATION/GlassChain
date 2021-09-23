@@ -22,6 +22,7 @@ var opt_guess_user = &table.Option{
 	Index:   []string{"addr", "startindex"},
 }
 
+//NewGuessUserTable    
 func NewGuessUserTable(kvdb db.KV) *table.Table {
 	rowmeta := NewGuessUserRow()
 	table, err := table.NewTable(rowmeta, kvdb, opt_guess_user)
@@ -31,18 +32,22 @@ func NewGuessUserTable(kvdb db.KV) *table.Table {
 	return table
 }
 
+//GuessUserRow table meta   
 type GuessUserRow struct {
 	*UserBet
 }
 
+//NewGuessUserRow     meta   
 func NewGuessUserRow() *GuessUserRow {
 	return &GuessUserRow{UserBet: &UserBet{}}
 }
 
+//CreateRow      (  index             ,     eventid)
 func (tx *GuessUserRow) CreateRow() *table.Row {
 	return &table.Row{Data: &UserBet{}}
 }
 
+//SetPayload     
 func (tx *GuessUserRow) SetPayload(data types.Message) error {
 	if txdata, ok := data.(*UserBet); ok {
 		tx.UserBet = txdata
@@ -51,6 +56,7 @@ func (tx *GuessUserRow) SetPayload(data types.Message) error {
 	return types.ErrTypeAsset
 }
 
+//Get   indexName    indexValue
 func (tx *GuessUserRow) Get(key string) ([]byte, error) {
 	if key == "index" {
 		return []byte(fmt.Sprintf("%018d", tx.Index)), nil
@@ -70,6 +76,7 @@ var opt_guess_game = &table.Option{
 	Index:   []string{"gameid", "status", "admin", "admin_status", "category_status"},
 }
 
+//NewGuessGameTable    
 func NewGuessGameTable(kvdb db.KV) *table.Table {
 	rowmeta := NewGuessGameRow()
 	table, err := table.NewTable(rowmeta, kvdb, opt_guess_game)
@@ -79,18 +86,22 @@ func NewGuessGameTable(kvdb db.KV) *table.Table {
 	return table
 }
 
+//GuessGameRow table meta   
 type GuessGameRow struct {
 	*GuessGame
 }
 
+//NewGuessGameRow     meta   
 func NewGuessGameRow() *GuessGameRow {
 	return &GuessGameRow{GuessGame: &GuessGame{}}
 }
 
+//CreateRow      (  index             ,     eventid)
 func (tx *GuessGameRow) CreateRow() *table.Row {
 	return &table.Row{Data: &GuessGame{}}
 }
 
+//SetPayload     
 func (tx *GuessGameRow) SetPayload(data types.Message) error {
 	if txdata, ok := data.(*GuessGame); ok {
 		tx.GuessGame = txdata
@@ -99,6 +110,7 @@ func (tx *GuessGameRow) SetPayload(data types.Message) error {
 	return types.ErrTypeAsset
 }
 
+//Get   indexName    indexValue
 func (tx *GuessGameRow) Get(key string) ([]byte, error) {
 	if key == "startindex" {
 		return []byte(fmt.Sprintf("%018d", tx.StartIndex)), nil

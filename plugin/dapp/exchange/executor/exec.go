@@ -5,6 +5,10 @@ import (
 	exchangetypes "github.com/33cn/plugin/plugin/dapp/exchange/types"
 )
 
+/*
+ *            
+ *       （statedb）       （log）
+ */
 
 func (e *exchange) Exec_LimitOrder(payload *exchangetypes.LimitOrder, tx *types.Transaction, index int) (*types.Receipt, error) {
 	action := NewAction(e, tx, index)

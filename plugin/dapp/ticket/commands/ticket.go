@@ -10,9 +10,6 @@ import (
 	"fmt"
 	"os"
 
-	cmdtypes "github.com/33cn/chain33/system/dapp/commands/types"
-	"github.com/pkg/errors"
-
 	"github.com/33cn/chain33/rpc/jsonclient"
 	rpctypes "github.com/33cn/chain33/rpc/types"
 	"github.com/33cn/chain33/types"
@@ -95,14 +92,9 @@ func addBindMinerFlags(cmd *cobra.Command) {
 }
 
 func bindMiner(cmd *cobra.Command, args []string) {
-	rpcLaddr, _ := cmd.Flags().GetString("rpc_laddr")
-	paraName, _ := cmd.Flags().GetString("paraName")
+	title, _ := cmd.Flags().GetString("title")
+	cfg := types.GetCliSysParam(title)
 
-	cfg, err := cmdtypes.GetChainConfig(rpcLaddr)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, errors.Wrapf(err, "GetChainConfig"))
-		return
-	}
 	bindAddr, _ := cmd.Flags().GetString("bind_addr")
 	originAddr, _ := cmd.Flags().GetString("origin_addr")
 	//c, _ := crypto.New(types.GetSignName(wallet.SignType))
@@ -117,8 +109,7 @@ func bindMiner(cmd *cobra.Command, args []string) {
 	ta.Value = &ty.TicketAction_Tbind{Tbind: tBind}
 	ta.Ty = ty.TicketActionBind
 
-	rawTx := &types.Transaction{Payload: types.Encode(ta)}
-	tx, err := types.FormatTxExt(cfg.ChainID, len(paraName) > 0, cfg.MinTxFeeRate, ty.TicketX, rawTx)
+	tx, err := types.CreateFormatTx(cfg, "ticket", types.Encode(ta))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return
@@ -225,7 +216,7 @@ func closeTicket(cmd *cobra.Command, args []string) {
 		return
 	}
 	if len(res.Hashes) == 0 {
-		fmt.Println("no ticket to be close or close fail,to check log")
+		fmt.Println("no ticket to be close")
 		return
 	}
 

@@ -64,7 +64,7 @@ type raftNode struct {
 	//httpstopc  chan struct{}
 	//httpdonec  chan struct{}
 	validatorC chan bool
-
+	//            
 	restartC chan struct{}
 }
 
@@ -105,9 +105,9 @@ func NewRaftNode(ctx context.Context, id int, join bool, peers []string, readOnl
 	return commitC, errorC, rc.snapshotterReady, rc.validatorC
 }
 
-
+//    raft  
 func (rc *raftNode) startRaft() {
-
+	//  snapshot   ，     
 	if !fileutil.Exist(rc.snapdir) {
 		if err := os.MkdirAll(rc.snapdir, 0750); err != nil {
 			rlog.Error(fmt.Sprintf("chain33_raft: cannot create dir for snapshot (%v)", err.Error()))
@@ -132,7 +132,7 @@ func (rc *raftNode) startRaft() {
 		Storage:         rc.raftStorage,
 		MaxSizePerMsg:   1024 * 1024,
 		MaxInflightMsgs: 256,
-
+		//      ，      ，           
 		PreVote:     true,
 		CheckQuorum: false,
 	}
@@ -170,20 +170,21 @@ func (rc *raftNode) startRaft() {
 		}
 	}
 
-
+	//       
 	go rc.serveRaft()
 	go rc.serveChannels()
 
-
+	//    watch leader       ，  validator
 	go rc.updateValidator()
 
+	//    wal  
 	go rc.cleanupWal()
 }
 
-
+//     
 func (rc *raftNode) serveRaft() {
 	var peers []string
-
+	//TODO:      ，   
 	peers = append(peers, rc.bootstrapPeers...)
 	peers = append(peers, rc.readOnlyPeers...)
 	peers = append(peers, rc.addPeers...)
@@ -226,6 +227,7 @@ func (rc *raftNode) serveChannels() {
 
 	go func() {
 		var confChangeCount uint64
+		//   propose proposeConfchange   RaftNode   
 		for rc.proposeC != nil && rc.confChangeC != nil {
 			select {
 			case prop, ok := <-rc.proposeC:
@@ -259,7 +261,7 @@ func (rc *raftNode) serveChannels() {
 			}
 		}
 	}()
-
+	//  Ready()     
 	for {
 		select {
 		case <-ticker.C:
@@ -293,7 +295,9 @@ func (rc *raftNode) serveChannels() {
 
 func (rc *raftNode) updateValidator() {
 
+	//TODO                 ?
 	time.Sleep(5 * time.Second)
+	//    readOnlyPeers            
 	flag := false
 	isRestart := false
 	ticker := time.NewTicker(50 * time.Millisecond)
@@ -315,7 +319,9 @@ func (rc *raftNode) updateValidator() {
 				rlog.Debug(fmt.Sprintf("==============This is %s node!==============", status.RaftState.String()))
 				continue
 			} else {
+				//    leader ID,    
 				if rc.id == int(status.Lead) {
+					//leader          addReadOnlyPeers
 					if !flag && !isRestart {
 						go rc.addReadOnlyPeers()
 					}
@@ -458,6 +464,7 @@ func (rc *raftNode) openWAL(snapshot *raftpb.Snapshot) *wal.WAL {
 	return w
 }
 
+//   http   channel
 func (rc *raftNode) stop() {
 	rc.wal.Close()
 	rc.stopHTTP()
@@ -480,6 +487,7 @@ func (rc *raftNode) writeError(err error) {
 	rc.node.Stop()
 }
 
+//  commit channel   commit log
 func (rc *raftNode) publishEntries(ents []raftpb.Entry) bool {
 	for i := range ents {
 		switch ents[i].Type {
@@ -487,6 +495,7 @@ func (rc *raftNode) publishEntries(ents []raftpb.Entry) bool {
 			if len(ents[i].Data) == 0 {
 				break
 			}
+			//   
 			block := &types.Block{}
 			if err := proto.Unmarshal(ents[i].Data, block); err != nil {
 				rlog.Error("Unmarshal block fail", "err", err)
@@ -557,6 +566,7 @@ func (rc *raftNode) ReportUnreachable(id uint64)                          {}
 func (rc *raftNode) ReportSnapshot(id uint64, status raft.SnapshotStatus) {}
 func (rc *raftNode) addReadOnlyPeers() {
 	isReady = true
+	//    ，      
 	if len(rc.readOnlyPeers) == 1 && rc.readOnlyPeers[0] == "" {
 		return
 	}
@@ -566,7 +576,7 @@ func (rc *raftNode) addReadOnlyPeers() {
 			NodeID:  uint64(len(rc.bootstrapPeers) + i + 1),
 			Context: []byte(peer),
 		}
-
+		//            ，            
 		if isReady {
 			confChangeC <- cc
 			isReady = false

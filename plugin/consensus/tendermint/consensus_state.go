@@ -809,6 +809,7 @@ func (cs *ConsensusState) createProposalBlock() (block *ttypes.TendermintBlock) 
 	cfg := cs.client.GetQueueClient().GetConfig()
 
 	block.Data.Txs[0] = baseTx
+	//                TxHash
 	if cfg.IsFork(block.Data.Height, "ForkRootHash") {
 		block.Data.Txs = types.TransactionSort(block.Data.Txs)
 	}

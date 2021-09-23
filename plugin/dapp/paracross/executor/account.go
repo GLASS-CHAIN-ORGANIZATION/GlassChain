@@ -11,37 +11,37 @@ import (
 	pt "github.com/33cn/plugin/plugin/dapp/paracross/types"
 )
 
-// ： ， paracros titl  , ，
+//  ：         ，    paracross        title  ，          ,       ，
 
 //NewParaAccount create new paracross account
-// {}, ， ， 
-// paracros 
+//    {},      ，          ，     
+//           paracross  
 // execName:  user.p.{guodun}.paracross
 // symbol: coins.bty, token.{TEST}
-//  mavl-{paracross}-coins.bty-{user-address} title{paracross}
-// paracross  malv-coins-bty-exec-{Address(paracross)}:{Address(user.p.{guodun}.paracross)}
+//         mavl-{paracross}-coins.bty-{user-address}   title{paracross}
+//      paracross     malv-coins-bty-exec-{Address(paracross)}:{Address(user.p.{guodun}.paracross)}
 func NewParaAccount(cfg *types.Chain33Config, paraTitle, mainExecName, mainSymbol string, db db.KV) (*account.DB, error) {
-	// ， title   "." 
+	//        ， title     "."    
 	// paraExec := paraTitle + types.ParaX
-	paraExec := pt.ParaX // ，
-	//  ) tokne  symbol   coins  symbol ，  localExecName 
+	paraExec := pt.ParaX //                      ，
+	//      (   ) tokne   symbol    coins    symbol     ，  localExecName     
 	paraSymbol := mainExecName + "." + mainSymbol
 	return account.NewAccountDB(cfg, paraExec, paraSymbol, db)
 }
 
 //NewMainAccount create new Main account
-// ， paracros 
+//                  ，            paracross  
 // execName: paracross
 // symbol: user.p.{guodun}.coins.{guodun}  user.p.{guodun}.token.{TEST}
-//  mavl-paracross-user.p.{guodun}.coins.guodun-{user-address}
-//   mavl-coins-{guodun}-exec-{Address(paracross)}:{Address(paracross)}
+//         mavl-paracross-user.p.{guodun}.coins.guodun-{user-address}
+//            mavl-coins-{guodun}-exec-{Address(paracross)}:{Address(paracross)}
 func NewMainAccount(cfg *types.Chain33Config, paraTitle, paraExecName, paraSymbol string, db db.KV) (*account.DB, error) {
 	mainSymbol := paraTitle + paraExecName + "." + paraSymbol
 	return account.NewAccountDB(cfg, pt.ParaX, mainSymbol, db)
 }
 
 func assetDepositBalance(acc *account.DB, addr string, amount int64) (*types.Receipt, error) {
-	if !acc.CheckAmount(amount) {
+	if !types.CheckAmount(amount) {
 		return nil, types.ErrAmount
 	}
 	acc1 := acc.LoadAccount(addr)
@@ -66,7 +66,7 @@ func assetDepositBalance(acc *account.DB, addr string, amount int64) (*types.Rec
 }
 
 func assetWithdrawBalance(acc *account.DB, addr string, amount int64) (*types.Receipt, error) {
-	if !acc.CheckAmount(amount) {
+	if !types.CheckAmount(amount) {
 		return nil, types.ErrAmount
 	}
 	acc1 := acc.LoadAccount(addr)
@@ -97,22 +97,22 @@ func assetWithdrawBalance(acc *account.DB, addr string, amount int64) (*types.Re
 // mavl-token-test-exec-1HPkPopVe3ERfvaAgedDtJQ792taZFEHCe:13DP8mVru5Rtu6CrjXQMvLsjvve3epRR1i
 // mavl-conis-bty-exec-{para}1e:13DP8mVru5Rtu6CrjXQMvLsjvve3epRR1i
 
-// 
-//      mavl-  ` -  ` - 
+//   
+//      mavl- `  ` - `   ` -   
 
-// 
-//      mavl-  ` -  ` -  exec -  ` ：                             10    - 5 |  5
-//      mavl-  ` -  ` -  exec -  ` ：  paracros `                      |  5
+//            
+//      mavl- `  ` - `   ` -  exec - `     ` ：                               10    - 5 |  5
+//      mavl- `  ` - `   ` -  exec - `     ` ： `   paracross  `                      |  5
 
-// 
-//     mavl-  ` -  ` - `
+//        
+//     mavl- `  ` - `   ` -`     `
 //
-// titl hu
+//  title hu
 
-// 
-//    `    paracross  ` :     user.p.guodun.paracross`
-//     `         coins.bty
-// mavl-  ` -  ` - 
+//    
+//   `  `    paracross  ` :         user.p.guodun.paracross`
+//    `   `         coins.bty
+// mavl- `  ` - `   ` -   
 //
 
 // transfer / withdraw
@@ -120,39 +120,39 @@ func assetWithdrawBalance(acc *account.DB, addr string, amount int64) (*types.Re
 
 // mavl -exec  -  symbol - addr
 
-//  token TEST   -> trade
+//    token TEST   -> trade
 //                                                                         token-symbol{TEST}-addr{trade}:addr{user}
-//  token TEST -> paracross ->  paracross： token.TEST ->  trade:   token.TEST@user.p.guodun.paracross
+//    token TEST ->   paracross ->     paracross： token.TEST ->     trade:   token.TEST@user.p.guodun.paracross
 //           TEST     token-TEST-addr{paracross}:addr{user}
 //                                    paracross-symbol{token.TEST}:addr{user}
 //                                                                         paracross-symbol{token.TEST}-addr{trade}:addr{user}
-//  token  TEST -> trade
+//     token  TEST -> trade
 //                                                                         token-symbol{TEST}-addr{trade}:addr{user}
-//  TEST, 
-//  token  TEST -> paracross
+//     TEST,      
+//     token  TEST -> paracross
 //                                                                        token-symbol{TEST}-addr{paracross}:addr{user}
-//  ， ,   exec + symbol
+//        ，     ,       exec + symbol
 
-// ，  ， symbol  symbol@host-title,   @bityuan
-//  ".", host-title.exec.symbol, host-title , , 
-//    titleFro    titleTo
-// token TEST -> paracross     ->  paracross ->   trade
+//         ，              ， symbol       symbol@host-title,          @bityuan
+//       ".", host-title.exec.symbol, host-title       ,     ,            
+//         titleFrom         titleTo
+// token TEST -> paracross     ->    paracross ->     trade
 //                token-symbol{TEST}-addr{paracross}:addr{user}
 //                                  paracross-symbol{token.TEST@tileFrom}-addr{user}
 //                                                   paracross-symbol{token.TEST@tileFrom}-addr{trade}:addr{user}
-//                                        ->   titleTo  paracross -> titleTo.trade
+//                                        ->       titleTo  paracross -> titleTo.trade
 //                                              paracross-symbol{token.TEST@tileFrom}-addr{user}
 //                                                                      paracross-symbol{token.TEST@tileFrom}-addr{trade}:addr{user}
 
 /*
- ， trad ， 
+     ， trade ，         
 
- ？ ， 
-  1. 
-  1. bty
-  1. 
-  1. token  YCC
- 
+        ？             ，            
+  1.           
+  1.          bty
+  1.         
+  1.      token   YCC
+          
 
- trade ， 。
+  trade           ，         。
 */

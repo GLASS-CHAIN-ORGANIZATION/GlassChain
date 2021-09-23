@@ -4,6 +4,8 @@
 
 package common
 
+// Message         
+//  EVM         ，   Tx    
 type Message struct {
 	to       *Address
 	from     Address
@@ -13,10 +15,11 @@ type Message struct {
 	gasLimit uint64
 	gasPrice uint32
 	data     []byte
-	para     []byte
+	abi      string
 }
 
-func NewMessage(from Address, to *Address, nonce int64, amount uint64, gasLimit uint64, gasPrice uint32, data, para []byte, alias string) *Message {
+// NewMessage       
+func NewMessage(from Address, to *Address, nonce int64, amount uint64, gasLimit uint64, gasPrice uint32, data []byte, alias, abi string) *Message {
 	return &Message{
 		from:     from,
 		to:       to,
@@ -26,28 +29,33 @@ func NewMessage(from Address, to *Address, nonce int64, amount uint64, gasLimit 
 		gasPrice: gasPrice,
 		data:     data,
 		alias:    alias,
-		para:     para,
+		abi:      abi,
 	}
 }
 
-func (m *Message) From() Address { return m.from }
+// From   
+func (m Message) From() Address { return m.from }
 
-func (m *Message) To() *Address { return m.to }
+// To     
+func (m Message) To() *Address { return m.to }
 
-func (m *Message) GasPrice() uint32 { return m.gasPrice }
+// GasPrice Gas  
+func (m Message) GasPrice() uint32 { return m.gasPrice }
 
-func (m *Message) Value() uint64 { return m.amount }
+// Value     
+func (m Message) Value() uint64 { return m.amount }
 
-func (m *Message) Nonce() int64 { return m.nonce }
+// Nonce  nonce 
+func (m Message) Nonce() int64 { return m.nonce }
 
-func (m *Message) Data() []byte { return m.data }
+// Data     
+func (m Message) Data() []byte { return m.data }
 
-func (m *Message) GasLimit() uint64 { return m.gasLimit }
+// GasLimit Gas  
+func (m Message) GasLimit() uint64 { return m.gasLimit }
 
-func (m *Message) SetGasLimit(gasLimit uint64) {
-	m.gasLimit = gasLimit
-}
+// Alias     
+func (m Message) Alias() string { return m.alias }
 
-func (m *Message) Alias() string { return m.alias }
-
-func (m *Message) Para() []byte { return m.para }
+// ABI   ABI
+func (m Message) ABI() string { return m.abi }

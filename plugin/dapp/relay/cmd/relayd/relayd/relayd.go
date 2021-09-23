@@ -321,7 +321,7 @@ func (r *Relayd) transaction(payload []byte) *types.Transaction {
 	var chainID int32
 	minFee := types.DefaultMinFee
 
-	//chain3 chainI minFee
+	//chain33      chainID minFee
 	if r.config.Chain33Cfg != nil {
 		chainID = r.config.Chain33Cfg.GetChainID()
 		minFee = r.config.Chain33Cfg.GetMinTxFeeRate()

@@ -26,7 +26,7 @@ func bindMiner(cfg *types.Chain33Config, param *ty.ReqBindMiner) (*ty.ReplyBindM
 	return &ty.ReplyBindMiner{TxHex: hex}, nil
 }
 
-// CreateBindMiner 
+// CreateBindMiner       
 func (g *channelClient) CreateBindMiner(ctx context.Context, in *ty.ReqBindMiner) (*ty.ReplyBindMiner, error) {
 	if in.BindAddr != "" {
 		err := address.CheckAddress(in.BindAddr)
@@ -53,7 +53,7 @@ func (g *channelClient) CreateBindMiner(ctx context.Context, in *ty.ReqBindMiner
 			return nil, types.ErrAmount
 		}
 
-		getBalance := &types.ReqBalance{Addresses: []string{in.OriginAddr}, Execer: cfg.GetCoinExec(), AssetSymbol: "bty", AssetExec: cfg.GetCoinExec()}
+		getBalance := &types.ReqBalance{Addresses: []string{in.OriginAddr}, Execer: "coins", AssetSymbol: "bty", AssetExec: "coins"}
 		balances, err := g.GetCoinsAccountDB().GetBalance(g, getBalance)
 		if err != nil {
 			return nil, err
@@ -61,7 +61,7 @@ func (g *channelClient) CreateBindMiner(ctx context.Context, in *ty.ReqBindMiner
 		if len(balances) == 0 {
 			return nil, types.ErrInvalidParam
 		}
-		if balances[0].Balance < in.Amount+2*cfg.GetCoinPrecision() {
+		if balances[0].Balance < in.Amount+2*types.Coin {
 			return nil, types.ErrNoBalance
 		}
 	}

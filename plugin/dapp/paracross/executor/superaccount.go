@@ -42,7 +42,7 @@ func getNodeID(db dbm.KV, id string) (*pt.ParaNodeIdStatus, error) {
 	return &status, err
 }
 
-/  i "mavl-paracros-...0x12342308b  mavl-paracros id i 
+//     id "mavl-paracros-...0x12342308b"  ，             mavl-paracross     id，    id    
 func getNodeIDWithFork(cfg *types.Chain33Config, db dbm.KV, title string, height int64, id string) (*pt.ParaNodeIdStatus, error) {
 	if pt.IsParaForkHeight(cfg, height, pt.ForkLoopCheckCommitTxDone) {
 		id = calcParaNodeIDKey(title, id)
@@ -70,7 +70,7 @@ func getDb(db dbm.KV, key []byte) ([]byte, error) {
 	return val, nil
 }
 
-/  i "mavl-paracros-...0x12342308b  mavl-paracros id i 
+//     id "mavl-paracros-...0x12342308b"  ，             mavl-paracross     id，    id    
 func getNodeGroupID(cfg *types.Chain33Config, db dbm.KV, title string, height int64, id string) (*pt.ParaNodeGroupStatus, error) {
 	if pt.IsParaForkHeight(cfg, height, pt.ForkLoopCheckCommitTxDone) {
 		id = calcParaNodeGroupIDKey(title, id)
@@ -222,7 +222,7 @@ func (a *action) checkValidNode(config *pt.ParaNodeAddrConfig) (bool, error) {
 	if err != nil {
 		return false, errors.Wrapf(err, "getNodes for title:%s", config.Title)
 	}
-	/ 
+	//                 
 	if validNode(config.Addr, nodes) {
 		return true, nil
 	}
@@ -319,7 +319,7 @@ func (a *action) nodeCancel(config *pt.ParaNodeAddrConfig) (*types.Receipt, erro
 		return nil, err
 	}
 
-	/ 
+	//         
 	if a.fromaddr != stat.FromAddr {
 		return nil, errors.Wrapf(types.ErrNotAllow, "id create by:%s,not by:%s", stat.FromAddr, a.fromaddr)
 	}
@@ -366,7 +366,7 @@ func (a *action) nodeModify(config *pt.ParaNodeAddrConfig) (*types.Receipt, erro
 		return nil, errors.Wrapf(err, "nodeAddr:%s get error", config.Addr)
 	}
 
-	/ 
+	//         
 	if a.fromaddr != config.Addr {
 		return nil, errors.Wrapf(types.ErrNotAllow, "addr create by:%s,not by:%s", config.Addr, a.fromaddr)
 	}
@@ -408,7 +408,7 @@ func hasVoted(addrs []string, addr string) (bool, int) {
 	return hasCommited(addrs, addr)
 }
 
-/ ，   
+//           ，                 ×    ，                                    
 func (a *action) superManagerVoteProc(title string) error {
 	status, err := getNodeGroupStatus(a.db, title)
 	if err != nil {
@@ -424,7 +424,7 @@ func (a *action) superManagerVoteProc(title string) error {
 	}
 	var consensMainHeight int64
 	consensHeight := data.(*pt.ParacrossStatus).Height
-	/ grou  approv 
+	//  group         ，  approve     
 	if consensHeight == -1 {
 		consensMainHeight = status.Height
 	} else {
@@ -455,7 +455,7 @@ func updateVotes(in *pt.ParaNodeVoteDetail, nodes map[string]struct{}) *pt.ParaN
 	return votes
 }
 
-/ propasal id quit i ，quit i addr　proposal i coinfroze  add 
+//  propasal id  quit id  ，quit id     addr　proposal id coinfrozen  ，        addr        
 func (a *action) updateNodeAddrStatus(stat *pt.ParaNodeIdStatus) (*types.Receipt, error) {
 	cfg := a.api.GetConfig()
 	addrStat, err := getNodeAddr(a.db, stat.Title, stat.TargetAddr)
@@ -507,7 +507,7 @@ func (a *action) updateNodeAddrStatus(stat *pt.ParaNodeIdStatus) (*types.Receipt
 func (a *action) checkIsSuperManagerVote(config *pt.ParaNodeAddrConfig, nodes map[string]struct{}) (bool, error) {
 	cfg := a.api.GetConfig()
 
-	/  nodegrou  superManager superManger superManager
+	//   ：           nodegroup  ，  superManager,          superManger,       superManager
 	if cfg.IsPara() {
 		if validNode(a.fromaddr, nodes) {
 			return false, nil
@@ -515,7 +515,7 @@ func (a *action) checkIsSuperManagerVote(config *pt.ParaNodeAddrConfig, nodes ma
 		return true, nil
 	}
 
-	/  
+	//  ：          
 	if !isSuperManager(cfg, a.fromaddr) {
 		return false, nil
 	}
@@ -532,7 +532,7 @@ func (a *action) nodeVote(config *pt.ParaNodeAddrConfig) (*types.Receipt, error)
 		return nil, errors.Wrapf(err, "getNodes for title:%s", config.Title)
 	}
 	cfg := a.api.GetConfig()
-	/ ， nodegrou supermanage vote
+	//      ，　  nodegroup   supermanager  vote
 	if !cfg.IsPara() && !validNode(a.fromaddr, nodes) && !isSuperManager(cfg, a.fromaddr) {
 		return nil, errors.Wrapf(pt.ErrNodeNotForTheTitle, "not validNode:%s", a.fromaddr)
 	}
@@ -548,7 +548,7 @@ func (a *action) nodeVote(config *pt.ParaNodeAddrConfig) (*types.Receipt, error)
 		return nil, errors.Wrapf(pt.ErrParaNodeOpStatusWrong, "config id:%s,status:%d", config.Id, stat.Status)
 	}
 
-	/ id pass 
+	//     id pass   
 	if stat.Status == pt.ParaApplyJoining && validNode(stat.TargetAddr, nodes) {
 		return nil, errors.Wrapf(pt.ErrParaNodeAddrExisted, "config id:%s,addr:%s", config.Id, stat.TargetAddr)
 	}
@@ -568,7 +568,7 @@ func (a *action) nodeVote(config *pt.ParaNodeAddrConfig) (*types.Receipt, error)
 		stat.Votes.Votes = append(stat.Votes.Votes, pt.ParaNodeVoteStr[config.Value])
 	}
 
-	/ nodegrou add 
+	//     nodegroup addr   
 	stat.Votes = updateVotes(stat.Votes, nodes)
 
 	most, vote := getMostVote(stat.Votes)
@@ -578,7 +578,7 @@ func (a *action) nodeVote(config *pt.ParaNodeAddrConfig) (*types.Receipt, error)
 			return nil, err
 		}
 
-		/ ye   
+		//     yes ，              ，                 
 		if !(superManagerPass && most > 0 && vote == pt.ParaVoteYes) {
 			return makeNodeConfigReceipt(a.fromaddr, config, copyStat, stat), nil
 		}
@@ -633,7 +633,7 @@ func (a *action) nodeVote(config *pt.ParaNodeAddrConfig) (*types.Receipt, error)
 			receipt = mergeReceipt(receipt, r)
 
 			if a.exec.GetMainHeight() > pt.GetDappForkHeight(cfg, pt.ForkLoopCheckCommitTxDone) {
-				//node qui  committ 2/  commitDone
+				//node quit ，  committx  2/3  ，    commitDone
 				r, err = a.loopCommitTxDone(config.Title)
 				if err != nil {
 					clog.Error("unpdateNodeGroup.loopCommitTxDone", "title", title, "err", err.Error())
@@ -680,7 +680,7 @@ func unpdateNodeGroup(db dbm.KV, title, addr string, add bool) (*types.Receipt, 
 		clog.Info("unpdateNodeGroup add", "addr", addr, "from", copyItem.GetArr().Value, "to", item.GetArr().Value)
 
 	} else {
-		/  
+		//      1     
 		if len(item.GetArr().Value) <= 1 {
 			return nil, pt.ErrParaNodeGroupLastAddr
 		}
@@ -859,7 +859,7 @@ func (a *action) nodeGroupQuit(config *pt.ParaNodeGroupConfig) (*types.Receipt, 
 		return nil, err
 	}
 
-	/ 
+	//         
 	if a.fromaddr != status.FromAddr {
 		return nil, errors.Wrapf(types.ErrNotAllow, "id create by:%s,not by:%s", status.FromAddr, a.fromaddr)
 	}
@@ -917,8 +917,8 @@ func (a *action) nodeGroupApproveModify(config *pt.ParaNodeGroupConfig, modify *
 	receipt.KV = append(receipt.KV, r.KV...)
 	receipt.Logs = append(receipt.Logs, r.Logs...)
 
-	/ approved grou addr active&froze coins add grou   
-	//  
+	//   approved group addrs      active&frozen   coins，      addr    group ，    ，           
+	//        ，            
 	copyStat := *stat
 	stat.Id = modify.Id
 	stat.CoinsFrozen = modify.CoinsFrozen
@@ -964,7 +964,7 @@ func (a *action) nodeGroupApproveApply(config *pt.ParaNodeGroupConfig, apply *pt
 	receipt.Logs = append(receipt.Logs, r.Logs...)
 	cfg := a.api.GetConfig()
 	if cfg.IsPara() && cfg.IsDappFork(a.height, pt.ParaX, pt.ForkParaSelfConsStages) {
-		/  init stage
+		//                    ，           init stage
 		r = selfConsensInitStage(cfg)
 		receipt.KV = append(receipt.KV, r.KV...)
 		receipt.Logs = append(receipt.Logs, r.Logs...)
@@ -977,7 +977,7 @@ func (a *action) nodeGroupApproveApply(config *pt.ParaNodeGroupConfig, apply *pt
 // NodeGroupApprove super addr approve the node group apply
 func (a *action) nodeGroupApprove(config *pt.ParaNodeGroupConfig) (*types.Receipt, error) {
 	cfg := a.api.GetConfig()
-	/ 
+	//      
 	if !cfg.IsPara() && !isSuperManager(cfg, a.fromaddr) {
 		return nil, errors.Wrapf(types.ErrNotAllow, "node group approve not super manager:%s", a.fromaddr)
 	}
@@ -1103,10 +1103,10 @@ func (a *action) NodeConfig(config *pt.ParaNodeAddrConfig) (*types.Receipt, erro
 	case pt.ParaOpNewApply:
 		return a.nodeJoin(config)
 	case pt.ParaOpQuit:
-		/ nodegroup
+		//  nodegroup
 		return a.nodeQuit(config)
 	case pt.ParaOpCancel:
-		/ 
+		//        
 		if config.Id == "" {
 			return nil, types.ErrInvalidParam
 		}
@@ -1117,7 +1117,7 @@ func (a *action) NodeConfig(config *pt.ParaNodeAddrConfig) (*types.Receipt, erro
 		}
 		return a.nodeVote(config)
 	case pt.ParaOpModify:
-		/ add  
+		//  addr      ，        
 		return a.nodeModify(config)
 	default:
 		return nil, pt.ErrParaUnSupportNodeOper

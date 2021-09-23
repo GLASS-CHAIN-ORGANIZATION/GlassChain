@@ -42,7 +42,7 @@ type NormalInterface interface {
 	SendPing(peer *Peer, nodeinfo *NodeInfo) error
 	GetBlockHeight(nodeinfo *NodeInfo) (int64, error)
 	CheckPeerNatOk(addr string, nodeInfo *NodeInfo) bool
-	GetAddrList(peer *Peer) (map[string]*pb.P2PPeerInfo, error)
+	GetAddrList(peer *Peer) (map[string]int64, error)
 	GetInPeersNum(peer *Peer) (int, error)
 	CheckSelf(addr string, nodeinfo *NodeInfo) bool
 }
@@ -79,9 +79,9 @@ func (m *Cli) BroadCastTx(msg *queue.Message, taskindex int64) {
 
 	if tx, ok := msg.GetData().(*pb.Transaction); ok {
 		txHash := hex.EncodeToString(tx.Hash())
-		/  ttl
+		//         ，          ttl
 		route := &pb.P2PRoute{TTL: 1}
-		/  
+		//       ，             
 		data, exist := txHashFilter.Get(txHash)
 		if ttl, ok := data.(*pb.P2PRoute); exist && ok {
 			route.TTL = ttl.GetTTL() + 1
@@ -104,7 +104,7 @@ func (m *Cli) GetMemPool(msg *queue.Message, taskindex int64) {
 	peers, _ := m.network.node.GetActivePeers()
 
 	for _, peer := range peers {
-		/  peer invs
+		//     peer invs
 		resp, err := peer.mconn.gcli.GetMemPool(context.Background(),
 			&pb.P2PGetMempool{Version: m.network.node.nodeInfo.channelVersion}, grpc.FailFast(true))
 		P2pComm.CollectPeerStat(err, peer)
@@ -117,7 +117,7 @@ func (m *Cli) GetMemPool(msg *queue.Message, taskindex int64) {
 		}
 
 		invs := resp.GetInvs()
-		/ mempool  t 
+		//   mempool    tx  
 		tmpMsg := m.network.client.NewMessage("mempool", pb.EventGetMempool, nil)
 		txresp, err := m.network.client.Wait(tmpMsg)
 		if err != nil {
@@ -130,13 +130,13 @@ func (m *Cli) GetMemPool(msg *queue.Message, taskindex int64) {
 			txmap[hex.EncodeToString(tx.Hash())] = tx
 		}
 
-		/ 
+		//    
 		for _, inv := range invs {
 			if _, ok := txmap[hex.EncodeToString(inv.Hash)]; !ok {
 				ableInv = append(ableInv, inv)
 			}
 		}
-		/ Tx call GetData
+		//       Tx call GetData
 		datacli, dataerr := peer.mconn.gcli.GetData(context.Background(),
 			&pb.P2PGetData{Invs: ableInv, Version: m.network.node.nodeInfo.channelVersion}, grpc.FailFast(true))
 		P2pComm.CollectPeerStat(dataerr, peer)
@@ -199,9 +199,9 @@ func (m *Cli) GetInPeersNum(peer *Peer) (int, error) {
 }
 
 // GetAddrList return a map for address-prot
-func (m *Cli) GetAddrList(peer *Peer) (map[string]*pb.P2PPeerInfo, error) {
+func (m *Cli) GetAddrList(peer *Peer) (map[string]int64, error) {
 
-	var addrlist = make(map[string]*pb.P2PPeerInfo)
+	var addrlist = make(map[string]int64)
 	if peer == nil {
 		return addrlist, fmt.Errorf("pointer is nil")
 	}
@@ -212,7 +212,7 @@ func (m *Cli) GetAddrList(peer *Peer) (map[string]*pb.P2PPeerInfo, error) {
 	if err != nil {
 		return addrlist, err
 	}
-	/ 
+	//      
 	client := peer.node.nodeInfo.client
 	msg := client.NewMessage("blockchain", pb.EventGetLastHeader, nil)
 	err = client.SendTimeout(msg, true, time.Second*10)
@@ -229,11 +229,9 @@ func (m *Cli) GetAddrList(peer *Peer) (map[string]*pb.P2PPeerInfo, error) {
 	peerinfos := resp.GetPeerinfo()
 
 	for _, peerinfo := range peerinfos {
-		if peerinfo == nil {
-			continue
-		}
 		if localBlockHeight-peerinfo.GetHeader().GetHeight() < 2048 {
-			addrlist[peerinfo.GetName()] = peerinfo
+
+			addrlist[fmt.Sprintf("%v:%v", peerinfo.GetAddr(), peerinfo.GetPort())] = peerinfo.GetHeader().GetHeight()
 		}
 	}
 	return addrlist, nil
@@ -269,7 +267,7 @@ func (m *Cli) SendVersion(peer *Peer, nodeinfo *NodeInfo) (string, error) {
 	resp, err := peer.mconn.gcli.Version2(context.Background(), &pb.P2PVersion{Version: nodeinfo.channelVersion, Service: int64(nodeinfo.ServiceTy()), Timestamp: pb.Now().Unix(),
 		AddrRecv: peer.Addr(), AddrFrom: addrfrom, Nonce: int64(rand.Int31n(102040)),
 		UserAgent: hex.EncodeToString(in.Sign.GetPubkey()), StartHeight: blockheight}, grpc.FailFast(true))
-	log.Debug("SendVersion", "resp", resp, "from", addrfrom, "to", peer.Addr())
+	log.Debug("SendVersion", "resp", resp, "addrfrom", addrfrom, "sendto", peer.Addr())
 	if err != nil {
 		log.Error("SendVersion", "Verson", err.Error(), "peer", peer.Addr())
 		if err == pb.ErrVersion {
@@ -280,7 +278,7 @@ func (m *Cli) SendVersion(peer *Peer, nodeinfo *NodeInfo) (string, error) {
 	}
 
 	P2pComm.CollectPeerStat(err, peer)
-	log.Debug("SHOW VERSION BACK", "VersionBack", resp, "remote peer", peer.Addr())
+	log.Debug("SHOW VERSION BACK", "VersionBack", resp, "peer", peer.Addr())
 	_, ver := utils.DecodeChannelVersion(resp.GetVersion())
 	peer.version.SetVersion(ver)
 
@@ -288,9 +286,9 @@ func (m *Cli) SendVersion(peer *Peer, nodeinfo *NodeInfo) (string, error) {
 	if err == nil {
 		if ip != nodeinfo.GetExternalAddr().IP.String() {
 
-			log.Debug("sendVersion", "expect ip", ip, "pre externalip", nodeinfo.GetExternalAddr().IP.String())
+			log.Debug("sendVersion", "externalip", ip)
 			if peer.IsPersistent() {
-				/ 
+				//       
 				nodeinfo.blacklist.Add(ip, 0)
 			}
 		}
@@ -397,7 +395,7 @@ func (m *Cli) GetHeaders(msg *queue.Message, taskindex int64) {
 			log.Error("GetBlocks", "Err", err.Error())
 			if err == pb.ErrVersion {
 				peer.version.SetSupport(false)
-				P2pComm.CollectPeerStat(err, peer) / no support 
+				P2pComm.CollectPeerStat(err, peer) // no support       
 			}
 			return
 		}
@@ -409,7 +407,7 @@ func (m *Cli) GetHeaders(msg *queue.Message, taskindex int64) {
 			log.Error("send", "to blockchain EventAddBlockHeaders msg Err", err.Error())
 		}
 	} else {
-		/ pi ActivePee 
+		//    pid  ActivePeer             
 		log.Debug("GetHeaders", "pid", pid[0], "ActivePeers", peers, "infos", infos)
 	}
 
@@ -444,7 +442,7 @@ func (m *Cli) GetBlocks(msg *queue.Message, taskindex int64) {
 
 	var downloadPeers []*Peer
 	peers, infos := m.network.node.GetActivePeers()
-	if len(pids) > 0 && pids[0] != "" { / Pid 
+	if len(pids) > 0 && pids[0] != "" { //  Pid     
 		log.Debug("fetch from peer in pids", "pids", pids)
 		for _, pid := range pids {
 			if peer, ok := peers[pid]; ok && peer != nil {
@@ -456,7 +454,7 @@ func (m *Cli) GetBlocks(msg *queue.Message, taskindex int64) {
 		log.Debug("fetch from all peers in pids")
 		for name, peer := range peers {
 			info, ok := infos[name]
-			if !ok || info.GetHeader().GetHeight() < req.GetStart() { / 
+			if !ok || info.GetHeader().GetHeight() < req.GetStart() { //       
 				continue
 			}
 			downloadPeers = append(downloadPeers, peer)
@@ -471,7 +469,7 @@ func (m *Cli) GetBlocks(msg *queue.Message, taskindex int64) {
 
 	msg.Reply(m.network.client.NewMessage("blockchain", pb.EventReply, pb.Reply{IsOk: true, Msg: []byte("downloading...")}))
 
-	/ 
+	//            
 	var bChan = make(chan *pb.BlockPid, 512)
 	invs := MaxInvs.GetInvs()
 	job := NewDownloadJob(m, downloadPeers)
@@ -562,7 +560,7 @@ func (m *Cli) GetNetInfo(msg *queue.Message, taskindex int64) {
 
 // CheckPeerNatOk check peer is ok or not
 func (m *Cli) CheckPeerNatOk(addr string, info *NodeInfo) bool {
-	/ 
+	//            
 	return !(len(P2pComm.AddrRouteble([]string{addr}, info.channelVersion, info.cliCreds)) == 0)
 
 }
@@ -607,7 +605,7 @@ func (m *Cli) peerInfos() []*pb.Peer {
 func (m *Cli) getLocalPeerInfo() (*pb.P2PPeerInfo, error) {
 	client := m.network.client
 	msg := client.NewMessage("mempool", pb.EventGetMempoolSize, nil)
-	err := client.SendTimeout(msg, true, time.Second*10) / 
+	err := client.SendTimeout(msg, true, time.Second*10) //    
 	if err != nil {
 		log.Error("GetPeerInfo mempool", "Error", err.Error())
 		return nil, err

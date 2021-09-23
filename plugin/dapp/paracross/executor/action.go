@@ -60,7 +60,7 @@ func getNodes(db dbm.KV, key []byte) (map[string]struct{}, []string, error) {
 
 	value := config.GetArr()
 	if value == nil {
-		//  ， 
+		//       ，      ，          
 		return map[string]struct{}{}, nil, nil
 	}
 	var nodesArray []string
@@ -133,7 +133,7 @@ func checkCommitInfo(cfg *types.Chain33Config, commit *pt.ParacrossNodeStatus) e
 	return nil
 }
 
-/ floa 
+//        float  
 func isCommitDone(nodes, mostSame int) bool {
 	return 3*mostSame > 2*nodes
 }
@@ -249,7 +249,7 @@ func GetMostCommit(commits [][]byte) (int, string) {
 	return most, hash
 }
 
-/ ForkLoopCheckCommitTxDon 
+//   ForkLoopCheckCommitTxDone   
 func getMostResults(mostHash []byte, stat *pt.ParacrossHeightStatus) []byte {
 	for i, hash := range stat.BlockDetails.BlockHashs {
 		if bytes.Equal(mostHash, hash) {
@@ -312,7 +312,7 @@ func (a *action) isValidSuperNode(addr string) error {
 	return nil
 }
 
-/ BlockHash 
+//   BlockHash，       
 func updateCommitBlockHashs(stat *pt.ParacrossHeightStatus, commit *pt.ParacrossNodeStatus) {
 	if stat.BlockDetails == nil {
 		stat.BlockDetails = &pt.ParacrossStatusBlockDetails{}
@@ -327,7 +327,7 @@ func updateCommitBlockHashs(stat *pt.ParacrossHeightStatus, commit *pt.Paracross
 
 }
 
-/ node addrs
+//  nodes         addrs
 func updateCommitAddrs(stat *pt.ParacrossHeightStatus, nodes map[string]struct{}) {
 	details := &pt.ParacrossStatusDetails{}
 	for i, addr := range stat.Details.Addrs {
@@ -340,15 +340,15 @@ func updateCommitAddrs(stat *pt.ParacrossHeightStatus, nodes map[string]struct{}
 
 }
 
-/    a.height
-/ 100  10 80~9 2  2 10   8 100
-/ commit.Status.Heigh   10 
+//        ，               ，                  ，           a.height
+//           100，          ，  100      80~99 20     ， 20    100      ，       ，        80   100
+//      commit.Status.Height  ，               ，      100  
 func paraCheckSelfConsOn(cfg *types.Chain33Config, db dbm.KV, commit *pt.ParacrossNodeStatus) (bool, *types.Receipt, error) {
 	if !cfg.IsDappFork(commit.Height, pt.ParaX, pt.ForkParaSelfConsStages) {
 		return true, nil, nil
 	}
 
-	/ ，ke  
+	//    ，key   ，               
 	isSelfConsOn, err := isSelfConsOn(db, commit.Height)
 	if err != nil && errors.Cause(err) != pt.ErrKeyNotExist {
 		return false, nil, err
@@ -379,10 +379,10 @@ func (a *action) preCheckCommitInfo(commit *pt.ParacrossNodeStatus, commitAddrs 
 		}
 	}
 
-	// ，  commi  ，  
-	//    （1）Bn1        （3） rollback-Bn1   （4） commit-done in Bn2
-	//          （2）commit                                 （5） 
-	// 
+	//     ，            commit        ，        ，     
+	//      （1）Bn1        （3） rollback-Bn1   （4） commit-done in Bn2
+	//             （2）commit                                 （5）          
+	//           
 	var dbMainHash []byte
 	if !cfg.IsPara() {
 		blockHash, err := getBlockHash(a.api, commit.MainBlockHeight)
@@ -401,8 +401,8 @@ func (a *action) preCheckCommitInfo(commit *pt.ParacrossNodeStatus, commitAddrs 
 		dbMainHash = block.MainHash
 	}
 
-	/  blockhas commi 
-	/ ， commi height bloc mainHas mainHas ， has blockhas 
+	//    ，           blockhash   commit   
+	//     ，     commit      height block   mainHash            mainHash  ，    hash           blockhash    
 	if !bytes.Equal(dbMainHash, commit.MainBlockHash) && commit.Height > 0 {
 		clog.Error("paracross.Commit blockHash not match", "isMain", !cfg.IsPara(), "db", common.ToHex(dbMainHash),
 			"commit", common.ToHex(commit.MainBlockHash), "commitHeight", commit.Height,
@@ -425,7 +425,7 @@ func getValidAddrs(nodes map[string]struct{}, addrs []string) []string {
 	return ret
 }
 
-//bl  3ms (2~4ms)
+//bls               3ms (2~4ms)
 func (a *action) procBlsSign(nodesArry []string, commit *pt.ParacrossCommitAction) ([]string, error) {
 	signAddrs := util.GetAddrsByBitMap(nodesArry, commit.Bls.AddrsMap)
 	var pubs []string
@@ -446,7 +446,7 @@ func (a *action) procBlsSign(nodesArry []string, commit *pt.ParacrossCommitActio
 
 func verifyBlsSign(cryptoCli crypto.Crypto, pubs []string, commit *pt.ParacrossCommitAction) error {
 	t1 := types.Now()
-	//1. add bls 
+	//1.   addr   bls   
 	pubKeys := make([]crypto.PubKey, 0)
 	for _, p := range pubs {
 		k, err := common.FromHex(p)
@@ -461,12 +461,12 @@ func verifyBlsSign(cryptoCli crypto.Crypto, pubs []string, commit *pt.ParacrossC
 
 	}
 
-	//2. , deserial 300us
+	//2.　       , deserial 300us
 	sign, err := cryptoCli.SignatureFromBytes(commit.Bls.Sign)
 	if err != nil {
 		return errors.Wrapf(err, "DeserializeSignature,key=%s", common.ToHex(commit.Bls.Sign))
 	}
-	//3. msg
+	//3.        msg
 	msg := types.Encode(commit.Status)
 
 	//4. verify 1ms, total 2ms
@@ -484,10 +484,10 @@ func verifyBlsSign(cryptoCli crypto.Crypto, pubs []string, commit *pt.ParacrossC
 	return nil
 }
 
-/ commit　msg 
+//  commit　msg　  
 func (a *action) Commit(commit *pt.ParacrossCommitAction) (*types.Receipt, error) {
 	cfg := a.api.GetConfig()
-	/  
+	//    ，          
 	if cfg.IsPara() {
 		isSelfConsOn, receipt, err := paraCheckSelfConsOn(cfg, a.db, commit.Status)
 		if !isSelfConsOn {
@@ -500,7 +500,7 @@ func (a *action) Commit(commit *pt.ParacrossCommitAction) (*types.Receipt, error
 		return nil, errors.Wrap(err, "getNodesGroup")
 	}
 
-	/ commitAddrs, bls sign 
+	//  commitAddrs, bls sign            
 	commitAddrs := []string{a.fromaddr}
 	if commit.Bls != nil {
 		addrs, err := a.procBlsSign(nodesArry, commit)
@@ -531,13 +531,13 @@ func (a *action) proCommitMsg(commit *pt.ParacrossNodeStatus, nodes map[string]s
 		return nil, errors.Wrapf(err, "getTitle:%s", commit.Title)
 	}
 
-	// ，  record log， 
+	//          ，    record log，              
 	if commit.Height <= titleStatus.Height {
 		clog.Debug("paracross.Commit record", "node", commitAddrs, "titile", commit.Title, "height", commit.Height)
 		return makeRecordReceipt(strings.Join(commitAddrs, ","), commit), nil
 	}
 
-	// ， 
+	//      ，             
 	stat, err := getTitleHeight(a.db, calcTitleHeightKey(commit.Title, commit.Height))
 	if err != nil && !isNotFound(err) {
 		clog.Error("paracross.Commit getTitleHeight failed", "err", err)
@@ -562,7 +562,7 @@ func (a *action) proCommitMsg(commit *pt.ParacrossNodeStatus, nodes map[string]s
 	}
 
 	for _, addr := range commitAddrs {
-		// ， commi 
+		//     ，            commit  
 		found, index := hasCommited(stat.Details.Addrs, addr)
 		if found {
 			stat.Details.BlockHash[index] = commit.BlockHash
@@ -572,19 +572,19 @@ func (a *action) proCommitMsg(commit *pt.ParacrossNodeStatus, nodes map[string]s
 		}
 	}
 
-	/ commit.MainBlockHeight  a.exec.MainHeigh  MainHeigh tx，
-	// loopCommitTxDon 
+	// commit.MainBlockHeight      ，   a.exec.MainHeight   ，      MainHeight       tx，
+	//   loopCommitTxDone                   
 	if pt.IsParaForkHeight(cfg, commit.MainBlockHeight, pt.ForkLoopCheckCommitTxDone) {
 		updateCommitBlockHashs(stat, commit)
 	}
 	receipt = makeCommitReceipt(strings.Join(commitAddrs, ","), commit, copyStat, stat)
 
-	/ fork pt.ForkCommitTx=0 ForkCommitT nodegroup dappFor true
+	//   fork pt.ForkCommitTx=0,   ForkCommitTx   nodegroup，     dappFork   true
 	if cfg.IsDappFork(commit.MainBlockHeight, pt.ParaX, pt.ForkCommitTx) {
 		updateCommitAddrs(stat, nodes)
 	}
 	saveTitleHeight(a.db, calcTitleHeightKey(stat.Title, stat.Height), stat)
-	//for stat node 
+	//fork     stat     nodes     
 	if pt.IsParaForkHeight(cfg, stat.MainHeight, pt.ForkLoopCheckCommitTxDone) {
 		r := makeCommitStatReceipt(stat)
 		receipt = mergeReceipt(receipt, r)
@@ -592,7 +592,7 @@ func (a *action) proCommitMsg(commit *pt.ParacrossNodeStatus, nodes map[string]s
 
 	if commit.Height > titleStatus.Height+1 {
 		saveTitleHeight(a.db, calcTitleHeightKey(commit.Title, commit.Height), stat)
-		/    
+		//            ，           ，    0  
 		allow, err := a.isAllowConsensJump(commit, titleStatus)
 		if err != nil {
 			clog.Error("paracross.Commit allowJump", "err", err)
@@ -610,7 +610,7 @@ func (a *action) proCommitMsg(commit *pt.ParacrossNodeStatus, nodes map[string]s
 	return receipt, nil
 }
 
-/ sta blockhas  crossTxHas  sta mostCommitStatus
+//    stat      blockhash   ，  crossTxHash   ，    stat     mostCommitStatus
 func (a *action) commitTxDone(nodeStatus *pt.ParacrossNodeStatus, stat *pt.ParacrossHeightStatus, titleStatus *pt.ParacrossStatus,
 	nodes map[string]struct{}) (*types.Receipt, error) {
 	receipt := &types.Receipt{}
@@ -628,7 +628,7 @@ func (a *action) commitTxDone(nodeStatus *pt.ParacrossNodeStatus, stat *pt.Parac
 	stat.Status = pt.ParacrossStatusCommitDone
 	saveTitleHeight(a.db, calcTitleHeightKey(stat.Title, stat.Height), stat)
 
-	/ stat 
+	//     stat      
 	cfg := a.api.GetConfig()
 	if pt.IsParaForkHeight(cfg, stat.MainHeight, pt.ForkLoopCheckCommitTxDone) {
 		r := makeCommitStatReceipt(stat)
@@ -664,22 +664,22 @@ func (a *action) commitTxDoneStep2(nodeStatus *pt.ParacrossNodeStatus, stat *pt.
 
 	//parallel chain not need to process cross commit tx here
 	if cfg.IsPara() {
-		/ 
+		//        
 		selfBlockHash, err := getBlockHash(a.api, nodeStatus.Height)
 		if err != nil {
 			clog.Error("paracross.CommitDone getBlockHash", "err", err, "commit tx height", nodeStatus.Height, "tx", common.ToHex(a.txhash))
 			return nil, err
 		}
-		/ blockhas has  
+		//     blockhash   hash   ，         
 		if !bytes.Equal(selfBlockHash.Hash, nodeStatus.BlockHash) {
 			clog.Error("paracross.CommitDone mosthash not match", "height", nodeStatus.Height,
 				"blockHash", common.ToHex(selfBlockHash.Hash), "mosthash", common.ToHex(nodeStatus.BlockHash))
 			return nil, types.ErrConsensusHashErr
 		}
 
-		/ 
+		//         
 		rewardReceipt, err := a.reward(nodeStatus, stat)
-		/ 
+		//                  
 		if err != nil {
 			clog.Error("paracross mining reward err", "height", nodeStatus.Height,
 				"blockhash", common.ToHex(nodeStatus.BlockHash), "err", err)
@@ -689,7 +689,7 @@ func (a *action) commitTxDoneStep2(nodeStatus *pt.ParacrossNodeStatus, stat *pt.
 		return receipt, nil
 	}
 
-	/  
+	//  ，      
 	r, err := a.procCrossTxs(nodeStatus)
 	if err != nil {
 		return nil, err
@@ -699,13 +699,13 @@ func (a *action) commitTxDoneStep2(nodeStatus *pt.ParacrossNodeStatus, stat *pt.
 }
 
 func isHaveCrossTxs(cfg *types.Chain33Config, status *pt.ParacrossNodeStatus) bool {
-	//ForkLoopCheckCommitTxDon txResul  tx
+	//ForkLoopCheckCommitTxDone        txResult   ，                 tx
 	if pt.IsParaForkHeight(cfg, status.MainBlockHeight, pt.ForkLoopCheckCommitTxDone) {
 		return true
 	}
 
 	haveCrossTxs := len(status.CrossTxHashs) > 0
-	//ForkCommitT ，CrossTxHashs[][] hash [0 nil
+	//ForkCommitTx ，CrossTxHashs[][]             hash，     [0] nil
 	if status.Height > 0 && pt.IsParaForkHeight(cfg, status.MainBlockHeight, pt.ForkCommitTx) && len(status.CrossTxHashs[0]) == 0 {
 		haveCrossTxs = false
 	}
@@ -726,7 +726,7 @@ func (a *action) procCrossTxs(status *pt.ParacrossNodeStatus) (*types.Receipt, e
 	return nil, nil
 }
 
-/  statedb t 
+//                 ，         statedb，  tx              
 func (a *action) loopCommitTxDone(title string) (*types.Receipt, error) {
 	receipt := &types.Receipt{}
 
@@ -734,12 +734,12 @@ func (a *action) loopCommitTxDone(title string) (*types.Receipt, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "getNodes for title:%s", title)
 	}
-	/ 
+	//           
 	titleStatus, err := getTitle(a.db, calcTitleKey(title))
 	if err != nil {
 		return nil, errors.Wrapf(err, "getTitle:%s", title)
 	}
-	/  
+	//             ，    
 	cfg := a.api.GetConfig()
 	if !pt.IsParaForkHeight(cfg, titleStatus.GetMainHeight(), pt.ForkLoopCheckCommitTxDone) {
 		return nil, errors.Wrapf(pt.ErrForkHeightNotReach,
@@ -756,7 +756,7 @@ func (a *action) loopCommitTxDone(title string) (*types.Receipt, error) {
 			clog.Error("paracross.loopCommitTxDone getTitleHeight failed", "title", title, "height", loopHeight, "err", err.Error())
 			return receipt, err
 		}
-		/ 
+		//      
 		if stat.MainHeight > a.exec.GetMainHeight() {
 			return receipt, nil
 		}
@@ -780,7 +780,7 @@ func (a *action) checkCommitTxDone(title string, stat *pt.ParacrossHeightStatus,
 		return nil, errors.Wrapf(err, "getTitle:%s", title)
 	}
 
-	/ sta statu +1    
+	//    stat       status  +1，       ，  ，               ，            
 	if stat.Height > status.Height+1 {
 		return nil, nil
 	}
@@ -789,7 +789,7 @@ func (a *action) checkCommitTxDone(title string, stat *pt.ParacrossHeightStatus,
 
 }
 
-/ sta commitDon commitMostStatu 
+//   stat    commitDone      commitMostStatus     
 func (a *action) commitTxDoneByStat(stat *pt.ParacrossHeightStatus, titleStatus *pt.ParacrossStatus, nodes map[string]struct{}) (*types.Receipt, error) {
 	receipt := &types.Receipt{}
 	clog.Debug("paracross.commitTxDoneByStat", "stat.title", stat.Title, "stat.height", stat.Height, "notes", len(nodes))
@@ -832,7 +832,7 @@ func (a *action) commitTxDoneByStat(stat *pt.ParacrossHeightStatus, titleStatus 
 	return receipt, nil
 }
 
-/ ： -1  
+//        ：             -1，        ，         
 func (a *action) isAllowMainConsensJump(commit *pt.ParacrossNodeStatus, titleStatus *pt.ParacrossStatus) bool {
 	cfg := a.api.GetConfig()
 	if cfg.IsDappFork(a.exec.GetMainHeight(), pt.ParaX, pt.ForkLoopCheckCommitTxDone) {
@@ -844,9 +844,9 @@ func (a *action) isAllowMainConsensJump(commit *pt.ParacrossNodeStatus, titleSta
 	return false
 }
 
-/ ：1 ，2：commi  ，
-// 1.        
-// 2.  stage.blockHeight== commit.height stag 
+//            ：1，        ，2：commit                                ，       ，
+// 1.     ，            １  ，           ， 0    ，     １     
+// 2.     ，  stage.blockHeight== commit.height，   stage          
 func (a *action) isAllowParaConsensJump(commit *pt.ParacrossNodeStatus, titleStatus *pt.ParacrossStatus) (bool, error) {
 	cfg := a.api.GetConfig()
 	if cfg.IsDappFork(a.height, pt.ParaX, pt.ForkParaSelfConsStages) {
@@ -860,7 +860,7 @@ func (a *action) isAllowParaConsensJump(commit *pt.ParacrossNodeStatus, titleSta
 		return stage.StartHeight == commit.Height, nil
 	}
 
-	/  
+	//       １    
 	return titleStatus.Height == -1, nil
 }
 
@@ -902,7 +902,7 @@ func execCrossTx(a *action, cross *types.TransactionDetail, crossTxHash []byte) 
 
 	}
 
-	/  withdraw, CrossAssetTransfe action
+	//     ，      withdraw,    CrossAssetTransfer     action
 	if payload.Ty == pt.ParacrossActionAssetWithdraw {
 		receiptWithdraw, err := a.assetWithdraw(payload.GetAssetWithdraw(), cross.Tx)
 		if err != nil {
@@ -934,7 +934,7 @@ func rollbackCrossTx(a *action, cross *types.TransactionDetail, crossTxHash []by
 			clog.Crit("paracross.Commit.rollbackCrossTx getCrossAction failed", "error", err, "txHash", common.ToHex(crossTxHash))
 			return nil, err
 		}
-		/  transfe 
+		//     ，            transfer  
 		if act == pt.ParacrossMainAssetTransfer {
 			receipt, err := a.assetTransferRollback(payload.GetCrossAssetTransfer(), cross.Tx)
 			if err != nil {
@@ -945,7 +945,7 @@ func rollbackCrossTx(a *action, cross *types.TransactionDetail, crossTxHash []by
 			clog.Debug("paracross.Commit crossAssetTransfer rollbackCrossTx", "txHash", common.ToHex(crossTxHash), "mainHeight", a.height)
 			return receipt, nil
 		}
-		/  withdra 
+		//     ，             withdraw  
 		if act == pt.ParacrossParaAssetWithdraw {
 			receipt, err := a.paraAssetWithdrawRollback(payload.GetCrossAssetTransfer(), cross.Tx)
 			if err != nil {
@@ -958,7 +958,7 @@ func rollbackCrossTx(a *action, cross *types.TransactionDetail, crossTxHash []by
 		}
 	}
 
-	/  transfe 
+	//     ，            transfer  
 	if payload.Ty == pt.ParacrossActionAssetTransfer {
 		cfg := payload.GetAssetTransfer()
 		transfer := &pt.CrossAssetTransfer{
@@ -982,7 +982,7 @@ func rollbackCrossTx(a *action, cross *types.TransactionDetail, crossTxHash []by
 }
 
 func getCrossTxHashsByRst(api client.QueueProtocolAPI, status *pt.ParacrossNodeStatus) ([][]byte, []byte, error) {
-	/ tx
+	//     tx
 	cfg := api.GetConfig()
 	rst, err := hex.DecodeString(string(status.TxResult))
 	if err != nil {
@@ -1002,7 +1002,7 @@ func getCrossTxHashsByRst(api client.QueueProtocolAPI, status *pt.ParacrossNodeS
 		return nil, nil, err
 	}
 
-	/ 
+	//            
 	paraAllTxs := FilterTxsForPara(cfg, blockDetail.FilterParaTxsByTitle(cfg, status.Title))
 	var baseHashs [][]byte
 	for _, tx := range paraAllTxs {
@@ -1035,7 +1035,7 @@ func getCrossTxHashs(api client.QueueProtocolAPI, status *pt.ParacrossNodeStatus
 	if err != nil {
 		return nil, nil, err
 	}
-	/ 
+	//  
 	paraBaseTxs := FilterTxsForPara(cfg, blockDetail.FilterParaTxsByTitle(cfg, status.Title))
 	paraCrossHashs := FilterParaCrossTxHashes(paraBaseTxs)
 	var baseHashs [][]byte
@@ -1058,7 +1058,7 @@ func getCrossTxHashs(api client.QueueProtocolAPI, status *pt.ParacrossNodeStatus
 		return nil, nil, types.ErrCheckTxHash
 	}
 
-	/ tx
+	//     tx
 	rst, err := hex.DecodeString(string(status.CrossTxResult))
 	if err != nil {
 		clog.Error("getCrossTxHashs decode rst", "CrossTxResult", string(status.CrossTxResult), "paraHeight", status.Height)
@@ -1135,7 +1135,7 @@ func (a *action) execCrossTxs(status *pt.ParacrossNodeStatus) (*types.Receipt, e
 }
 
 func (a *action) assetTransferMainCheck(cfg *types.Chain33Config, transfer *types.AssetsTransfer) error {
-	/ nodegrou    
+	//      nodegroup  ，      ,      ，        
 	if cfg.IsDappFork(a.height, pt.ParaX, pt.ForkParaAssetTransferRbk) {
 		if len(transfer.To) == 0 {
 			return errors.Wrap(types.ErrInvalidParam, "toAddr should not be null")
@@ -1150,7 +1150,7 @@ func (a *action) AssetTransfer(transfer *types.AssetsTransfer) (*types.Receipt, 
 	cfg := a.api.GetConfig()
 	isPara := cfg.IsPara()
 
-	/ nodegrou    
+	//      nodegroup  ，      ,      ，        
 	if !isPara {
 		err := a.assetTransferMainCheck(cfg, transfer)
 		if err != nil {
@@ -1172,7 +1172,7 @@ func (a *action) assetWithdrawMainCheck(cfg *types.Chain33Config, withdraw *type
 		}
 	}
 
-	//rbk for  nodegroup　conf 
+	//rbk fork 　    nodegroup　conf，      
 	if cfg.IsDappFork(a.height, pt.ParaX, pt.ForkParaAssetTransferRbk) {
 		if len(withdraw.To) == 0 {
 			return errors.Wrap(types.ErrInvalidParam, "toAddr should not be null")
@@ -1186,7 +1186,7 @@ func (a *action) assetWithdrawMainCheck(cfg *types.Chain33Config, withdraw *type
 }
 
 func (a *action) AssetWithdraw(withdraw *types.AssetsWithdraw) (*types.Receipt, error) {
-	/  
+	//      ，          
 	cfg := a.api.GetConfig()
 	isPara := cfg.IsPara()
 	if !isPara {
@@ -1197,7 +1197,7 @@ func (a *action) AssetWithdraw(withdraw *types.AssetsWithdraw) (*types.Receipt, 
 	}
 
 	if !isPara {
-		// ，  
+		//         ，      ，    
 		return nil, nil
 	}
 	clog.Debug("paracross.AssetWithdraw isPara", "execer", string(a.tx.Execer),
@@ -1226,7 +1226,7 @@ func (a *action) CrossAssetTransfer(transfer *pt.CrossAssetTransfer) (*types.Rec
 	cfg := a.api.GetConfig()
 	isPara := cfg.IsPara()
 
-	/ 
+	//      
 	if !isPara {
 		err := a.crossAssetTransferMainCheck(transfer)
 		if err != nil {
@@ -1234,7 +1234,7 @@ func (a *action) CrossAssetTransfer(transfer *pt.CrossAssetTransfer) (*types.Rec
 		}
 	}
 
-	/ ForkRootHas crossAssetTransfer
+	//    ForkRootHash     crossAssetTransfer
 	if isPara && !cfg.IsFork(a.exec.GetMainHeight(), "ForkRootHash") {
 		return nil, errors.Wrap(types.ErrNotSupport, "not Allow before ForkRootHash")
 	}
@@ -1243,7 +1243,7 @@ func (a *action) CrossAssetTransfer(transfer *pt.CrossAssetTransfer) (*types.Rec
 	if act == pt.ParacrossNoneTransfer {
 		return nil, errors.Wrap(err, "non action")
 	}
-	// ，  
+	//         ，      ，    
 	if !isPara && (act == pt.ParacrossMainAssetWithdraw || act == pt.ParacrossParaAssetTransfer) {
 		return nil, nil
 	}
@@ -1259,12 +1259,12 @@ func getTitleFrom(exec []byte) ([]byte, error) {
 	if last == -1 {
 		return nil, types.ErrNotFound
 	}
-	//   ， title  `.` 
+	//         . ，    title     `.`    
 	return exec[:last+1], nil
 }
 
 func (a *action) isAllowTransfer() error {
-	//1. nodegroup 
+	//1.     nodegroup　   
 	tempTitle, err := getTitleFrom(a.tx.Execer)
 	if err != nil {
 		return errors.Wrapf(types.ErrInvalidParam, "not para chain exec=%s", string(a.tx.Execer))
@@ -1276,7 +1276,7 @@ func (a *action) isAllowTransfer() error {
 	if len(nodes) == 0 {
 		return errors.Wrapf(types.ErrNotSupport, "nodegroup not create,title=%s", tempTitle)
 	}
-	//2. 
+	//2.          
 	if !types.IsParaExecName(string(a.tx.Execer)) {
 		return errors.Wrapf(types.ErrInvalidParam, "exec=%s,should prefix with user.p.", string(a.tx.Execer))
 	}
@@ -1318,7 +1318,7 @@ func (a *action) Transfer(transfer *types.AssetsTransfer, tx *types.Transaction,
 		clog.Error("Transfer failed", "err", err)
 		return nil, err
 	}
-	//to  execs 
+	//to   execs     
 	if dapp.IsDriverAddress(tx.GetRealToAddr(), a.height) {
 		return acc.TransferToExec(from, tx.GetRealToAddr(), transfer.Amount)
 	}
@@ -1351,7 +1351,7 @@ func (a *action) TransferToExec(transfer *types.AssetsTransferToExec, tx *types.
 		clog.Error("TransferToExec failed", "err", err)
 		return nil, err
 	}
-	//to  execs 
+	//to   execs     
 	if dapp.IsDriverAddress(tx.GetRealToAddr(), a.height) || dapp.ExecAddress(transfer.ExecName) == tx.GetRealToAddr() {
 		return acc.TransferToExec(from, tx.GetRealToAddr(), transfer.Amount)
 	}

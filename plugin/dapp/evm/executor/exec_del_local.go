@@ -9,6 +9,7 @@ import (
 	evmtypes "github.com/33cn/plugin/plugin/dapp/evm/types"
 )
 
+// ExecDelLocal       
 func (evm *EVMExecutor) ExecDelLocal(tx *types.Transaction, receipt *types.ReceiptData, index int) (*types.LocalDBSet, error) {
 	set, err := evm.DriverBase.ExecDelLocal(tx, receipt, index)
 	if err != nil {

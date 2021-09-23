@@ -17,8 +17,8 @@ gID=""
 lottExecAddr=""
 luckyNumber=""
 
-purNum=300
-drawNum=320
+purNum=200
+drawNum=220
 opRatio=5
 devRatio=5
 
@@ -66,11 +66,12 @@ init() {
 }
 
 lottery_LotteryCreate() {
-
+    #    
     priv=$1
     req='{"method":"Chain33.CreateTransaction","params":[{"execer":"lottery","actionName":"LotteryCreate","payload":{"purBlockNum":'"$purNum"',"drawBlockNum":'"$drawNum"', "opRewardRatio":'"$opRatio"',"devRewardRatio":'"$devRatio"',"fee":1000000}}]}'
     chain33_Http "$req" ${MAIN_HTTP} '(.error|not)' "$FUNCNAME" ".result"
 
+    #    
     chain33_SignAndSendTx "${RETURN_RESP}" "${priv}" ${MAIN_HTTP}
 
     gID="${RAW_TX_HASH}"
@@ -78,7 +79,7 @@ lottery_LotteryCreate() {
 }
 
 lottery_LotteryBuy() {
-
+    #    
     priv=$1
     amount=$2
     number=$3
@@ -86,24 +87,25 @@ lottery_LotteryBuy() {
     req='{"method":"Chain33.CreateTransaction","params":[{"execer":"lottery","actionName":"LotteryBuy","payload":{"lotteryId":"'"$gID"'","amount":'"$amount"',"number":'"$number"',"way":'"$way"',"fee":1000000}}]}'
     chain33_Http "$req" ${MAIN_HTTP} '(.error|not)' "$FUNCNAME" ".result"
 
+    #    
     chain33_SignAndSendTx "${RETURN_RESP}" "${priv}" ${MAIN_HTTP}
 }
 
 lottery_LotteryDraw() {
-
+    #    
     priv=$1
     req='{"method":"Chain33.CreateTransaction","params":[{"execer":"lottery","actionName":"LotteryDraw","payload":{"lotteryId":"'"$gID"'","fee":1000000}}]}'
     chain33_Http "$req" ${MAIN_HTTP} '(.error|not)' "$FUNCNAME" ".result"
-
+    #    
     chain33_SignAndSendTx "${RETURN_RESP}" "${priv}" ${MAIN_HTTP}
 }
 
 lottery_LotteryClose() {
-
+    #    
     priv=$1
     req='{"method":"Chain33.CreateTransaction","params":[{"execer":"lottery","actionName":"LotteryClose","payload":{"lotteryId":"'"$gID"'","fee":1000000}}]}'
     chain33_Http "$req" ${MAIN_HTTP} '(.error|not)' "$FUNCNAME" ".result"
-
+    #    
     chain33_SignAndSendTx "${RETURN_RESP}" "${priv}" ${MAIN_HTTP}
 }
 
@@ -198,40 +200,46 @@ lottery_GetLotteryRoundGainInfo() {
 }
 
 function run_testcases() {
-
+    #    
     gameAddr1="1FLh9wBS2rat1mUS4G95hRpJt6yHYy5nHF"
     gamePriv1="0x8223b757a5d0f91b12e7af3b9666ca33be47fe63e1502987b0537089aaf90bc1"
     gameAddr2="1UWE6NfXPR7eNAjYgT4HMERp7cMMi486E"
     gamePriv2="0xbfccb96690e0a1f89748b321f85b03e14bda0cb3d5d19f255ff0b9b0ffb624b3"
 
+    #        
     chain33_SendToAddress "${gameAddr1}" "${lottExecAddr}" 500000000 "${MAIN_HTTP}"
     chain33_SendToAddress "${gameAddr2}" "${lottExecAddr}" 500000000 "${MAIN_HTTP}"
 
+    #    
     lottery_LotteryCreate "${lottery_creator_priv}"
     lottery_GetLotteryNormalInfo "$gID" "${lottery_creator_addr}"
     lottery_GetLotteryCurrentInfo "$gID" 1 0
 
+    #     
     lottery_LotteryBuy "${gamePriv1}" 1 12345 1
     lottery_LotteryBuy "${gamePriv2}" 2 66666 2
-
+    #  
     lottery_GetLotteryCurrentInfo "$gID" 2 3
     lottery_GetLotteryPurchaseAddr "$gID" 2
     lottery_GetLotteryHistoryBuyInfo "$gID" "${gameAddr1}" 1 "12345"
     lottery_GetLotteryBuyRoundInfo "$gID" "${gameAddr2}" 1 1 "66666"
 
+    #     
     lottery_LotteryBuy "${gamePriv1}" 2 12321 1
     lottery_LotteryBuy "${gamePriv2}" 1 78987 5
-
+    #  
     lottery_GetLotteryCurrentInfo "$gID" 2 6
     lottery_GetLotteryPurchaseAddr "$gID" 2
     lottery_GetLotteryHistoryBuyInfo "$gID" "${gameAddr1}" 2 "12321"
     lottery_GetLotteryBuyRoundInfo "$gID" "${gameAddr2}" 1 2 "78987"
 
+    #    
     M_HTTP=${MAIN_HTTP//8901/8801}
     chain33_BlockWait ${drawNum} "${M_HTTP}"
     lottery_LotteryDraw "${lottery_creator_priv}"
     lottery_GetLotteryCurrentInfo "$gID" 3 0
 
+    #    
     lottery_GetLotteryHistoryLuckyNumber "$gID" 1 "${luckyNumber}"
     lottery_GetLotteryRoundLuckyNumber "$gID" 1 "${luckyNumber}"
     lottery_GetLotteryHistoryGainInfo "$gID" "${gameAddr1}" 1 3
@@ -239,6 +247,7 @@ function run_testcases() {
     lottery_GetLotteryRoundGainInfo "$gID" "${gameAddr1}" 1 3
     lottery_GetLotteryRoundGainInfo "$gID" "${gameAddr2}" 1 3
 
+    #    
     lottery_LotteryClose "${lottery_creator_priv}"
     lottery_GetLotteryCurrentInfo "$gID" 4 0
 }

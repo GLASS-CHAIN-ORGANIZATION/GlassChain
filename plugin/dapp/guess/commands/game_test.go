@@ -44,34 +44,52 @@ var (
 	jrpcURL = "127.0.0.1:8803"
 	grpcURL = "127.0.0.1:8804"
 
-	config = `# Title is local, Indicating that this configuration file is the configuration of a local single node. At this time, there is only one node in the chain where the local node is located, and the consensus module generally adopts the solo mode。
+	config = `# Title local，                。                  ，        solo  。
 Title="local"
 TestNet=true
 FixTime=false
-[crypto]
 [log]
-# debug(dbug)/info/warn/error(eror)/crit
+#     ，  debug(dbug)/info/warn/error(eror)/crit
 loglevel = "info"
 logConsoleLevel = "info"
+#      ，    ，                
 logFile = "logs/chain33.log"
+#           （  ： ）
 maxFileSize = 300
+#              
 maxBackups = 100
+#            （  ： ）
 maxAge = 28
+#              （    UTC  ）
 localTime = true
+#           （     gz）
 compress = true
+#             
 callerFile = false
+#         
 callerFunction = false
 [blockchain]
+#        
 defCacheSize=128
+#                   
 maxFetchBlockNum=128
+#                 
 timeoutSeconds=5
+#         
 driver="leveldb"
+#        
 dbPath="datadir"
+#        
 dbCache=64
+#       
 singleMode=true
+#            ，         ，             false，     
 batchsync=false
+#                ，         ，          ，     true
 isRecordBlockSequence=true
+#         
 isParaChain=false
+#             
 enableTxQuickIndex=false
 
 [p2p]
@@ -84,101 +102,153 @@ grpcLogFile="grpc33.log"
 
 
 [rpc]
-
+# jrpc    
 jrpcBindAddr="localhost:8803"
-
+# grpc    
 grpcBindAddr="localhost:8804"
-
+#      ，     IP  ，   “*”，    IP  
 whitelist=["127.0.0.1"]
-
+# jrpc       ，   “*”，      RPC  
 jrpcFuncWhitelist=["*"]
+# jrpc       ，           rpc  ，          ，    
+# jrpcFuncBlacklist=["xxxx"]
+# grpc       ，   “*”，      RPC  
 grpcFuncWhitelist=["*"]
+# grpc       ，           rpc  ，          ，    
+# grpcFuncBlacklist=["xxx"]
+#     https
 enableTLS=false
+#     ，          cli    
 certFile="cert.pem"
+#     
 keyFile="key.pem"
 [mempool]
+# mempool    ，  ，timeline，score，price
 name="timeline"
+# mempool      ，  10240
 poolCacheSize=10240
+#          ，       ，  ，   100000
 minTxFeeRate=100000
+#      mempool        ，  100
 maxTxNumPerAccount=10000
+# timeline               
 [mempool.sub.timeline]
-
+# mempool      ，  10240
 poolCacheSize=10240
+#          ，       ，  ，   100000
 minTxFeeRate=100000
+#      mempool        ，  100
 maxTxNumPerAccount=10000
+# score       (  =  a*   /     -  b*  *  c，     ，    ，  a，b   c   )，      
 [mempool.sub.score]
+# mempool      ，  10240
 poolCacheSize=10240
+#          ，       ，  ，   100000
 minTxFeeRate=100000
+#      mempool        ，  100
 maxTxNumPerAccount=10000
+#        
 timeParam=1
+#                 ，   unix       ，       1e-5   ~= 1s   
 priceConstant=1544
+#     
 pricePower=1
+# price       (  =   /     ，      ，        )
 [mempool.sub.price]
+# mempool      ，  10240
 poolCacheSize=10240
+#          ，       ，  ，   100000
 minTxFeeRate=100000
+#      mempool        ，  100
 maxTxNumPerAccount=10000
 [consensus]
+#   ,    solo,ticket,raft,tendermint,para
 name="solo"
+#      ,          
 minerstart=true
+#      (UTC  )
 genesisBlockTime=1514533394
-
+#      
 genesis="14KEKbYtKKQm4wMthSK9J4La4nAiidGozt"
 [mver.consensus]
-
+#      
 fundKeyAddr = "1BQXS6TxaYYG5mADaWij4AxhZZUTpw95a5"
-
+#    
 coinReward = 18
-
+#      
 coinDevFund = 12
-
+#ticket  
 ticketPrice = 10000
-
+#    
 powLimitBits = "0x1f00ffff"
+#            ，      4   ，    (1/4 - 4)，       4      ，            1/4 ，    ，                
 retargetAdjustmentFactor = 4
+#               16s ，             。
 futureBlockTime = 16
-
+#ticket    
 ticketFrozenTime = 5    #5s only for test
 ticketWithdrawTime = 10 #10s only for test
 ticketMinerWaitTime = 2 #2s only for test
-
+#         
 maxTxNumber = 1600      #160
+#         ，(ps:            ，     targetTimespan / targetTimePerBlock      )
 targetTimespan = 2304
-
+#           
 targetTimePerBlock = 16
+#       ，  consensus         
 [consensus.sub.solo]
-
+#      
 genesis="14KEKbYtKKQm4wMthSK9J4La4nAiidGozt"
+#      (UTC  )
 genesisBlockTime=1514533394
-
+#        ,    
 waitTxMs=10
 [store]
+#         ，    mavl,kvdb,kvmvcc,mpt
 name="mavl"
+#         ，    leveldb,goleveldb,memdb,gobadgerdb,ssdb,pegasus
 driver="leveldb"
+#         
 dbPath="datadir/mavltree"
+# Cache  
 dbCache=128
+#      
 localdbVersion="1.0.0"
 [store.sub.mavl]
+#     mavl   
 enableMavlPrefix=false
+#     MVCC,  mavl enableMVCC true     true
 enableMVCC=false
+#     mavl    
 enableMavlPrune=false
+#       
 pruneHeight=10000
 [wallet]
+#          ，  0.00000001BTY(1e-8),  100000， 0.001BTY
 minFee=100000
+# walletdb   ，  leveldb/memdb/gobadgerdb/ssdb/pegasus
 driver="leveldb"
+# walletdb  
 dbPath="wallet"
+# walletdb    
 dbCache=16
+#           
 signType="secp256k1"
 [wallet.sub.ticket]
+#     ticket    ，  false
 minerdisable=false
+#     ticket        ，    “*”，        
 minerwhitelist=["*"]
 [exec]
+#    stat  
 enableStat=false
+#    MVCC  
 enableMVCC=false
 alias=["token1:token","token2:token","token3:token"]
 [exec.sub.token]
-
+#    token    
 saveTokenTxList=true
-
+#token     
 tokenApprs = [
     "1Bsg9j6gW83sShoee1fZAt9TkUjcrCgA9S",
     "1Q8hGLfoGe63efeWa8fJ4Pnukhkngt6poK",
@@ -188,17 +258,17 @@ tokenApprs = [
     "12qyocayNF7Lv6C9qW4avxs2E7U41fKSfv",
 ]
 [exec.sub.cert]
-
+#            
 enable=false
-
+#       
 cryptoPath="authdir/crypto"
-
+#        ，  "auth_ecdsa", "auth_sm2"
 signType="auth_ecdsa"
 [exec.sub.relay]
-
+#relay     BTC       
 genesis="14KEKbYtKKQm4wMthSK9J4La4nAiidGozt"
 [exec.sub.manage]
-
+#manage          
 superManager=[
     "1Bsg9j6gW83sShoee1fZAt9TkUjcrCgA9S", 
     "12qyocayNF7Lv6C9qW4avxs2E7U41fKSfv", 
@@ -296,7 +366,7 @@ func testGuessImp(t *testing.T) {
 	}
 
 	fmt.Println("=======start sendTransferTx sendTransferToExecTx!=======")
-
+	//          A    
 	sendTransferTx(cfg, adminPriv, userAAddr, 2000000000000)
 	sendTransferTx(cfg, adminPriv, userBAddr, 2000000000000)
 
@@ -321,7 +391,7 @@ func testGuessImp(t *testing.T) {
 	}
 	assert.Equal(t, true, acct2.Acc[0].Balance == 2000000000000)
 
-
+	//      dos      
 	sendTransferToExecTx(cfg, userAPriv, "guess", 1000000000000)
 	sendTransferToExecTx(cfg, userBPriv, "guess", 1000000000000)
 	time.Sleep(2 * time.Second)
@@ -358,7 +428,6 @@ func initEnvGuess() (queue.Queue, *blockchain.BlockChain, queue.Module, queue.Mo
 	var q = queue.New("channel")
 	q.SetConfig(chain33Cfg)
 	cfg := chain33Cfg.GetModuleConfig()
-	cfg.Log.LogFile = ""
 	sub := chain33Cfg.GetSubConfig()
 	chain := blockchain.New(chain33Cfg)
 	chain.SetQueueClient(q.Client())
@@ -473,7 +542,7 @@ func sendTransferTx(cfg *types.Chain33Config, fromKey, to string, amount int64) 
 	v := &cty.CoinsAction_Transfer{Transfer: &types.AssetsTransfer{Amount: amount, Note: []byte(""), To: to}}
 	transfer.Value = v
 	transfer.Ty = cty.CoinsActionTransfer
-	execer := []byte(cfg.GetCoinExec())
+	execer := []byte("coins")
 	tx = &types.Transaction{Execer: execer, Payload: types.Encode(transfer), To: to, Fee: fee}
 	tx, err := types.FormatTx(cfg, string(execer), tx)
 	if err != nil {
@@ -508,7 +577,7 @@ func sendTransferToExecTx(cfg *types.Chain33Config, fromKey, execName string, am
 	v := &cty.CoinsAction_TransferToExec{TransferToExec: &types.AssetsTransferToExec{Amount: amount, Note: []byte(""), ExecName: execName, To: execAddr}}
 	transfer.Value = v
 	transfer.Ty = cty.CoinsActionTransferToExec
-	execer := []byte(cfg.GetCoinExec())
+	execer := []byte("coins")
 	tx = &types.Transaction{Execer: execer, Payload: types.Encode(transfer), To: address.ExecAddress("guess"), Fee: fee}
 	tx, err := types.FormatTx(cfg, string(execer), tx)
 	if err != nil {

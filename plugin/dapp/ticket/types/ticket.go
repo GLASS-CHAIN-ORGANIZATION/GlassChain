@@ -13,7 +13,7 @@ import (
 	"github.com/33cn/chain33/types"
 )
 
-// 0 ->  1 ->  2 ->  3-> 
+// 0 ->     1 ->     2 ->      3->    
 const (
 	//TicketInit ticket　init status
 	TicketInit = iota
@@ -47,9 +47,9 @@ const (
 	// TicketActionClose action type
 	TicketActionClose = 13
 	// TicketActionList  action type
-	TicketActionList = 14 / transaction
+	TicketActionList = 14 //         transaction
 	// TicketActionInfos action type
-	TicketActionInfos = 15 / transaction
+	TicketActionInfos = 15 //         transaction
 	// TicketActionMiner action miner
 	TicketActionMiner = 16
 	// TicketActionBind action bind
@@ -159,14 +159,14 @@ type TicketMinerParam struct {
 	RetargetAdjustmentFactor int64
 }
 
-// GetTicketMinerParam ticket miner config params
+// GetTicketMinerParam   ticket miner config params
 func GetTicketMinerParam(cfg *types.Chain33Config, height int64) *TicketMinerParam {
 	conf := types.Conf(cfg, "mver.consensus.ticket")
 	c := &TicketMinerParam{}
-	c.CoinDevFund = conf.MGInt("coinDevFund", height) * cfg.GetCoinPrecision()
-	c.CoinReward = conf.MGInt("coinReward", height) * cfg.GetCoinPrecision()
+	c.CoinDevFund = conf.MGInt("coinDevFund", height) * types.Coin
+	c.CoinReward = conf.MGInt("coinReward", height) * types.Coin
 	c.FutureBlockTime = conf.MGInt("futureBlockTime", height)
-	c.TicketPrice = conf.MGInt("ticketPrice", height) * cfg.GetCoinPrecision()
+	c.TicketPrice = conf.MGInt("ticketPrice", height) * types.Coin
 	c.TicketFrozenTime = conf.MGInt("ticketFrozenTime", height)
 	c.TicketWithdrawTime = conf.MGInt("ticketWithdrawTime", height)
 	c.TicketMinerWaitTime = conf.MGInt("ticketMinerWaitTime", height)

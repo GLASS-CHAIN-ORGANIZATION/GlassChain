@@ -6,12 +6,12 @@ package types
 
 //Issuance op
 const (
-	IssuanceActionCreate = 1 + iota 
-	IssuanceActionDebt             
-	IssuanceActionRepay           
-	IssuanceActionFeed              
-	IssuanceActionClose            
-	IssuanceActionManage            
+	IssuanceActionCreate = 1 + iota //     
+	IssuanceActionDebt              //     
+	IssuanceActionRepay             //     
+	IssuanceActionFeed              //       
+	IssuanceActionClose             //     
+	IssuanceActionManage            //     
 
 	//log for Issuance
 	TyLogIssuanceCreate = 741
@@ -25,7 +25,7 @@ const (
 const (
 	IssuanceX                   = "issuance"
 	CCNYTokenName               = "CCNY"
-	IssuancePreLiquidationRatio = 11000 
+	IssuancePreLiquidationRatio = 11000 //TODO      ，         ccny  110%       
 )
 
 //Issuance status

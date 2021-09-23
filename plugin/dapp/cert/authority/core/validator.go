@@ -4,6 +4,7 @@
 
 package core
 
+// Validator      
 type Validator interface {
 	Setup(config *AuthConfig) error
 
@@ -14,6 +15,7 @@ type Validator interface {
 	GetCertSnFromSignature(signature []byte) ([]byte, error)
 }
 
+// AuthConfig      
 type AuthConfig struct {
 	RootCerts         [][]byte
 	IntermediateCerts [][]byte

@@ -6,7 +6,7 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-// Queue      )
+// Queue       (  =   /     ,      ,        )
 type Queue struct {
 	*skiplist.Queue
 	subConfig subConfig
@@ -27,7 +27,7 @@ func (item *priceScore) Hash() []byte {
 
 func (item *priceScore) Compare(cmp skiplist.Scorer) int {
 	it := cmp.(*priceScore)
-	/  
+	//    ，    
 	if item.EnterTime < it.EnterTime {
 		return skiplist.Big
 	}
@@ -41,7 +41,7 @@ func (item *priceScore) ByteSize() int64 {
 	return int64(proto.Size(item.Value))
 }
 
-// NewQueue 
+// NewQueue     
 func NewQueue(subcfg subConfig) *Queue {
 	return &Queue{
 		Queue:     skiplist.NewQueue(subcfg.PoolCacheSize),
@@ -49,7 +49,7 @@ func NewQueue(subcfg subConfig) *Queue {
 	}
 }
 
-//GetItem  key
+//GetItem        key
 func (cache *Queue) GetItem(hash string) (*mempool.Item, error) {
 	item, err := cache.Queue.GetItem(hash)
 	if err != nil {
@@ -58,19 +58,19 @@ func (cache *Queue) GetItem(hash string) (*mempool.Item, error) {
 	return item.(*priceScore).Item, nil
 }
 
-//Push 
+//Push        
 func (cache *Queue) Push(item *mempool.Item) error {
 	return cache.Queue.Push(&priceScore{Item: item})
 }
 
-//Walk  key
+//Walk        key
 func (cache *Queue) Walk(count int, cb func(tx *mempool.Item) bool) {
 	cache.Queue.Walk(count, func(item skiplist.Scorer) bool {
 		return cb(item.(*priceScore).Item)
 	})
 }
 
-// GetProperFee  10 
+// GetProperFee          ,  100       
 func (cache *Queue) GetProperFee() int64 {
 	var sumFeeRate int64
 	var properFeeRate int64
@@ -80,9 +80,9 @@ func (cache *Queue) GetProperFee() int64 {
 	i := 0
 	var feeRate int64
 	cache.Walk(100, func(item *mempool.Item) bool {
-		/ , txsize/1000 +  
+		//        ,       txsize/1000 + 1  
 		unitFeeNum := proto.Size(item.Value)/1000 + 1
-		/ 
+		//     
 		if count := item.Value.GetGroupCount(); count > 0 {
 			unitFeeNum = int(count)
 			txs, err := item.Value.GetTxGroup()

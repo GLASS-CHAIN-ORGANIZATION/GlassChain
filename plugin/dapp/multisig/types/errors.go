@@ -6,7 +6,7 @@ package types
 
 import "errors"
 
-//multisig 
+//multisig       
 var (
 	ErrRequiredweight       = errors.New("ErrRequiredweight")
 	ErrCreatAccountAddr     = errors.New("ErrCreatAccountAddr")

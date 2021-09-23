@@ -7,29 +7,35 @@ package state
 import (
 	"sort"
 
-	"github.com/33cn/chain33/common/log/log15"
-
 	"github.com/33cn/chain33/types"
 	"github.com/33cn/plugin/plugin/dapp/evm/executor/vm/common"
 	evmtypes "github.com/33cn/plugin/plugin/dapp/evm/types"
 )
 
+// DataChange         
+//                 ，                 
+//       （   Tx   ），                   
+//         ，         ，                   ，           
+//         ，         ，                  ，      
 type DataChange interface {
 	revert(mdb *MemoryStateDB)
 	getData(mdb *MemoryStateDB) []*types.KeyValue
 	getLog(mdb *MemoryStateDB) []*types.ReceiptLog
 }
 
+// Snapshot     ，                             
 type Snapshot struct {
 	id      int
 	entries []DataChange
 	statedb *MemoryStateDB
 }
 
+// GetID   ID
 func (ver *Snapshot) GetID() int {
 	return ver.id
 }
 
+//       
 func (ver *Snapshot) revert() bool {
 	if ver.entries == nil {
 		return true
@@ -40,12 +46,14 @@ func (ver *Snapshot) revert() bool {
 	return true
 }
 
+//       
 func (ver *Snapshot) append(entry DataChange) {
 	ver.entries = append(ver.entries, entry)
 }
 
+//           
 func (ver *Snapshot) getData() (kvSet []*types.KeyValue, logs []*types.ReceiptLog) {
-
+	//          
 	dataMap := make(map[string]*types.KeyValue)
 
 	for _, entry := range ver.entries {
@@ -55,12 +63,13 @@ func (ver *Snapshot) getData() (kvSet []*types.KeyValue, logs []*types.ReceiptLo
 			logs = append(logs, entry.getLog(ver.statedb)...)
 		}
 
-
+		//       
 		for _, kv := range items {
 			dataMap[string(kv.Key)] = kv
 		}
 	}
 
+	//                   ，    （   KV           ，           ）
 	names := make([]string, 0, len(dataMap))
 	for name := range dataMap {
 		names = append(names, name)
@@ -76,50 +85,59 @@ func (ver *Snapshot) getData() (kvSet []*types.KeyValue, logs []*types.ReceiptLo
 
 type (
 
+	//       ，        
 	baseChange struct {
 	}
 
+	//           
 	createAccountChange struct {
 		baseChange
 		account string
 	}
 
+	//     
 	suicideChange struct {
 		baseChange
 		account string
 		prev    bool // whether account had already suicided
 	}
 
-
+	// nonce    
 	nonceChange struct {
 		baseChange
 		account string
 		prev    uint64
 	}
 
+	//         
 	storageChange struct {
 		baseChange
 		account       string
 		key, prevalue common.Hash
 	}
 
+	//           
 	codeChange struct {
 		baseChange
 		account            string
 		prevcode, prevhash []byte
 	}
 
+	//   ABI    
 	abiChange struct {
 		baseChange
 		account string
 		prevabi string
 	}
 
+	//         
 	refundChange struct {
 		baseChange
 		prev uint64
 	}
 
+	//     
+	//            ，           
 	transferChange struct {
 		baseChange
 		amount int64
@@ -127,19 +145,20 @@ type (
 		logs   []*types.ReceiptLog
 	}
 
+	//         
 	addLogChange struct {
 		baseChange
 		txhash common.Hash
-		logs   []*types.ReceiptLog
 	}
 
+	//     sha3  
 	addPreimageChange struct {
 		baseChange
 		hash common.Hash
 	}
 )
 
-
+//  baseChang         ，              
 func (ch baseChange) revert(s *MemoryStateDB) {
 }
 
@@ -151,11 +170,12 @@ func (ch baseChange) getLog(s *MemoryStateDB) (logs []*types.ReceiptLog) {
 	return nil
 }
 
-
+//          ，               
 func (ch createAccountChange) revert(s *MemoryStateDB) {
 	delete(s.accounts, ch.account)
 }
 
+//           
 func (ch createAccountChange) getData(s *MemoryStateDB) (kvset []*types.KeyValue) {
 	acc := s.accounts[ch.account]
 	if acc != nil {
@@ -167,7 +187,7 @@ func (ch createAccountChange) getData(s *MemoryStateDB) (kvset []*types.KeyValue
 }
 
 func (ch suicideChange) revert(mdb *MemoryStateDB) {
-
+	//         ，   
 	if ch.prev {
 		return
 	}
@@ -178,7 +198,7 @@ func (ch suicideChange) revert(mdb *MemoryStateDB) {
 }
 
 func (ch suicideChange) getData(mdb *MemoryStateDB) []*types.KeyValue {
-
+	//         ，   
 	if ch.prev {
 		return nil
 	}
@@ -197,6 +217,7 @@ func (ch nonceChange) revert(mdb *MemoryStateDB) {
 }
 
 func (ch nonceChange) getData(mdb *MemoryStateDB) []*types.KeyValue {
+	// nonce        ，          ，            
 	//acc := mdb.accounts[ch.account]
 	//if acc != nil {
 	//	return acc.GetStateKV()
@@ -277,18 +298,7 @@ func (ch addLogChange) revert(mdb *MemoryStateDB) {
 	} else {
 		mdb.logs[ch.txhash] = logs[:len(logs)-1]
 	}
-
 	mdb.logSize--
-	log15.Info("addLogChange::revert", "mdb.logSize", mdb.logSize)
-}
-
-func (ch addLogChange) getLog(mdb *MemoryStateDB) []*types.ReceiptLog {
-	cfg := mdb.api.GetConfig()
-	if !cfg.IsDappFork(mdb.blockHeight, "evm", evmtypes.ForkEVMState) {
-		return nil
-	}
-
-	return ch.logs
 }
 
 func (ch addPreimageChange) revert(mdb *MemoryStateDB) {

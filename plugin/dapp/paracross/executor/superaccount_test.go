@@ -76,7 +76,7 @@ type NodeManageTestSuite struct {
 func (suite *NodeManageTestSuite) SetupSuite() {
 
 	suite.stateDB, _ = dbm.NewGoMemDB("state", "state", 1024)
-	// memdb KVD ， Exec ，  memdb
+	// memdb    KVDB  ，     Exec ，     memdb
 	//suite.localDB, _ = dbm.NewGoMemDB("local", "local", 1024)
 	suite.localDB = new(dbmock.KVDB)
 	suite.api = new(apimock.QueueProtocolAPI)

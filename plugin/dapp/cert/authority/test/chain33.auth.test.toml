@@ -1,25 +1,24 @@
 Title="chain33"
 
-[crypto]
 [log]
-# Log level, support debug(dbug)/info/warn/error(eror)/crit
+#     ，  debug(dbug)/info/warn/error(eror)/crit
 loglevel = "debug"
 logConsoleLevel = "info"
-# Log file name, with a directory, all generated log files are placed in this directory
+#      ，    ，                
 logFile = "logs/chain33.log"
-# The maximum value of a single log file (unit: megabytes)
+#           （  ： ）
 maxFileSize = 20
-# Maximum number of saved historical log files
+#              
 maxBackups = 20
-# The most saved historical log messages (unit: day)
+#            （  ： ）
 maxAge = 28
-# Whether the log file name uses local events (otherwise UTC time is used)
+#              （    UTC  ）
 localTime = true
-# Whether the history log file is compressed (compression format is gz)
+#           （     gz）
 compress = false
-# Whether to print the calling source file and line number
+#             
 callerFile = true
-# Whether to print the calling method
+#         
 callerFunction = true
 
 [blockchain]
@@ -81,6 +80,9 @@ minerwhitelist=["*"]
 enableStat=false
 
 [exec.sub.cert]
+#            
 enable=true
+#       
 cryptoPath="./test/authdir/crypto"
-signType="sm2"
+#        ，  "auth_ecdsa", "auth_sm2"
+signType="auth_sm2"

@@ -1,0 +1,3 @@
+[rpc]
+  jrpcBindAddr = ":8801"
+  grpcBindAddr = ":8802"

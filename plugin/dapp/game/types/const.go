@@ -18,7 +18,9 @@ const (
 	TyLogCloseGame  = 714
 )
 
-
+//               
+//   github     ，        ,            
+//      ，              
 var (
 	GameX      = "game"
 	ExecerGame = []byte(GameX)

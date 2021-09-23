@@ -1,145 +1,143 @@
 syntax = "proto3";
 
 package types;
-option go_package = "../types";
 
-// vote 
+// vote          
 message VoteAction {
     int32 ty = 1;
     oneof value {
-        CreateGroup  createGroup  = 2; / 
-        UpdateGroup  updateGroup  = 3; / 
-        CreateVote   createVote   = 4; / 
-        CommitVote   commitVote   = 5; / 
-        CloseVote    closeVote    = 6; / 
-        UpdateMember updateMember = 7; / 
+        CreateGroup  createGroup  = 2; //     
+        UpdateGroup  updateGroup  = 3; //     
+        CreateVote   createVote   = 4; //      
+        CommitVote   commitVote   = 5; //      
+        CloseVote    closeVote    = 6; //    
+        UpdateMember updateMember = 7; //      
     }
 }
 
 message GroupMember {
-    string addr       = 1; / 
-    uint32 voteWeight = 2; / ， 1
-    string nickName   = 3; / 
+    string addr       = 1; //    
+    uint32 voteWeight = 2; //    ，       1
+    string nickName   = 3; //   
 }
 
-/ 
+//     
 message CreateGroup {
-    string   name                    = 1; / 
-    repeated string admins           = 2; /  
-    repeated GroupMember members     = 3; / 
-    string               description = 4; / 
+    string   name                    = 1; //     
+    repeated string admins           = 2; //       ，         
+    repeated GroupMember members     = 3; //  
+    string               description = 4; //  
 }
 
-/ 
+//     
 message UpdateGroup {
-    string   groupID                = 1; / ID
-    repeated GroupMember addMembers = 2; / 
-    repeated string removeMembers   = 3; / 
-    repeated string addAdmins       = 4; / 
-    repeated string removeAdmins    = 5; / 
+    string   groupID                = 1; //   ID
+    repeated GroupMember addMembers = 2; //        
+    repeated string removeMembers   = 3; //          
+    repeated string addAdmins       = 4; //     
+    repeated string removeAdmins    = 5; //     
 }
 
-// 
+//      
 message GroupInfo {
 
-    string   ID                      = 1; / ID
-    string   name                    = 2; / 
-    uint32   memberNum               = 3; / 
-    string   creator                 = 4; / 
-    repeated string admins           = 5; / 
-    repeated GroupMember members     = 6; / 
-    string               description = 7; / 
-    uint32               voteNum     = 8; / 
+    string   ID                      = 1; //   ID
+    string   name                    = 2; //     
+    uint32   memberNum               = 3; //    
+    string   creator                 = 4; //   
+    repeated string admins           = 5; //     
+    repeated GroupMember members     = 6; //    
+    string               description = 7; //    
+    uint32               voteNum     = 8; //    
 }
 
 message GroupInfos {
-    repeated GroupInfo groupList = 1; / 
+    repeated GroupInfo groupList = 1; //       
 }
 
-/ 
+//    
 message VoteOption {
-    string option = 1; / 
-    uint32 score  = 2; / 
+    string option = 1; //    
+    uint32 score  = 2; //    
 }
 
-//  
+//       ，    
 message CreateVote {
-    string   name                  = 1; / 
-    string   groupID               = 2; / 
-    repeated string voteOptions    = 3; / 
-    int64           beginTimestamp = 4; / 
-    int64           endTimestamp   = 5; / 
-    string          description    = 6; / 
+    string   name                  = 1; //    
+    string   groupID               = 2; //     
+    repeated string voteOptions    = 3; //      
+    int64           beginTimestamp = 4; //       
+    int64           endTimestamp   = 5; //       
+    string          description    = 6; //    
 }
 
-//  
+//         ，    
 message CommitVote {
-    string voteID      = 1; / ID
-    uint32 optionIndex = 2; /  
+    string voteID      = 1; //  ID
+    uint32 optionIndex = 2; //        ，        
 }
 
 message CommitInfo {
-    string addr       = 1; / 
-    string txHash     = 2; / 
-    uint32 voteWeight = 3; / 
+    string addr       = 1; //    
+    string txHash     = 2; //      
+    uint32 voteWeight = 3; //    
 }
 
 message CloseVote {
-    string voteID = 1; // ID
+    string voteID = 1; //   ID
 }
 
 message UpdateMember {
-    string name = 1; / 
+    string name = 1; //    
 }
 
-/ 
+//    
 message VoteInfo {
 
-    string   ID                        = 1;  / ID
-    string   name                      = 2;  / 
-    string   creator                   = 3;  / 
-    string   groupID                   = 4;  / 
-    repeated VoteOption voteOptions    = 5;  / 
-    int64               beginTimestamp = 6;  / 
-    int64               endTimestamp   = 7;  / 
-    repeated CommitInfo commitInfos    = 8;  / 
-    string              description    = 9;  / 
-    uint32              status         = 10; / ， ， ， ， 
-    string              groupName      = 11; / 
+    string   ID                        = 1;  //  ID
+    string   name                      = 2;  //    
+    string   creator                   = 3;  //   
+    string   groupID                   = 4;  //        
+    repeated VoteOption voteOptions    = 5;  //     
+    int64               beginTimestamp = 6;  //       
+    int64               endTimestamp   = 7;  //       
+    repeated CommitInfo commitInfos    = 8;  //        
+    string              description    = 9;  //    
+    uint32              status         = 10; //  ，1    ，2    ，3    ，4   
 }
 
 message VoteInfos {
-    repeated VoteInfo voteList = 1; / 
+    repeated VoteInfo voteList = 1; //      
 }
 
 message MemberInfo {
-    string   addr            = 1; / 
-    string   name            = 2; / 
-    repeated string groupIDs = 3; / I 
+    string   addr            = 1; //  
+    string   name            = 2; //    
+    repeated string groupIDs = 3; //      ID  
 }
 
 message MemberInfos {
-    repeated MemberInfo memberList = 1; / 
+    repeated MemberInfo memberList = 1; //         
 }
 
 message ReqStrings {
-    repeated string items = 1; / 
+    repeated string items = 1; //     
 }
 
-/ 
+//      
 message ReqListItem {
-    string startItemID = 1; / ID groupID 
-    int32  count       = 2; / ,  
-    int32  direction   = 3; //  I ，  I 
+    string startItemID = 1; //     ID，       groupID，       
+    int32  count       = 2; //       , 0      
+    int32  direction   = 3; // 0    ID  ，1    ，  ID        
 }
 
 message ReqListVote {
-    string      groupID = 1; / ID
-    ReqListItem listReq = 2; / 
-    uint32      status  = 3; / 
+    string      groupID = 1; //     ID
+    ReqListItem listReq = 2; //    
+    uint32      status  = 3; //      
 }
 
 message ReplyVoteList {
-    repeated VoteInfo voteList         = 1; / 
-    int64             currentTimestamp = 2; / 
+    repeated VoteInfo voteList         = 1; //    
+    int64             currentTimestamp = 2; //      
 }

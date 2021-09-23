@@ -8,8 +8,8 @@ import (
 )
 
 /*
- *  
- *  (localDB),  
+ *             ，     
+ *      ，    (localDB),       ，   
  */
 
 func (v *vote) ExecLocal_CreateGroup(payload *vty.CreateGroup, tx *types.Transaction, receiptData *types.ReceiptData, index int) (*types.LocalDBSet, error) {
@@ -44,21 +44,13 @@ func (v *vote) ExecLocal_UpdateGroup(update *vty.UpdateGroup, tx *types.Transact
 	dbSet := &types.LocalDBSet{}
 	groupInfo := decodeGroupInfo(receiptData.Logs[0].Log)
 	table := newGroupTable(v.GetLocalDB())
-	row, err := table.GetData([]byte(groupInfo.ID))
-	if err != nil {
-		elog.Error("execLocal updateGroup", "txHash", hex.EncodeToString(tx.Hash()), "groupTable get", err)
-		return nil, err
-	}
-	oldInfo, _ := row.Data.(*vty.GroupInfo)
-	//  
-	groupInfo.VoteNum = oldInfo.VoteNum
 	kvs, err := v.updateAndSaveTable(table.Replace, table.Save, groupInfo, tx, vty.NameUpdateGroupAction, "group")
 	if err != nil {
 		return nil, err
 	}
 	dbSet.KV = kvs
 	removeAddrs := make([]string, 0)
-	/  groupI 
+	//            ，   groupID  
 	tempAddrs := append(update.RemoveAdmins, update.RemoveMembers...)
 	for _, addr := range tempAddrs {
 		if checkMemberExist(addr, groupInfo.Members) || checkSliceItemExist(addr, groupInfo.Admins) {
@@ -92,21 +84,21 @@ func (v *vote) ExecLocal_UpdateGroup(update *vty.UpdateGroup, tx *types.Transact
 func (v *vote) ExecLocal_CreateVote(payload *vty.CreateVote, tx *types.Transaction, receiptData *types.ReceiptData, index int) (*types.LocalDBSet, error) {
 	dbSet := &types.LocalDBSet{}
 	voteInfo := decodeVoteInfo(receiptData.Logs[0].Log)
-	vTable := newVoteTable(v.GetLocalDB())
-	gTable := newGroupTable(v.GetLocalDB())
-	row, err := gTable.GetData([]byte(voteInfo.GroupID))
+	table := newVoteTable(v.GetLocalDB())
+	kvs, err := v.updateAndSaveTable(table.Add, table.Save, voteInfo, tx, vty.NameCreateVoteAction, "vote")
 	if err != nil {
-		elog.Error("execLocal createVote", "txHash", hex.EncodeToString(tx.Hash()), "groupTable get", err)
+		return nil, err
+	}
+	dbSet.KV = kvs
+	table = newGroupTable(v.GetLocalDB())
+	row, err := table.GetData([]byte(voteInfo.GroupID))
+	if err != nil {
+		elog.Error("execLocal createVote", "txHash", hex.EncodeToString(tx.Hash()), "voteTable get", err)
 		return nil, err
 	}
 	groupInfo, _ := row.Data.(*vty.GroupInfo)
 	groupInfo.VoteNum++
-	voteInfo.GroupName = groupInfo.GetName()
-	dbSet.KV, err = v.updateAndSaveTable(vTable.Add, vTable.Save, voteInfo, tx, vty.NameCreateVoteAction, "vote")
-	if err != nil {
-		return nil, err
-	}
-	kvs, err := v.updateAndSaveTable(gTable.Replace, gTable.Save, groupInfo, tx, vty.NameCreateVoteAction, "group")
+	kvs, err = v.updateAndSaveTable(table.Replace, table.Save, groupInfo, tx, vty.NameCreateVoteAction, "group")
 	if err != nil {
 		return nil, err
 	}
@@ -178,7 +170,7 @@ func (v *vote) ExecLocal_UpdateMember(payload *vty.UpdateMember, tx *types.Trans
 	return v.addAutoRollBack(tx, dbSet.KV), nil
 }
 
-/  localdb kv exec-loca k 
+//      ，        localdb kv，   exec-local   kv    
 func (v *vote) addAutoRollBack(tx *types.Transaction, kv []*types.KeyValue) *types.LocalDBSet {
 
 	dbSet := &types.LocalDBSet{}
@@ -204,7 +196,7 @@ func (v *vote) updateAndSaveTable(update updateFunc, save saveFunc, data types.M
 	return kvs, nil
 }
 
-//  groupI 
+//      ，    groupID         
 func (v *vote) addGroupMember(groupID string, addrs []string) ([]*types.KeyValue, error) {
 
 	table := newMemberTable(v.GetLocalDB())
@@ -221,7 +213,7 @@ func (v *vote) addGroupMember(groupID string, addrs []string) ([]*types.KeyValue
 			err = table.Add(&vty.MemberInfo{Addr: addr, GroupIDs: []string{groupID}})
 		}
 
-		// GetData，Replace，Ad 
+		//       GetData，Replace，Add  
 		if err != nil {
 			elog.Error("execLocal addMember", "member table Add/Replace", err)
 			return nil, err
@@ -235,7 +227,7 @@ func (v *vote) addGroupMember(groupID string, addrs []string) ([]*types.KeyValue
 	return kvs, nil
 }
 
-/  groupI 
+//    ，    groupID    
 func (v *vote) removeGroupMember(groupID string, addrs []string) ([]*types.KeyValue, error) {
 
 	table := newMemberTable(v.GetLocalDB())

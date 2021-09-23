@@ -25,7 +25,7 @@ func (n *Node) destroyPeer(peer *Peer) {
 		"version support", peer.version.IsSupport())
 
 	n.nodeInfo.addrBook.RemoveAddr(peer.Addr())
-	n.remove(peer.GetPeerName())
+	n.remove(peer.Addr())
 
 }
 
@@ -37,14 +37,17 @@ func (n *Node) monitorErrPeer() {
 			return
 		}
 		if !peer.version.IsSupport() {
-			/  
+			//       ,      
 			log.Info("VersoinMonitor", "NotSupport,addr", peer.Addr())
 			n.destroyPeer(peer)
-			/ 1 
+			//     12  
 			n.nodeInfo.blacklist.Add(peer.Addr(), int64(3600*12))
 			continue
 		}
-		if peer.IsMaxInbouds || !peer.GetRunning() {
+		if peer.IsMaxInbouds {
+			n.destroyPeer(peer)
+		}
+		if !peer.GetRunning() {
 			n.destroyPeer(peer)
 			continue
 		}
@@ -63,7 +66,7 @@ func (n *Node) getAddrFromGithub() {
 	if !n.nodeInfo.cfg.UseGithub {
 		return
 	}
-	/ github 
+	// github          
 	res, err := http.Get("https://raw.githubusercontent.com/chainseed/seeds/master/bty.txt")
 	if err != nil {
 		log.Error("getAddrFromGithub", "http.Get", err.Error())
@@ -106,7 +109,7 @@ func (n *Node) getAddrFromOnline() {
 		<-ticker.C
 
 		seedsMap := make(map[string]bool)
-		/ see 
+		//    seed     
 		seedArr := n.nodeInfo.cfg.Seeds
 		for _, seed := range seedArr {
 			seedsMap[seed] = true
@@ -119,10 +122,10 @@ func (n *Node) getAddrFromOnline() {
 		}
 
 		if n.Size() == 0 && ticktimes > 2 {
-			/ Seed 
+			//   Seed     
 			var rangeCount int
 			for addr := range seedsMap {
-				/ seed 
+				//  seed     
 				rangeCount++
 				if rangeCount < maxOutBoundNum {
 					n.pubsub.FIFOPub(addr, "addr")
@@ -131,7 +134,7 @@ func (n *Node) getAddrFromOnline() {
 			}
 
 			if rangeCount < maxOutBoundNum {
-				/ innerSeeds 
+				// innerSeeds     
 				n.innerSeeds.Range(func(k, v interface{}) bool {
 					rangeCount++
 					if rangeCount < maxOutBoundNum {
@@ -147,62 +150,80 @@ func (n *Node) getAddrFromOnline() {
 		}
 
 		peers, _ := n.GetActivePeers()
-		for _, peer := range peers { /  
-			peerInfoList, err := pcli.GetAddrList(peer)
+		for _, peer := range peers { //         ，      
+
+			var addrlist []string
+			var addrlistMap map[string]int64
+
+			var err error
+
+			addrlistMap, err = pcli.GetAddrList(peer)
+
 			P2pComm.CollectPeerStat(err, peer)
 			if err != nil {
 				log.Error("getAddrFromOnline", "ERROR", err.Error())
 				continue
 			}
 
-			for _, info := range peerInfoList {
+			for addr := range addrlistMap {
+				addrlist = append(addrlist, addr)
+			}
+
+			for _, addr := range addrlist {
+
 				if !n.needMore() {
-					/ 2  
+
+					//      25   ，         
 					localBlockHeight, err := pcli.GetBlockHeight(n.nodeInfo)
 					if err != nil {
 						continue
 					}
-					/    
-					if localBlockHeight-info.GetHeader().GetHeight() < 1024 {
-						/ 
-						n.innerSeeds.Range(func(k, v interface{}) bool {
-							if _, ok := n.cfgSeeds.Load(k.(string)); ok {
-								return true
+					//       ，          ,          ，       
+					if peerHeight, ok := addrlistMap[addr]; ok {
+
+						if localBlockHeight-peerHeight < 1024 {
+							if _, ok := seedsMap[addr]; ok {
+								continue
 							}
-							//remove inner seed
-							for _, peerInfo := range n.nodeInfo.peerInfos.GetPeerInfos() {
-								if peerInfo.Addr == k.(string) {
-									n.remove(peerInfo.GetName())
+
+							//           
+
+							n.innerSeeds.Range(func(k, v interface{}) bool {
+								if n.Has(k.(string)) {
+									//     cfgseed 
+									if _, ok := n.cfgSeeds.Load(k.(string)); ok {
+										return true
+									}
+									n.remove(k.(string))
 									n.nodeInfo.addrBook.RemoveAddr(k.(string))
 									return false
 								}
-							}
-							return false
-
-						})
+								return true
+							})
+						}
 					}
-
+					time.Sleep(MonitorPeerInfoInterval)
 					continue
 				}
 
-			}
+				if !n.nodeInfo.blacklist.Has(addr) || !peerAddrFilter.Contains(addr) {
+					if ticktimes < 10 {
+						//         ，         
+						if _, ok := n.innerSeeds.Load(addr); !ok {
+							//  seed     
+							n.pubsub.FIFOPub(addr, "addr")
 
-			if !n.nodeInfo.blacklist.Has(peer.Addr()) || !peerAddrFilter.Contains(peer.Addr()) || !n.Has(peer.GetPeerName()) {
-				if ticktimes < 10 {
-					/  
-					if _, ok := n.innerSeeds.Load(peer.Addr()); !ok {
-						/ seed 
-						n.pubsub.FIFOPub(peer.Addr(), "addr")
+						}
+					} else {
+						n.pubsub.FIFOPub(addr, "addr")
 					}
-				} else {
-					n.pubsub.FIFOPub(peer.Addr(), "addr")
-				}
 
+				}
 			}
+
 		}
 
 	}
-
 }
 
 func (n *Node) getAddrFromAddrBook() {
@@ -217,7 +238,7 @@ func (n *Node) getAddrFromAddrBook() {
 			log.Debug("GetAddrFromOnLine", "loop", "done")
 			return
 		}
-		//1 ， githu 
+		//12    ，   github  
 		if tickerTimes > 12 && n.Size() == 0 {
 			n.getAddrFromGithub()
 			tickerTimes = 0
@@ -228,7 +249,7 @@ func (n *Node) getAddrFromAddrBook() {
 		addrNetArr := n.nodeInfo.addrBook.GetPeers()
 
 		for _, addr := range addrNetArr {
-			if !n.nodeInfo.blacklist.Has(addr.String()) {
+			if !n.Has(addr.String()) && !n.nodeInfo.blacklist.Has(addr.String()) {
 				log.Debug("GetAddrFromOffline", "Add addr", addr.String())
 
 				if n.needMore() || n.CacheBoundsSize() < maxOutBoundNum {
@@ -260,7 +281,7 @@ func (n *Node) nodeReBalance() {
 			continue
 		}
 		peers, _ := n.GetActivePeers()
-		/  
+		//          ，       
 		var MaxInBounds int32
 		var MaxInBoundPeer *Peer
 		for _, peer := range peers {
@@ -273,7 +294,7 @@ func (n *Node) nodeReBalance() {
 			continue
 		}
 
-		/ 
+		//                  
 		cachePeers := n.GetCacheBounds()
 		var MinCacheInBounds int32 = 1000
 		var MinCacheInBoundPeer *Peer
@@ -282,17 +303,17 @@ func (n *Node) nodeReBalance() {
 		for _, peer := range cachePeers {
 			inbounds, err := p2pcli.GetInPeersNum(peer)
 			if err != nil {
-				n.RemoveCachePeer(peer.GetPeerName())
+				n.RemoveCachePeer(peer.Addr())
 				peer.Close()
 				continue
 			}
-			/ 
+			//      
 			if int32(inbounds) < MinCacheInBounds {
 				MinCacheInBounds = int32(inbounds)
 				MinCacheInBoundPeer = peer
 			}
 
-			/ 
+			//      
 			if int32(inbounds) > MaxCacheInBounds {
 				MaxCacheInBounds = int32(inbounds)
 				MaxCacheInBoundPeer = peer
@@ -303,16 +324,16 @@ func (n *Node) nodeReBalance() {
 			continue
 		}
 
-		/ 
+		//                          
 		if MaxInBounds < MaxCacheInBounds {
-			n.RemoveCachePeer(MaxCacheInBoundPeer.GetPeerName())
+			n.RemoveCachePeer(MaxCacheInBoundPeer.Addr())
 			MaxCacheInBoundPeer.Close()
 		}
-		/  
+		//                  ，           
 		if MaxInBounds < MinCacheInBounds {
 			cachePeers := n.GetCacheBounds()
 			for _, peer := range cachePeers {
-				n.RemoveCachePeer(peer.GetPeerName())
+				n.RemoveCachePeer(peer.Addr())
 				peer.Close()
 			}
 
@@ -326,7 +347,7 @@ func (n *Node) nodeReBalance() {
 		if MinCacheInBoundPeer != nil {
 			info, err := MinCacheInBoundPeer.GetPeerInfo()
 			if err != nil {
-				n.RemoveCachePeer(MinCacheInBoundPeer.GetPeerName())
+				n.RemoveCachePeer(MinCacheInBoundPeer.Addr())
 				MinCacheInBoundPeer.Close()
 				continue
 			}
@@ -340,8 +361,8 @@ func (n *Node) nodeReBalance() {
 				n.addPeer(MinCacheInBoundPeer)
 				n.nodeInfo.addrBook.AddAddress(MinCacheInBoundPeer.peerAddr, nil)
 
-				n.remove(MaxInBoundPeer.GetPeerName())
-				n.RemoveCachePeer(MinCacheInBoundPeer.GetPeerName())
+				n.remove(MaxInBoundPeer.Addr())
+				n.RemoveCachePeer(MinCacheInBoundPeer.Addr())
 			}
 		}
 	}
@@ -369,20 +390,20 @@ func (n *Node) monitorPeers() {
 		for name, pinfo := range infos {
 			peerheight := pinfo.GetHeader().GetHeight()
 			paddr := pinfo.GetAddr()
-			if name == selfName && !pinfo.GetSelf() { /  
-				/ 
-				n.remove(pinfo.GetName())
+			if name == selfName && !pinfo.GetSelf() { //       ，    
+				//          
+				n.remove(pinfo.GetAddr())
 				n.nodeInfo.addrBook.RemoveAddr(paddr)
 				n.nodeInfo.blacklist.Add(paddr, 0)
 			}
 
 			if localBlockHeight-peerheight > 2048 {
-				/ 
-				if peerList, err := p2pcli.GetAddrList(peers[paddr]); err == nil {
+				//          
+				if addrMap, err := p2pcli.GetAddrList(peers[paddr]); err == nil {
 
-					for peerName, info := range peerList {
-						if !n.Has(peerName) && !n.nodeInfo.blacklist.Has(info.Addr) {
-							n.pubsub.FIFOPub(info.Addr, "addr")
+					for addr := range addrMap {
+						if !n.Has(addr) && !n.nodeInfo.blacklist.Has(addr) {
+							n.pubsub.FIFOPub(addr, "addr")
 						}
 					}
 
@@ -391,12 +412,12 @@ func (n *Node) monitorPeers() {
 				if n.Size() <= stableBoundNum {
 					continue
 				}
-				/  
+				//       ，    
 				if _, ok := n.cfgSeeds.Load(paddr); ok {
 					continue
 				}
-				/ 
-				n.remove(pinfo.GetName())
+				//          
+				n.remove(paddr)
 				n.nodeInfo.addrBook.RemoveAddr(paddr)
 			}
 
@@ -435,13 +456,10 @@ func (n *Node) monitorDialPeers() {
 			return
 		}
 		if peerAddrFilter.Contains(addr.(string)) {
-			/  
+			//          ，             
 			continue
 		}
-		if _, ok := n.peerStore.Load(addr.(string)); ok {
-			/ pee i 
-			continue
-		}
+
 		netAddr, err := NewNetAddressString(addr.(string))
 		if err != nil {
 			continue
@@ -451,13 +469,13 @@ func (n *Node) monitorDialPeers() {
 			continue
 		}
 
-		/  TODO   , )
-		if n.nodeInfo.blacklist.Has(netAddr.String()) {
+		//                      TODO:     ,               (             ,     )
+		if n.Has(netAddr.String()) || n.nodeInfo.blacklist.Has(netAddr.String()) || n.HasCacheBound(netAddr.String()) {
 			log.Debug("DialPeers", "find hash", netAddr.String())
 			continue
 		}
 
-		/ 
+		//                
 		if !n.needMore() && n.CacheBoundsSize() >= maxOutBoundNum {
 			n.pubsub.FIFOPub(addr, "addr")
 			time.Sleep(time.Second * 10)
@@ -465,7 +483,7 @@ func (n *Node) monitorDialPeers() {
 		}
 
 		log.Debug("DialPeers", "peer", netAddr.String())
-		/  
+		//      ，      
 		if dialCount >= maxOutBoundNum*2 {
 			n.pubsub.FIFOPub(addr, "addr")
 			time.Sleep(time.Second * 10)
@@ -473,22 +491,22 @@ func (n *Node) monitorDialPeers() {
 			continue
 		}
 		dialCount++
-		/ 
+		//               
 		peerAddrFilter.Add(addr.(string), types.Now().Unix())
 		log.Debug("monitorDialPeer", "dialCount", dialCount)
 		go func(netAddr *NetAddress) {
 			defer peerAddrFilter.Remove(netAddr.String())
 			peer, err := P2pComm.dialPeer(netAddr, n)
 			if err != nil {
-				/ 
+				//     
 				n.nodeInfo.addrBook.RemoveAddr(netAddr.String())
 				log.Error("monitorDialPeers", "peerAddr", netAddr.str, "err", err.Error())
-				if err == types.ErrVersion { /  1 
+				if err == types.ErrVersion { //     ，     12  
 					peer.version.SetSupport(false)
 					P2pComm.CollectPeerStat(err, peer)
 					return
 				}
-				/  1 
+				//    ，   10  
 				if peer != nil {
 					peer.Close()
 				}
@@ -497,18 +515,18 @@ func (n *Node) monitorDialPeers() {
 				}
 				return
 			}
-			/ 
+			//         
 			inbounds, err := p2pcli.GetInPeersNum(peer)
 			if err != nil {
 				peer.Close()
 				return
 			}
-			/  90%  
+			//      ,      90%，    ，     
 			if int32(inbounds*100)/n.nodeInfo.cfg.InnerBounds > 90 {
 				peer.Close()
 				return
 			}
-			/ 
+			//                
 			if len(n.GetRegisterPeers()) >= maxOutBoundNum {
 				if n.CacheBoundsSize() < maxOutBoundNum {
 					n.AddCachePeer(peer)
@@ -543,7 +561,7 @@ func (n *Node) monitorBlackList() {
 			if n.nodeInfo.addrBook.IsOurStringAddress(badPeer) {
 				continue
 			}
-			// 
+			//0         
 			if 0 == intime {
 				continue
 			}
@@ -559,7 +577,7 @@ func (n *Node) monitorFilter() {
 	peerAddrFilter.ManageRecvFilter(tickTime)
 }
 
-/ goroutine 
+//  goroutine      
 
 func (n *Node) monitorCfgSeeds() {
 
@@ -575,23 +593,27 @@ func (n *Node) monitorCfgSeeds() {
 		<-ticker.C
 		n.cfgSeeds.Range(func(k, v interface{}) bool {
 
-			/ 
-			if n.needMore() { / 
-				n.pubsub.FIFOPub(k.(string), "addr")
-			} else {
-				peers, _ := n.GetActivePeers()
-				/  
-				var maxInBounds int32
-				maxInBoundPeer := &Peer{}
-				for _, peer := range peers {
-					if peer.GetInBouns() > maxInBounds {
-						maxInBounds = peer.GetInBouns()
-						maxInBoundPeer = peer
+			if !n.Has(k.(string)) {
+				//       
+				if n.needMore() { //         
+					n.pubsub.FIFOPub(k.(string), "addr")
+				} else {
+					//    
+					peers, _ := n.GetActivePeers()
+					//          ，       
+					var MaxInBounds int32
+					MaxInBoundPeer := &Peer{}
+					for _, peer := range peers {
+						if peer.GetInBouns() > MaxInBounds {
+							MaxInBounds = peer.GetInBouns()
+							MaxInBoundPeer = peer
+						}
 					}
-				}
 
-				n.remove(maxInBoundPeer.GetPeerName())
-				n.pubsub.FIFOPub(k.(string), "addr")
+					n.remove(MaxInBoundPeer.Addr())
+					n.pubsub.FIFOPub(k.(string), "addr")
+
+				}
 
 			}
 			return true

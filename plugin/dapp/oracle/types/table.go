@@ -22,7 +22,7 @@ var opt = &table.Option{
 	Index:   []string{"status", "addr_status", "type_status"},
 }
 
-//NewTable 
+//NewTable    
 func NewTable(kvdb db.KV) *table.Table {
 	rowmeta := NewOracleRow()
 	table, err := table.NewTable(rowmeta, kvdb, opt)
@@ -32,22 +32,22 @@ func NewTable(kvdb db.KV) *table.Table {
 	return table
 }
 
-//OracleRow table meta 
+//OracleRow table meta   
 type OracleRow struct {
 	*ReceiptOracle
 }
 
-//NewOracleRow meta 
+//NewOracleRow     meta   
 func NewOracleRow() *OracleRow {
 	return &OracleRow{ReceiptOracle: &ReceiptOracle{}}
 }
 
-//CreateRow  index  eventid)
+//CreateRow      (  index             ,     eventid)
 func (tx *OracleRow) CreateRow() *table.Row {
 	return &table.Row{Data: &ReceiptOracle{}}
 }
 
-//SetPayload 
+//SetPayload     
 func (tx *OracleRow) SetPayload(data types.Message) error {
 	if txdata, ok := data.(*ReceiptOracle); ok {
 		tx.ReceiptOracle = txdata
@@ -56,7 +56,7 @@ func (tx *OracleRow) SetPayload(data types.Message) error {
 	return types.ErrTypeAsset
 }
 
-//Get indexName  indexValue
+//Get   indexName    indexValue
 func (tx *OracleRow) Get(key string) ([]byte, error) {
 	if key == "eventid" {
 		return []byte(tx.EventID), nil

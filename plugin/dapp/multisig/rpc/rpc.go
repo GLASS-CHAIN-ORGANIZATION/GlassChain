@@ -11,7 +11,7 @@ import (
 	mty "github.com/33cn/plugin/plugin/dapp/multisig/types"
 )
 
-// MultiSigAccCreateTx  
+// MultiSigAccCreateTx :             
 func (c *Jrpc) MultiSigAccCreateTx(param *mty.MultiSigAccCreate, result *interface{}) error {
 	if param == nil {
 		return types.ErrInvalidParam
@@ -25,7 +25,7 @@ func (c *Jrpc) MultiSigAccCreateTx(param *mty.MultiSigAccCreate, result *interfa
 	return nil
 }
 
-// MultiSigOwnerOperateTx  owne 
+// MultiSigOwnerOperateTx :          owner     
 func (c *Jrpc) MultiSigOwnerOperateTx(param *mty.MultiSigOwnerOperate, result *interface{}) error {
 	if param == nil {
 		return types.ErrInvalidParam
@@ -39,7 +39,7 @@ func (c *Jrpc) MultiSigOwnerOperateTx(param *mty.MultiSigOwnerOperate, result *i
 	return nil
 }
 
-// MultiSigAccOperateTx  
+// MultiSigAccOperateTx :               
 func (c *Jrpc) MultiSigAccOperateTx(param *mty.MultiSigAccOperate, result *interface{}) error {
 	if param == nil {
 		return types.ErrInvalidParam
@@ -53,7 +53,7 @@ func (c *Jrpc) MultiSigAccOperateTx(param *mty.MultiSigAccOperate, result *inter
 	return nil
 }
 
-// MultiSigConfirmTx  
+// MultiSigConfirmTx :             
 func (c *Jrpc) MultiSigConfirmTx(param *mty.MultiSigConfirmTx, result *interface{}) error {
 	if param == nil {
 		return types.ErrInvalidParam
@@ -67,7 +67,7 @@ func (c *Jrpc) MultiSigConfirmTx(param *mty.MultiSigConfirmTx, result *interface
 	return nil
 }
 
-// MultiSigAccTransferInTx  
+// MultiSigAccTransferInTx :                      
 func (c *Jrpc) MultiSigAccTransferInTx(param *mty.MultiSigExecTransferTo, result *interface{}) error {
 	if param == nil {
 		return types.ErrInvalidParam
@@ -82,7 +82,7 @@ func (c *Jrpc) MultiSigAccTransferInTx(param *mty.MultiSigExecTransferTo, result
 	return nil
 }
 
-// MultiSigAccTransferOutTx  
+// MultiSigAccTransferOutTx :                      
 func (c *Jrpc) MultiSigAccTransferOutTx(param *mty.MultiSigExecTransferFrom, result *interface{}) error {
 	if param == nil {
 		return types.ErrInvalidParam
@@ -97,7 +97,7 @@ func (c *Jrpc) MultiSigAccTransferOutTx(param *mty.MultiSigExecTransferFrom, res
 	return nil
 }
 
-// MultiSigAddresList owne {multiSigAddr，owneraddr，weight}
+// MultiSigAddresList   owner            {multiSigAddr，owneraddr，weight}
 func (c *Jrpc) MultiSigAddresList(in *types.ReqString, result *interface{}) error {
 	v := *in
 	data, err := c.cli.ExecWalletFunc(mty.MultiSigX, "MultiSigAddresList", &v)

@@ -26,12 +26,12 @@ func InitExecutor(cfg *types.Chain33Config) {
 	types.RegistorExecutor(MultiSigX, NewType(cfg))
 }
 
-// MultiSigType multisi 
+// MultiSigType multisig     
 type MultiSigType struct {
 	types.ExecTypeBase
 }
 
-// NewType ne multisi 
+// NewType new    multisig    
 func NewType(cfg *types.Chain33Config) *MultiSigType {
 	c := &MultiSigType{}
 	c.SetChild(c)
@@ -39,17 +39,17 @@ func NewType(cfg *types.Chain33Config) *MultiSigType {
 	return c
 }
 
-//GetPayload payloa  multisig.pb.g 
+//GetPayload     payload      ：   multisig.pb.go             
 func (m *MultiSigType) GetPayload() types.Message {
 	return &MultiSigAction{}
 }
 
-//GetName name
+//GetName     name
 func (m *MultiSigType) GetName() string {
 	return MultiSigX
 }
 
-//GetTypeMap  exec.g  EXEC_
+//GetTypeMap              ，   exec.go      ，  EXEC_
 func (m *MultiSigType) GetTypeMap() map[string]int32 {
 	return map[string]int32{
 		"MultiSigAccCreate":        ActionMultiSigAccCreate,
@@ -61,7 +61,7 @@ func (m *MultiSigType) GetTypeMap() map[string]int32 {
 	}
 }
 
-//GetLogMap Receiptlo ：
+//GetLogMap       Receiptlog      ：
 func (m *MultiSigType) GetLogMap() map[int64]*types.LogInfo {
 	return map[int64]*types.LogInfo{
 		TyLogMultiSigAccCreate: {Ty: reflect.TypeOf(MultiSig{}), Name: "LogMultiSigAccCreate"},
@@ -84,7 +84,7 @@ func (m *MultiSigType) GetLogMap() map[int64]*types.LogInfo {
 	}
 }
 
-//DecodePayload Payloa 
+//DecodePayload      Payload  
 func (m MultiSigType) DecodePayload(tx *types.Transaction) (types.Message, error) {
 	var action MultiSigAction
 	err := types.Decode(tx.Payload, &action)
@@ -94,7 +94,7 @@ func (m MultiSigType) DecodePayload(tx *types.Transaction) (types.Message, error
 	return &action, nil
 }
 
-//ActionName actioni name
+//ActionName   actionid   name
 func (m MultiSigType) ActionName(tx *types.Transaction) string {
 	var g MultiSigAction
 	err := types.Decode(tx.Payload, &g)

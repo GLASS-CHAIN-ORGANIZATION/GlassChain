@@ -15,7 +15,7 @@ import (
 	mty "github.com/33cn/plugin/plugin/dapp/multisig/types"
 	"github.com/stretchr/testify/assert"
 
-	// syste plugin 
+	//   system plugin  
 	rpctypes "github.com/33cn/chain33/rpc/types"
 	_ "github.com/33cn/chain33/system"
 	_ "github.com/33cn/plugin/plugin"
@@ -26,7 +26,7 @@ func init() {
 }
 
 func TestJRPCChannel(t *testing.T) {
-	// RPCmocker
+	//   RPCmocker
 	mocker := testnode.New("--notset--", nil)
 	defer func() {
 		mocker.Close()
@@ -72,7 +72,7 @@ func TestJRPCChannel(t *testing.T) {
 	}
 }
 
-/ 
+//    
 func testCreateMultiSigAccCreateCmd(t *testing.T, jrpc *jsonclient.JSONClient) error {
 	params := &mty.MultiSigAccCreate{}
 	return jrpc.Call("multisig.MultiSigAccCreateTx", params, nil)
@@ -116,7 +116,7 @@ func testCreateMultiSigAccTransferOutCmd(t *testing.T, jrpc *jsonclient.JSONClie
 	return jrpc.Call("multisig.MultiSigAccTransferOutTx", params, nil)
 }
 
-//get 
+//get         
 func testGetMultiSigAccCountCmd(t *testing.T, jrpc *jsonclient.JSONClient) error {
 	params := &rpctypes.Query4Jrpc{
 		Execer:   mty.MultiSigX,

@@ -1,26 +1,25 @@
 Title="local"
 TestNet=true
 
-[crypto]
 [log]
-#  debug(dbug)/info/warn/error(eror)/crit
+#     ，  debug(dbug)/info/warn/error(eror)/crit
 loglevel = "debug"
 logConsoleLevel = "info"
-#   
+#      ，    ，                
 logFile = "logs/chain33.log"
-#   ）
+#           （  ： ）
 maxFileSize = 20
-# 
+#              
 maxBackups = 20
-#   ）
+#            （  ： ）
 maxAge = 28
-#  UT ）
+#              （    UTC  ）
 localTime = true
-#  gz）
+#           （     gz）
 compress = false
-# 
+#             
 callerFile = true
-# 
+#         
 callerFunction = true
 
 [blockchain]
@@ -68,9 +67,9 @@ poolCacheSize=10240
 
 [mempool.sub.score]
 poolCacheSize=10240
-timeParam=1       
-priceConstant=3    1e ~ 1 
-pricePower=1      
+timeParam=1      #       
+priceConstant=3  #              ,       1e3   ~= 1h   
+pricePower=1     #    
 
 [mempool.sub.price]
 poolCacheSize=10240
@@ -173,11 +172,11 @@ tokenApprs = [
 genesis="14KEKbYtKKQm4wMthSK9J4La4nAiidGozt"
 
 [exec.sub.cert]
-# 
+#            
 enable=false
-# 
+#       
 cryptoPath="authdir/crypto"
-#  "auth_ecdsa", "auth_sm2"
+#        ，  "auth_ecdsa", "auth_sm2"
 signType="auth_ecdsa"
 
 [exec.sub.manage]

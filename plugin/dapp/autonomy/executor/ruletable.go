@@ -24,6 +24,7 @@ var ruleOpt = &table.Option{
 	Index:   []string{"addr", "status", "addr_status"},
 }
 
+//NewRuleTable    
 func NewRuleTable(kvdb db.KV) *table.Table {
 	rowmeta := NewRuleRow()
 	table, err := table.NewTable(rowmeta, kvdb, ruleOpt)
@@ -33,18 +34,22 @@ func NewRuleTable(kvdb db.KV) *table.Table {
 	return table
 }
 
+//RuleRow table meta   
 type RuleRow struct {
 	*auty.AutonomyProposalRule
 }
 
+//NewRuleRow     meta   
 func NewRuleRow() *RuleRow {
 	return &RuleRow{AutonomyProposalRule: &auty.AutonomyProposalRule{}}
 }
 
+//CreateRow      (  index             ,     heightindex)
 func (r *RuleRow) CreateRow() *table.Row {
 	return &table.Row{Data: &auty.AutonomyProposalRule{}}
 }
 
+//SetPayload     
 func (r *RuleRow) SetPayload(data types.Message) error {
 	if d, ok := data.(*auty.AutonomyProposalRule); ok {
 		r.AutonomyProposalRule = d
@@ -53,6 +58,7 @@ func (r *RuleRow) SetPayload(data types.Message) error {
 	return types.ErrTypeAsset
 }
 
+//Get   indexName    indexValue
 func (r *RuleRow) Get(key string) ([]byte, error) {
 	if key == "heightindex" {
 		return []byte(dapp.HeightIndexStr(r.Height, int64(r.Index))), nil

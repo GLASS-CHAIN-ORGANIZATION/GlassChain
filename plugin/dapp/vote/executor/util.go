@@ -7,11 +7,11 @@ import (
 )
 
 const (
-	voteStatusNormal   = iota / 
-	voteStatusPending         / 
-	voteStatusOngoing         / 
-	voteStatusFinished        / 
-	voteStatusClosed          / 
+	voteStatusNormal   = iota //       
+	voteStatusPending         //    
+	voteStatusOngoing         //    
+	voteStatusFinished        //    
+	voteStatusClosed          //    
 )
 
 const (
@@ -109,7 +109,7 @@ func filterVoteWithStatus(voteList []*vty.VoteInfo, status uint32, currentTime i
 			filterList = append(filterList, voteInfo)
 		}
 	}
-	/  
+	//       ，         
 	if status > 0 {
 		return filterList
 	}

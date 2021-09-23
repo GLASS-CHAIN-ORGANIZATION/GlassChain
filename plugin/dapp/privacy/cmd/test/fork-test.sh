@@ -18,11 +18,11 @@ priTxFee2=0
 priTxindex=0
 priTxHashs1=("")
 priTxHashs2=("")
-priRepeatTx=1  
+priRepeatTx=1 #        
 priTotalAmount1="300.0000"
 priTotalAmount2="300.0000"
 
-# 
+#           
 # $1 name
 # $2 pswd
 function unlockWallet() {
@@ -35,7 +35,7 @@ function unlockWallet() {
     sleep 1
 }
 
-# 
+#             
 # $1 name
 # $2 pswd
 # $3 seed
@@ -51,7 +51,7 @@ function saveSeed() {
     sleep 1
 }
 
-# 
+#          
 # $1 name
 # $2 key
 # $3 label
@@ -66,7 +66,7 @@ function importKey() {
     sleep 1
 }
 
-# 
+#             
 # $1 name
 # $2 flag 0:close 1:open
 function setAutomine() {
@@ -101,12 +101,12 @@ function peersCount() {
 
     for ((i = 0; i < retryTime; i++)); do
         peersCount=$($name net peer | jq '.[] | length')
-        printf   %s   %d   %s \n' "${name}" "${needCount}" "${peersCount}"
+        printf '     %s ,      %d ,      %s \n' "${name}" "${needCount}" "${peersCount}"
         if [ "${peersCount}" = "$needCount" ]; then
-            echo "=============  ============="
+            echo "=============         ============="
             return 0
         else
-            echo "=============  ${sleepTime}s  ============="
+            echo "=============    ${sleepTime}s      ============="
             sleep ${sleepTime}
         fi
     done
@@ -319,7 +319,7 @@ function showPrivacyTotalAmount() {
 # $2 keypair
 # $3 amount
 # $4 expire
-#  returnStr1 
+#    returnStr1         
 function createPrivacyPub2PrivTx() {
     name=$1
     keypair=$2
@@ -336,7 +336,7 @@ function createPrivacyPub2PrivTx() {
 # $3 amount
 # $4 sender
 # $5 expire
-#  returnStr1 
+#    returnStr1         
 function createPrivacyPriv2PrivTx() {
     name=$1
     keypair=$2
@@ -349,13 +349,13 @@ function createPrivacyPriv2PrivTx() {
     returnStr1=$result
 }
 
-#  
+#             ,           
 # $1 name
 # $2 from
 # $3 to
 # $4 amount
 # $5 expire
-#  returnStr1 
+#    returnStr1         
 function createPrivacyPriv2PubTx() {
     name=$1
     from=$2
@@ -368,11 +368,11 @@ function createPrivacyPriv2PubTx() {
     returnStr1=$result
 }
 
-# 
+#           
 # $1 name
 # $2 addr
 # $3 data
-#  returnStr1 
+#    returnStr1         
 function signRawTx() {
     name=$1
     addr=$2
@@ -381,7 +381,7 @@ function signRawTx() {
     returnStr1=$result
 }
 
-# 
+#                 
 # $1 name
 # $2 data
 function sendRawTx() {
@@ -462,9 +462,9 @@ function displayPrivateTotalAmount() {
 }
 
 function genFirstChainPritx() {
-    echo "======  ======"
+    echo "======         ======"
     name=$CLI
-    echo  ：${name}"
+    echo "    ：${name}"
     for ((i = 0; i < priRepeatTx; i++)); do
         fromAdd=$CLIfromAddr1
         priAdd=$CLIprivKey1
@@ -475,13 +475,13 @@ function genFirstChainPritx() {
 
         sleep 1
         height=$(${name} block last_header | jq ".height")
-        printf   %d  %s \n' $i "${height}"
+        printf '       %d         %s \n' $i "${height}"
     done
 
     block_wait_timeout "${CLI}" 5 80
 
     priTxindex=0
-    echo "======  ======"
+    echo "======         ======"
     for ((i = 0; i < priRepeatTx; i++)); do
         fromAdd=$CLIfromAddr1
         priAdd=$CLIprivKey2
@@ -495,12 +495,12 @@ function genFirstChainPritx() {
 
         sleep 1
         height=$(${name} block last_header | jq ".height")
-        printf   %d  %s \n' $i "${height}"
+        printf '       %d         %s \n' $i "${height}"
     done
 
     block_wait_timeout "${CLI}" 5 80
 
-    echo "======  ======"
+    echo "======         ======"
     for ((i = 0; i < priRepeatTx; i++)); do
         fromAdd=$CLIfromAddr1
         toAdd=$CLIfromAddr1
@@ -514,10 +514,10 @@ function genFirstChainPritx() {
 
         sleep 1
         height=$(${name} block last_header | jq ".height")
-        printf   %d  %s \n' $i "${height}"
+        printf '       %d         %s \n' $i "${height}"
     done
 
-    echo "============ ============="
+    echo "=============        ============="
 
     fromAdd=$CLIfromAddr1
     showPrivacyBalance "${name}" $fromAdd
@@ -527,9 +527,9 @@ function genFirstChainPritx() {
 }
 
 function genSecondChainPritx() {
-    echo "======  ======"
+    echo "======         ======"
     name=$CLI4
-    echo  ：${name}"
+    echo "    ：${name}"
     for ((i = 0; i < priRepeatTx; i++)); do
         fromAdd=$CLI4fromAddr1
         priAdd=$CLI4privKey11
@@ -540,14 +540,14 @@ function genSecondChainPritx() {
 
         sleep 1
         height=$(${name} block last_header | jq ".height")
-        printf   %d  %s \n' $i "${height}"
+        printf '       %d         %s \n' $i "${height}"
     done
 
     block_wait_timeout "${name}" 5 80
 
     priTxHashs2=("")
     priTxindex=0
-    echo "======  ======"
+    echo "======         ======"
     for ((i = 0; i < priRepeatTx; i++)); do
         fromAdd=$CLI4fromAddr1
         priAdd=$CLI4privKey12
@@ -561,12 +561,12 @@ function genSecondChainPritx() {
 
         sleep 1
         height=$(${name} block last_header | jq ".height")
-        printf   %d  %s \n' $i "${height}"
+        printf '       %d         %s \n' $i "${height}"
     done
 
     block_wait_timeout "${name}" 5 80
 
-    echo "======  ======"
+    echo "======         ======"
     for ((i = 0; i < priRepeatTx; i++)); do
         fromAdd=$CLI4fromAddr1
         toAdd=$CLI4fromAddr1
@@ -580,10 +580,10 @@ function genSecondChainPritx() {
 
         sleep 1
         height=$(${name} block last_header | jq ".height")
-        printf   %d  %s \n' $i "${height}"
+        printf '       %d         %s \n' $i "${height}"
     done
 
-    echo "============ ============="
+    echo "=============        ============="
 
     fromAdd=$CLI4fromAddr1
     showPrivacyBalance "${name}" $fromAdd
@@ -599,7 +599,7 @@ function checkPriResult() {
     name1=$CLI
     name2=$CLI4
 
-    echo "=================== docke ================="
+    echo "====================     docker    ================="
 
     for ((i = 0; i < ${#priTxHashs1[*]}; i++)); do
         txHash=${priTxHashs1[$i]}
@@ -627,18 +627,18 @@ function checkPriResult() {
     showPrivacyBalance "${name1}" $fromAdd
     value3=$returnStr1
 
-    printf  %d \n' "${priTxFee1}"
+    printf '      %d \n' "${priTxFee1}"
 
     actTotal=$(echo "$value1 + $value2 + $value3 + $priTxFee1" | bc)
-    echo "${name1} ：$actTotal"
+    echo "${name1}     ：$actTotal"
 
     if [ "${actTotal}" = $priTotalAmount1 ]; then
-        echo "${name1} "
+        echo "${name1}            "
     else
-        echo "${name1} "
+        echo "${name1}             "
     fi
 
-    echo "=================== docke ================="
+    echo "====================     docker    ================="
     for ((i = 0; i < ${#priTxHashs2[*]}; i++)); do
         txHash=${priTxHashs2[$i]}
         txQuery "${name2}" "$txHash"
@@ -663,15 +663,15 @@ function checkPriResult() {
     showPrivacyBalance "${name2}" $fromAdd
     value3=$returnStr1
 
-    printf  %d \n' "${priTxFee2}"
+    printf '      %d \n' "${priTxFee2}"
 
     actTotal=$(echo "$value1 + $value2 + $value3 + $priTxFee2" | bc)
-    echo "${name2} ：$actTotal"
+    echo "${name2}     ：$actTotal"
 
     if [ "${actTotal}" = $priTotalAmount2 ]; then
-        echo "${name2} "
+        echo "${name2}            "
     else
-        echo "${name2} "
+        echo "${name2}             "
     fi
 
     sleep 1
@@ -714,42 +714,42 @@ function genPrivacy2PublicTx() {
     fi
 }
 
-# 
+#            
 # $1 name
-# $2 fromAddr1   
-# $3 pk1        
-# $4 pk2        
-# $5 group       Docke 1, Docke 2
+# $2 fromAddr1        ,         
+# $3 pk1               
+# $4 pk2               
+# $5 group      1  Docker  1,2  Docker  2
 function genTransactionInType4() {
     name=$1
     fromAddr1=$2
     pk1=$3
     pk2=$4
     group=$5
-    echo  ：${name}, ${group}"
+    echo "         ：${name},      ${group}"
     expire=120
 
     height=$(${name} block last_header | jq ".height")
     amount=17
-    printf   :%s :%s \n' "${height}" "${amount}"
-    pub2priv "${name}" "$fromAddr1" "$pk1"  12 " 12 120
+    printf '         :%s      :%s \n' "${height}" "${amount}"
+    pub2priv "${name}" "$fromAddr1" "$pk1" "   120   " 12 120
     block_wait_timeout "${name}" 1 16
-    pub2priv "${name}" "$fromAddr1" "$pk1"  360 " 13 3600
-    pub2priv "${name}" "$fromAddr1" "$pk1"  180 " 17 1800
+    pub2priv "${name}" "$fromAddr1" "$pk1" "   3600   " 13 3600
+    pub2priv "${name}" "$fromAddr1" "$pk1" "   1800   " 17 1800
     block_wait_timeout "${name}" 5 80
 
     height=$(${name} block last_header | jq ".height")
     amount=7
     mixcount=0
-    printf   :%s :%s \n' "${height}" "${amount}"
-    genPrivacy2PrivacyTx "${name}" "$fromAddr1" "$pk2"  12 " 7 $mixcount 120
-    pub2priv "${name}" "$fromAddr1" "$pk1"  12 " 12 120
-    pub2priv "${name}" "$fromAddr1" "$pk1"  180 " 17 1800
+    printf '         :%s      :%s \n' "${height}" "${amount}"
+    genPrivacy2PrivacyTx "${name}" "$fromAddr1" "$pk2" "   120   " 7 $mixcount 120
+    pub2priv "${name}" "$fromAddr1" "$pk1" "   120   " 12 120
+    pub2priv "${name}" "$fromAddr1" "$pk1" "   1800   " 17 1800
     block_wait_timeout "${name}" 1 16
-    genPrivacy2PrivacyTx "${name}" "$fromAddr1" "$pk2"  360 " 9 $mixcount 3600
-    genPrivacy2PrivacyTx "${name}" "$fromAddr1" "$pk2"  360 " 19 $mixcount 3600
+    genPrivacy2PrivacyTx "${name}" "$fromAddr1" "$pk2" "   3600   " 9 $mixcount 3600
+    genPrivacy2PrivacyTx "${name}" "$fromAddr1" "$pk2" "   3600   " 19 $mixcount 3600
     block_wait_timeout "${name}" 1 16
-    pub2priv "${name}" "$fromAddr1" "$pk1"  12 " 19 120
+    pub2priv "${name}" "$fromAddr1" "$pk1" "   120   " 19 120
     block_wait_timeout "${name}" 5 80
 
     height=$(${name} block last_header | jq ".height")
@@ -757,19 +757,19 @@ function genTransactionInType4() {
     from=$fromAddr1
     to=$fromAddr1
     mixcount=0
-    printf   :%s :%s \n' "${height}" "${amount}"
-    pub2priv "${name}" "$fromAddr1" "$pk1"  12 " 12 120
-    genPrivacy2PublicTx "${name}" "$from" "$to"  12 " $amount $mixcount 120
-    genPrivacy2PublicTx "${name}" "$from" "$to"  360 " $amount $mixcount 3600
+    printf '         :%s      :%s \n' "${height}" "${amount}"
+    pub2priv "${name}" "$fromAddr1" "$pk1" "   120   " 12 120
+    genPrivacy2PublicTx "${name}" "$from" "$to" "   120   " $amount $mixcount 120
+    genPrivacy2PublicTx "${name}" "$from" "$to" "   3600   " $amount $mixcount 3600
     block_wait_timeout "${name}" 1 16
-    genPrivacy2PrivacyTx "${name}" "$fromAddr1" "$pk2"  12 " 7 $mixcount 120
+    genPrivacy2PrivacyTx "${name}" "$fromAddr1" "$pk2" "   120   " 7 $mixcount 120
     block_wait_timeout "${name}" 5 80
 }
 
 function genFirstChainPritxType4() {
     genTransactionInType4 "${CLI}" $CLIfromAddr1 $CLIprivKey1 $CLIprivKey2 1
 
-    echo "============ ============="
+    echo "=============        ============="
     showPrivacyBalance "${name}" $CLIfromAddr1
     showPrivacyBalance "${name}" $CLIfromAddr2
 }
@@ -777,7 +777,7 @@ function genFirstChainPritxType4() {
 function genSecondChainPritxType4() {
     genTransactionInType4 "${CLI4}" $CLI4fromAddr1 $CLI4privKey11 $CLI4privKey12 2
 
-    echo "============ ============="
+    echo "=============        ============="
     showPrivacyBalance "${name}" $CLI4fromAddr1
     showPrivacyBalance "${name}" $CLI4fromAddr2
 }

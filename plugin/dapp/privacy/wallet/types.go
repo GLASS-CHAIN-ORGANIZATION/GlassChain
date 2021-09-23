@@ -14,7 +14,7 @@ type addrAndprivacy struct {
 	Addr           *string
 }
 
-// buildInputInfo 
+// buildInputInfo              
 type buildInputInfo struct {
 	assetExec   string
 	assetSymbol string
@@ -23,7 +23,7 @@ type buildInputInfo struct {
 	mixcount    int32
 }
 
-// txOutputInfo UTX 
+// txOutputInfo              UTXO  
 type txOutputInfo struct {
 	amount           int64
 	utxoGlobalIndex  *privacytypes.UTXOGlobalIndex

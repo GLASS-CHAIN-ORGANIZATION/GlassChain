@@ -4,7 +4,6 @@ import "transaction.proto";
 import "account.proto";
 
 package types;
-option go_package = "../types";
 
 // action
 message TokenAction {
@@ -22,7 +21,7 @@ message TokenAction {
     int32 Ty = 7;
 }
 
-/ token   1e 
+//  token，        8   ,               1e8 
 message TokenPreCreate {
     string name         = 1;
     string symbol       = 2;
@@ -93,7 +92,7 @@ message LocalToken {
     int64  prepareCreateHeight = 11;
     int64  prepareCreateTime   = 12;
     int32  precision           = 13;
-    // 
+    //                  
     int64 totalTransferTimes = 14;
     int64 revokedHeight      = 15;
     int64 revokedTime        = 16;
@@ -158,7 +157,7 @@ message ReqAddrTokens {
 
 message ReqTokenTx {
     string symbol = 1;
-    / /from/to has 
+    //     /from/to/   hash  
     int32  flag      = 2;
     int32  count     = 3;
     int32  direction = 4;
@@ -172,7 +171,7 @@ message ReplyTokenLogs {
 }
 
 service token {
-    // token 
-    / 
+    // token          
+    //     
     rpc GetTokenBalance(ReqTokenBalance) returns (Accounts) {}
 }

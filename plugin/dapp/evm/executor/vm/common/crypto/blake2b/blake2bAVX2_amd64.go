@@ -4,6 +4,7 @@
 
 // +build go1.7,amd64,!gccgo,!appengine
 
+//nolint:unparam //        golangci-linter  
 package blake2b
 
 import "golang.org/x/sys/cpu"

@@ -29,9 +29,9 @@ import (
 
 const (
 	consensusInterval = 10 //about 1 new block interval
-	minerInterval     = 10 
+	minerInterval     = 10 //5s            ，10s          
 
-	waitBlocks4CommitMsg int32  = 5 
+	waitBlocks4CommitMsg int32  = 5 //commit msg                
 	waitConsensStopTimes uint32 = 3 //3*10s
 )
 
@@ -42,8 +42,8 @@ type paraSelfConsEnable struct {
 
 type commitMsgClient struct {
 	paraClient           *client
-	waitMainBlocks       int32  
-	waitConsensStopTimes uint32 
+	waitMainBlocks       int32  //                    ，         
+	waitConsensStopTimes uint32 //          ， reset         
 	resetCh              chan interface{}
 	sendMsgCh            chan *types.Transaction
 	minerSwitch          int32
@@ -52,13 +52,13 @@ type commitMsgClient struct {
 	sendingHeight        int64
 	consensHeight        int64
 	consensDoneHeight    int64
-	selfConsensError     int32 
+	selfConsensError     int32 //               ，       <=       
 	authAccount          string
 	authAccountIn        bool
 	isRollBack           int32
 	checkTxCommitTimes   int32
 	txFeeRate            int64
-	selfConsEnableList   []*paraSelfConsEnable 
+	selfConsEnableList   []*paraSelfConsEnable //                     ，fork  ，      
 	privateKey           crypto.PrivKey
 	quit                 chan struct{}
 	mutex                sync.Mutex
@@ -88,14 +88,16 @@ func newCommitMsgCli(para *client, cfg *subConfig) *commitMsgClient {
 		cli.waitConsensStopTimes = cfg.WaitConsensStopTimes
 	}
 
-	
-	
+	//            ，      -1                   0        
+	//note：     LoopCheckCommitTxDoneForkHeight       ParaConsensStartHeight
 	if cfg.ParaConsensStartHeight > 0 {
 		cli.consensDoneHeight = cfg.ParaConsensStartHeight - 1
 	}
 	return cli
 }
 
+// 1.      ，        ，            ,             
+// 2.                         ，                ，                   ，       
 func (client *commitMsgClient) handler() {
 	var readTick <-chan time.Time
 	checkParams := &commitCheckParams{}
@@ -116,9 +118,11 @@ func (client *commitMsgClient) handler() {
 out:
 	for {
 		select {
+		//      ，  reset   
 		case <-client.resetCh:
 			client.resetSend()
 			client.createCommitTx()
+		//        ,         
 		case <-readTick:
 			client.procChecks(checkParams)
 			client.createCommitTx()
@@ -131,6 +135,7 @@ out:
 	client.paraClient.wg.Done()
 }
 
+//chain height      
 func (client *commitMsgClient) updateChainHeightNotify(height int64, isDel bool) {
 	if isDel {
 		atomic.StoreInt32(&client.isRollBack, 1)
@@ -148,10 +153,12 @@ func (client *commitMsgClient) setInitChainHeight(height int64) {
 	atomic.StoreInt64(&client.chainHeight, height)
 }
 
+// reset notify         ，  tx   
 func (client *commitMsgClient) resetNotify() {
 	client.resetCh <- 1
 }
 
+//      ，     commitTx      
 func (client *commitMsgClient) commitTxCheckNotify(block *types.ParaTxDetail) {
 	if client.checkCommitTxSuccess(block) {
 		client.createCommitTx()
@@ -169,6 +176,7 @@ func (client *commitMsgClient) resetSend() {
 	client.resetSendEnv()
 }
 
+//                 ，     ，         
 func (client *commitMsgClient) getConsensusHeight() int64 {
 	status, err := client.getSelfConsensus()
 	if err != nil {
@@ -194,11 +202,14 @@ func (client *commitMsgClient) createCommitTx() {
 	client.pushCommitTx(tx)
 }
 
+//    ：1,     2,10s tick     3,         4,    
+//1&2　          sendingHeight，       ，                        
 func (client *commitMsgClient) getCommitTx() *types.Transaction {
 	client.mutex.Lock()
 	defer client.mutex.Unlock()
 
 	consensHeight := client.getConsensusHeight()
+	//       ，              
 	if consensHeight == -1 && consensHeight < client.consensDoneHeight {
 		consensHeight = client.consensDoneHeight
 	}
@@ -217,11 +228,13 @@ func (client *commitMsgClient) getCommitTx() *types.Transaction {
 		return nil
 	}
 
+	//1.          ，               
+	//2.   ，     
 	if sendingHeight > consensHeight || consensHeight > chainHeight || sendingHeight >= chainHeight {
 		return nil
 	}
 
-	//　sendingHeight <= consensHeight <= chainHeight && sendingHeight < chainHeight
+	//  　sendingHeight <= consensHeight <= chainHeight && sendingHeight < chainHeight
 	signTx, count := client.getSendingTx(sendingHeight, chainHeight)
 	if signTx == nil {
 		return nil
@@ -231,6 +244,8 @@ func (client *commitMsgClient) getCommitTx() *types.Transaction {
 
 }
 
+//client.checkTxCommitTimes client.sendingHeight        
+//  commitTx，   checkCommitTxSuccess        ，  ，　            ，      
 func (client *commitMsgClient) pushCommitTx(signTx *types.Transaction) {
 	client.mutex.Lock()
 	defer client.mutex.Unlock()
@@ -255,7 +270,7 @@ func (client *commitMsgClient) sendCommitActions(acts []*pt.ParacrossCommitActio
 }
 
 func (client *commitMsgClient) checkTxIn(block *types.ParaTxDetail, tx *types.Transaction) bool {
-
+	//committx      
 	if types.IsParaExecName(string(tx.Execer)) {
 		for _, tx := range block.TxDetails {
 			if bytes.HasSuffix(tx.Tx.Execer, []byte(pt.ParaX)) && tx.Receipt.Ty == types.ExecOk {
@@ -265,6 +280,7 @@ func (client *commitMsgClient) checkTxIn(block *types.ParaTxDetail, tx *types.Tr
 		return false
 	}
 
+	//    ，     ,                  
 	receipt, _ := client.paraClient.QueryTxOnMainByHash(tx.Hash())
 	if receipt != nil && receipt.Receipt.Ty == types.ExecOk {
 		return true
@@ -281,6 +297,7 @@ func (client *commitMsgClient) checkCommitTxSuccess(block *types.ParaTxDetail) b
 		return false
 	}
 
+	//  addType   ，    ，              ，    
 	if block.Type != types.AddBlock {
 		if client.checkTxCommitTimes > 0 {
 			client.checkTxCommitTimes--
@@ -306,6 +323,7 @@ func (client *commitMsgClient) reSendCommitTx(tx *types.Transaction) bool {
 	return true
 }
 
+//                ，       ，         ，    ，       ，  
 func (client *commitMsgClient) checkConsensusStop(checks *commitCheckParams) {
 	client.mutex.Lock()
 	defer client.mutex.Unlock()
@@ -328,6 +346,7 @@ func (client *commitMsgClient) checkAuthAccountIn() {
 	}
 	authExist := strings.Contains(nodeStr, client.authAccount)
 
+	//          ，             
 	if !client.authAccountIn && authExist {
 		client.resetSend()
 	}
@@ -389,8 +408,8 @@ func (client *commitMsgClient) isSync() bool {
 
 func (client *commitMsgClient) getSendingTx(startHeight, endHeight int64) (*types.Transaction, int64) {
 	count := endHeight - startHeight
-	if count > int64(types.MaxTxGroupSize) {
-		count = int64(types.MaxTxGroupSize)
+	if count > types.TxGroupMaxCount {
+		count = types.TxGroupMaxCount
 	}
 	status, err := client.getNodeStatus(startHeight+1, startHeight+count)
 	if err != nil {
@@ -604,6 +623,8 @@ out:
 	client.paraClient.wg.Done()
 }
 
+//       key        ，     height   ，block      ，          
+//               20   txgroup，                
 func (client *commitMsgClient) getNodeStatus(start, end int64) ([]*pt.ParacrossNodeStatus, error) {
 	var ret []*pt.ParacrossNodeStatus
 	if start == 0 {
@@ -681,8 +702,11 @@ func (client *commitMsgClient) getNodeStatus(start, end int64) ([]*pt.ParacrossN
 		ret = append(ret, nodeList[req.Start+int64(i)])
 		needSentTxs += nodeList[req.Start+int64(i)].NonCommitTxCounts
 	}
-
-	if needSentTxs == 0 && len(ret) < int(types.MaxTxGroupSize) {
+	//1.     commit tx   ，    ，          commit tx       tx  
+	//2,  20     commit tx   ，20        ，    commit tx     
+	//3,    xxoxx    ，x  commit  ，o      ，       commit ，           
+	//  =0       paracross commit tx，    
+	if needSentTxs == 0 && len(ret) < types.TxGroupMaxCount {
 		plog.Debug("para commitmsg all self-consensus commit tx,send delay", "start", start, "end", end)
 		return nil, nil
 	}
@@ -767,6 +791,7 @@ out:
 				continue
 			}
 
+			//                ，         
 			if mainStatus.Height < selfHeight {
 				atomic.StoreInt32(&client.selfConsensError, 1)
 			} else {
@@ -775,6 +800,7 @@ out:
 
 			preHeight := atomic.LoadInt64(&client.consensHeight)
 			atomic.StoreInt64(&client.consensHeight, mainStatus.Height)
+			//              ，              ,               
 			if mainStatus.Height < preHeight {
 				client.resetNotify()
 			}
@@ -801,6 +827,7 @@ func (client *commitMsgClient) GetProperFeeRate() error {
 	return nil
 }
 
+//            
 func (client *commitMsgClient) getSelfConsensus() (*pt.ParacrossStatus, error) {
 	block, err := client.paraClient.getLastBlockInfo()
 	if err != nil {
@@ -825,6 +852,7 @@ func (client *commitMsgClient) getSelfConsensus() (*pt.ParacrossStatus, error) {
 		if err != nil {
 			return nil, err
 		}
+		//                      ，               ，           ，          
 		if resp.Height > stage.StartHeight {
 			return resp, nil
 		}
@@ -832,6 +860,7 @@ func (client *commitMsgClient) getSelfConsensus() (*pt.ParacrossStatus, error) {
 	return nil, types.ErrNotFound
 }
 
+//         
 func (client *commitMsgClient) getSelfConsensusStatus() (*pt.ParacrossStatus, error) {
 	cfg := client.paraClient.GetAPI().GetConfig()
 	ret, err := client.paraClient.GetAPI().QueryChain(&types.ChainExecutor{
@@ -852,13 +881,14 @@ func (client *commitMsgClient) getSelfConsensusStatus() (*pt.ParacrossStatus, er
 
 }
 
+//  grpc          ，         
 func (client *commitMsgClient) getMainConsensusStatus() (*pt.ParacrossStatus, error) {
 	block, err := client.paraClient.getLastBlockInfo()
 	if err != nil {
 		return nil, err
 	}
 	cfg := client.paraClient.GetAPI().GetConfig()
-
+	//         
 	reply, err := client.paraClient.grpcClient.QueryChain(context.Background(), &types.ChainExecutor{
 		Driver:   "paracross",
 		FuncName: "GetTitleByHash",
@@ -882,6 +912,7 @@ func (client *commitMsgClient) getMainConsensusStatus() (*pt.ParacrossStatus, er
 
 }
 
+//node group             ,        
 func (client *commitMsgClient) getNodeGroupAddrs() (string, error) {
 	cfg := client.paraClient.GetAPI().GetConfig()
 	ret, err := client.paraClient.GetAPI().QueryChain(&types.ChainExecutor{
@@ -1024,6 +1055,7 @@ func (client *commitMsgClient) setSelfConsEnable() error {
 	return nil
 }
 
+//                     ，fork  ，      
 func (client *commitMsgClient) isSelfConsEnable(height int64) bool {
 	for _, v := range client.selfConsEnableList {
 		if height >= v.startHeight && height <= v.endHeight {

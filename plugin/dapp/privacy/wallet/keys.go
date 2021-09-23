@@ -7,55 +7,55 @@ package wallet
 import "fmt"
 
 const (
-	// PrivacyDBVersion  KE 
+	// PrivacyDBVersion          ，                     KEY 
 	PrivacyDBVersion = "Privacy-DBVersion"
-	// Privacy4Addr KE 
-	// KE   	Privacy4Addr 
-	// VALU  types.WalletAccountPrivacy， 
+	// Privacy4Addr                    KEY 
+	// KEY      	Privacy4Addr-    
+	// VALUE     types.WalletAccountPrivacy，        
 	Privacy4Addr = "Privacy-Addr"
-	// AvailUTXOs UTX KE 
-	// KE   	AvailUTXOs-tokenname-address-outtxhash-outindex outtxhas UTX  common.Byte2Hex( 
-	// VALU  types.PrivacyDBStore UTX 
+	// AvailUTXOs             UTXO     KEY 
+	// KEY      	AvailUTXOs-tokenname-address-outtxhash-outindex   outtxhash    UTXO     ，  common.Byte2Hex()  
+	// VALUE     types.PrivacyDBStore，           UTXO     
 	AvailUTXOs = "Privacy-UTXO"
-	// UTXOsSpentInTx  UTX   UTX 
-	// KE  	UTXOsSpentInTx：costtxhash  costtxhas  common.Byte2Hex( 
-	// VALU 	types.FTXOsSTXOsInOneTx
+	// UTXOsSpentInTx          ，        UTXO  ，         ，     UTXO            
+	// KEY     	UTXOsSpentInTx：costtxhash 	  costtxhash          ，  common.Byte2Hex()  
+	// VALUE    	types.FTXOsSTXOsInOneTx
 	UTXOsSpentInTx = "Privacy-UTXOsSpentInTx"
-	// FrozenUTXOs  UTX  KE 
-	// KE   	FrozenUTXOs:tokenname-address-costtxhash costtxhas UTX  common.Byte2Hex( 
-	// VALU  UTXOsSpentInT KE 
+	// FrozenUTXOs          ，         UTXO      ，       KEY 
+	// KEY      	FrozenUTXOs:tokenname-address-costtxhash   costtxhash   UTXO     ，  common.Byte2Hex()  
+	// VALUE    	   UTXOsSpentInTx KEY   
 	FrozenUTXOs = "Privacy-FUTXO4Tx"
-	// PrivacySTXO  UTX UTXO UTX KE 
-	// KE 	PrivacySTXO-tokenname-address-costtxhash costtxhas UTX  common.Byte2Hex( 
-	// VALU  UTXOsSpentInT KE 
+	// PrivacySTXO                   ，  UTXO     UTXO，       UTXO   KEY 
+	// KEY    	PrivacySTXO-tokenname-address-costtxhash	  costtxhash   UTXO     ，  common.Byte2Hex()  
+	// VALUE    	   UTXOsSpentInTx KEY   
 	PrivacySTXO = "Privacy-SUTXO"
-	// STXOs4Tx UTX KE 
-	// KE 	STXOs4Tx：costtxhash costtxhas UTX  common.Byte2Hex( 
-	// VALU  UTXOsSpentInT KE 
+	// STXOs4Tx      UTXO      KEY 
+	// KEY    	STXOs4Tx：costtxhash	  costtxhash   UTXO     ，  common.Byte2Hex()  
+	// VALUE    	   UTXOsSpentInTx KEY   
 	STXOs4Tx = "Privacy-SUTXO4Tx"
-	// RevertSendtx UTX 
-	// KE 	RevertSendtx:tokenname-address-costtxhash costtxhas UTX  common.Byte2Hex( 
-	// VALU  UTXOsSpentInT KE 
+	// RevertSendtx                   UTXO  
+	// KEY    	RevertSendtx:tokenname-address-costtxhash	  costtxhash   UTXO     ，  common.Byte2Hex()  
+	// VALUE    	   UTXOsSpentInTx KEY   
 	RevertSendtx = "Privacy-RevertSendtx"
-	// RecvPrivacyTx KE 
-	// KE 	RecvPrivacyTx:tokenname-address-heighstr heighst types.MaxTxsPerBloc index
-	// VALU  PrivacyT KE 
+	// RecvPrivacyTx                      KEY 
+	// KEY    	RecvPrivacyTx:tokenname-address-heighstr	  heighstr       types.MaxTxsPerBlock              index
+	// VALUE    	  PrivacyTX   KEY 
 	RecvPrivacyTx = "Privacy-RecvTX"
-	// SendPrivacyTx KE 
-	// KE 	SendPrivacyTx:tokenname-address-heighstr heighst types.MaxTxsPerBloc index
-	// VALU  PrivacyT KE 
+	// SendPrivacyTx                 KEY 
+	// KEY    	SendPrivacyTx:tokenname-address-heighstr	  heighstr       types.MaxTxsPerBlock              index
+	// VALUE    	  PrivacyTX   KEY 
 	SendPrivacyTx = "Privacy-SendTX"
-	// PrivacyTX KE 
-	// KE 	PrivacyTX:heighstr heighst types.MaxTxsPerBloc index
-	// VALU 	types.WalletTxDetail
+	// PrivacyTX                       KEY 
+	// KEY    	PrivacyTX:heighstr	  heighstr       types.MaxTxsPerBlock              index
+	// VALUE    	types.WalletTxDetail
 	PrivacyTX = "Privacy-TX"
-	// ScanPrivacyInput  UTX 
-	// KE 	ScanPrivacyInput-outtxhash-outindex outtxhas UTX  common.Byte2Hex( 
-	// VALU 	types.UTXOGlobalIndex
+	// ScanPrivacyInput        ，                      UTXO  
+	// KEY    	ScanPrivacyInput-outtxhash-outindex	  outtxhash    UTXO     ，  common.Byte2Hex()  
+	// VALUE    	types.UTXOGlobalIndex
 	ScanPrivacyInput = "Privacy-ScaneInput"
-	// ReScanUtxosFlag UTX 
-	// KE 	ReScanUtxosFlag
-	// VALU 	types.Int64 
+	// ReScanUtxosFlag           UTXO     
+	// KEY    	ReScanUtxosFlag
+	// VALUE    	types.Int64，    
 	//		UtxoFlagNoScan  int32 = 0
 	//		UtxoFlagScaning int32 = 1
 	//		UtxoFlagScanEnd int32 = 2
@@ -66,17 +66,17 @@ func calcPrivacyDBVersion() []byte {
 	return []byte(PrivacyDBVersion)
 }
 
-// calcUTXOKey UTX   
+// calcUTXOKey     UTXO   ,       +      
 //key and prefix for privacy
-//types.PrivacyDBStor calcUTXOKe key，
-//1 utx  ke value calcUTXOKey4TokenAdd ke k ；
-//2 ，calcUTXOKey4TokenAdd k  calcPrivacyFUTXOKe ke k  key，
-//  utx futxo；
-//3  futx   ke stx ，
-//4  del bloc  
-// 4.a stx  stx ftx ，
-// 4.b utx ftx  utx ftx  types.PrivacyDBStor 
-// 4.c stx    utx   
+//types.PrivacyDBStore      calcUTXOKey  key，
+//1.  utxo                    ， key  value，   calcUTXOKey4TokenAddr    key   kv ；
+//2.      ，calcUTXOKey4TokenAddr   kv   ，   calcPrivacyFUTXOKey   key  kv ，       key，
+//                ，  utxo   futxo；
+//3.             ，         futxo ，        ，  key   stxo ，
+//4.           ，   del block    ，  
+// 4.a            stxo ，    stxo    ftxo ，
+// 4.b            utxo ftxo  ，    utxo ftxo       ，    types.PrivacyDBStore       
+// 4.c            stxo  ，      ，     ，    utxo         ，        ，         
 func calcUTXOKey(txhash string, index int) []byte {
 	return []byte(fmt.Sprintf("%s-%s-%d", AvailUTXOs, txhash, index))
 }
@@ -85,50 +85,51 @@ func calcKey4UTXOsSpentInTx(key string) []byte {
 	return []byte(fmt.Sprintf("%s:%s", UTXOsSpentInTx, key))
 }
 
-// calcPrivacyAddrKey 
+// calcPrivacyAddrKey                    
 func calcPrivacyAddrKey(addr string) []byte {
 	return []byte(fmt.Sprintf("%s-%s", Privacy4Addr, addr))
 }
 
-//calcAddrKey add Accoun 
+//calcAddrKey   addr    Account    
 func calcAddrKey(addr string) []byte {
 	return []byte(fmt.Sprintf("Addr:%s", addr))
 }
 
-// calcPrivacyUTXOPrefix4Addr UTX KE 
+// calcPrivacyUTXOPrefix4Addr          UTXO     KEY   
 func calcPrivacyUTXOPrefix4Addr(assetExec, token, addr string) []byte {
 	return []byte(fmt.Sprintf("%s-%s-%s-%s-", AvailUTXOs, assetExec, token, addr))
 }
 
-// calcFTXOsKeyPrefix UTX KE 
+// calcFTXOsKeyPrefix                        UTXO         KEY   
 func calcFTXOsKeyPrefix(assetExec, token, addr string) []byte {
 	return []byte(fmt.Sprintf("%s:%s-%s-%s-", FrozenUTXOs, assetExec, token, addr))
 }
 
-// calcSendPrivacyTxKey 
-// add 
-func calcSendPrivacyTxKey(assetExec, assetSymbol, addr, txHeightIndex string) []byte {
-	return []byte(fmt.Sprintf("%s:%s-%s-%s-%s", SendPrivacyTx, assetExec, assetSymbol, addr, txHeightIndex))
+// calcSendPrivacyTxKey                     
+// addr     
+// key   calcTxKey(heightstr)      
+func calcSendPrivacyTxKey(assetExec, tokenname, addr, key string) []byte {
+	return []byte(fmt.Sprintf("%s:%s-%s-%s-%s", SendPrivacyTx, assetExec, tokenname, addr, key))
 }
 
-// calcRecvPrivacyTxKey 
-// add 
-// ke calcTxKey(heightstr 
+// calcRecvPrivacyTxKey                     
+// addr     
+// key   calcTxKey(heightstr)      
 func calcRecvPrivacyTxKey(assetExec, tokenname, addr, key string) []byte {
 	return []byte(fmt.Sprintf("%s:%s-%s-%s-%s", RecvPrivacyTx, assetExec, tokenname, addr, key))
 }
 
-// calcUTXOKey4TokenAddr UTX Ke 
+// calcUTXOKey4TokenAddr         UTXO Key  
 func calcUTXOKey4TokenAddr(assetExec, token, addr, txhash string, index int) []byte {
 	return []byte(fmt.Sprintf("%s-%s-%s-%s-%s-%d", AvailUTXOs, assetExec, token, addr, txhash, index))
 }
 
-// calcKey4FTXOsInTx  UTX 
+// calcKey4FTXOsInTx       ,   UTXO     
 func calcKey4FTXOsInTx(assetExec, token, addr, txhash string) []byte {
 	return []byte(fmt.Sprintf("%s:%s-%s-%s-%s", FrozenUTXOs, assetExec, token, addr, txhash))
 }
 
-// calcRescanUtxosFlagKey UTX 
+// calcRescanUtxosFlagKey                  UTXO  
 func calcRescanUtxosFlagKey(addr string) []byte {
 	return []byte(fmt.Sprintf("%s-%s", ReScanUtxosFlag, addr))
 }
@@ -141,7 +142,7 @@ func calcKey4STXOsInTx(txhash string) []byte {
 	return []byte(fmt.Sprintf("%s:%s", STXOs4Tx, txhash))
 }
 
-// calcSTXOTokenAddrTxKey UTXO
+// calcSTXOTokenAddrTxKey           UTXO
 func calcSTXOTokenAddrTxKey(assetExec, token, addr, txhash string) []byte {
 	return []byte(fmt.Sprintf("%s-%s-%s-%s-%s", PrivacySTXO, assetExec, token, addr, txhash))
 }
@@ -150,12 +151,12 @@ func calcSTXOPrefix4Addr(assetExec, token, addr string) []byte {
 	return []byte(fmt.Sprintf("%s-%s-%s-%s-", PrivacySTXO, assetExec, token, addr))
 }
 
-// calcRevertSendTxKey UTX UTX 
+// calcRevertSendTxKey                UTXO     UTXO     
 func calcRevertSendTxKey(assetExec, tokenname, addr, txhash string) []byte {
 	return []byte(fmt.Sprintf("%s:%s-%s-%s-%s", RevertSendtx, assetExec, tokenname, addr, txhash))
 }
 
-/ height*100000+index T 
+//  height*100000+index   Tx    
 //key:Tx:height*100000+index
 func calcTxKey(key string) []byte {
 	return []byte(fmt.Sprintf("%s:%s", PrivacyTX, key))

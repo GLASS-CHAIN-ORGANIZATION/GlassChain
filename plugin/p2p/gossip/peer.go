@@ -26,7 +26,7 @@ func (p *Peer) Start() {
 
 // Close peer close
 func (p *Peer) Close() {
-	/ 
+	//      
 	if !atomic.CompareAndSwapInt32(&p.isclose, 0, 1) {
 		return
 	}
@@ -35,7 +35,6 @@ func (p *Peer) Close() {
 		//unsub all topics
 		p.node.pubsub.Unsub(p.taskChan)
 	}
-	p.node.peerStore.Delete(p.Addr())
 	log.Info("Peer", "closed", p.Addr())
 
 }
@@ -48,12 +47,12 @@ type Peer struct {
 	persistent   bool
 	isclose      int32
 	version      *Version
-	name         string / name
+	name         string //     name
 	mconn        *MConnection
 	peerAddr     *NetAddress
 	peerStat     *Stat
 	taskChan     chan interface{} //tx block
-	inBounds     int32            / 
+	inBounds     int32            //             
 	IsMaxInbouds bool
 }
 
@@ -139,7 +138,18 @@ func (p *Peer) heartBeat() {
 		if !p.GetRunning() {
 			return
 		}
-		p.taskChan = p.node.pubsub.Sub("block", "tx", p.name)
+		peername, err := pcli.SendVersion(p, p.node.nodeInfo)
+		P2pComm.CollectPeerStat(err, p)
+		if err != nil || peername == "" {
+			//    ，    
+			log.Error("PeerHeartBeatSendVersion", "peerName", peername, "err", err)
+			p.Close()
+			return
+		}
+
+		log.Debug("sendVersion", "peer name", peername)
+		p.SetPeerName(peername) //              
+		p.taskChan = p.node.pubsub.Sub("block", "tx", peername)
 		go p.sendStream()
 		go p.readStream()
 		break
@@ -266,7 +276,7 @@ func (p *Peer) sendStream() {
 					}
 					cancel()
 
-					break SEND_LOOP / stream
+					break SEND_LOOP //          stream
 				}
 				log.Debug("sendStream", "send data", "ok")
 
@@ -299,7 +309,7 @@ func (p *Peer) readStream() {
 			log.Error("readStream", "err:", err.Error(), "peerIp", p.Addr())
 			continue
 		}
-		resp, err := p.mconn.gcli.ServerStreamSend(context.Background(), ping, grpc.WaitForReady(true))
+		resp, err := p.mconn.gcli.ServerStreamSend(context.Background(), ping)
 		P2pComm.CollectPeerStat(err, p)
 		if err != nil {
 			log.Error("readStream", "serverstreamsend,err:", err, "peer", p.Addr())
@@ -320,11 +330,17 @@ func (p *Peer) readStream() {
 			data, err := resp.Recv()
 			if err != nil {
 				P2pComm.CollectPeerStat(err, p)
-				log.Error("readStream", "recv err", err.Error(), "peerAddr", p.Addr(), "data:", data)
+				log.Error("readStream", "recv,err:", err.Error(), "peerAddr", p.Addr())
 				errs := resp.CloseSend()
 				if errs != nil {
 					log.Error("CloseSend", "err", errs)
 				}
+
+				if status.Code(err) == codes.Unavailable {
+					break //       
+				}
+
+				log.Error("readStream", "recv,err:", err.Error(), "peerIp", p.Addr())
 
 				if status.Code(err) == codes.Unimplemented { //maybe order peers delete peer to BlackList
 					p.node.nodeInfo.blacklist.Add(p.Addr(), 3600)
@@ -337,9 +353,8 @@ func (p *Peer) readStream() {
 					P2pComm.CollectPeerStat(err, p)
 					return
 				}
+				time.Sleep(time.Second) //have a rest
 
-				/ stream break  stream
-				break
 			}
 
 			p.node.processRecvP2P(data, p.GetPeerName(), p.node.pubToPeer, p.Addr())

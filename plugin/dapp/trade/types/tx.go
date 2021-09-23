@@ -24,13 +24,13 @@ type TradeBuyTx struct {
 	Fee         int64  `json:"fee"`
 }
 
-//TradeRevokeTx  
+//TradeRevokeTx :         
 type TradeRevokeTx struct {
 	SellID string `json:"sellID,"`
 	Fee    int64  `json:"fee"`
 }
 
-//TradeBuyLimitTx  
+//TradeBuyLimitTx :        
 type TradeBuyLimitTx struct {
 	TokenSymbol       string `json:"tokenSymbol"`
 	AmountPerBoardlot int64  `json:"amountPerBoardlot"`
@@ -43,14 +43,14 @@ type TradeBuyLimitTx struct {
 	PriceSymbol       string `json:"priceSymbol"`
 }
 
-//TradeSellMarketTx  toke 
+//TradeSellMarketTx :         token   
 type TradeSellMarketTx struct {
 	BuyID       string `json:"buyID"`
 	BoardlotCnt int64  `json:"boardlotCnt"`
 	Fee         int64  `json:"fee"`
 }
 
-//TradeRevokeBuyTx  
+//TradeRevokeBuyTx :      
 type TradeRevokeBuyTx struct {
 	BuyID string `json:"buyID,"`
 	Fee   int64  `json:"fee"`

@@ -244,72 +244,64 @@ function dapp_run() {
 
 function optDockerfun() {
     #############################################
-    #1 The first bifurcation structure: first the
-    # two chains conduct joint mining, and then split
-    # Don't mine, that is, the transactions when
-    # the two chains are forked are different.
+    #1        ：           ，    
+    #      ，                  。
     #############################################
     forkType1
     #############################################
-     #2 The second fork structure: including the
-     # first group of dockers, the second group
-     # of dockers,And the public node docker, 
-     # first mine together, and then stop the
-     # second group docker, back up the public node
-     # docker database, in the public node docker
-     # Create transaction on, sign transaction,
-     # record signature, send, then close the first group
-     # docker, then restore the public node 
-     # docker database to the backup state,
-     # Then start the second group of docker, 
-     # and then send the transaction that just recorded the signature.
-     # Finally start all nodes to mine together
+    #2        ：     docker,   docker，
+    #       docker，      ，       
+    # docker，      docker   ，     docker
+    #      ，    ，    ，  ，       
+    # docker，       docker          ，
+    #        docker,             。
+    #             
     #############################################
     forkType2
 }
 
 function forkType1() {
-    echo "=========== Start type 1 fork test ========== "
+    echo "===========       1     ========== "
     base_init
     dapp_run forkInit
 
     start
     optDockerPart1
     #############################################
-    #Here to join according to specific needs; such as transferring from the wallet to a specific contract account
-    #1 Initialize the transaction balance
+    #          ；               
+    #1        
     dapp_run forkConfig
 
     #############################################
     optDockerPart2
     #############################################
-    #Here according to specific needs to join in a test chain to send test data
-    #2 Construct the first chain transaction
+    #                       
+    #2          
     dapp_run forkAGroupRun
 
     #############################################
     optDockerPart3
     #############################################
-    #Here, according to specific needs, join to send test data in the second test chain
-    #3 Construct the second chain transaction
+    #                        
+    #3          
     dapp_run forkBGroupRun
 
     #############################################
     optDockerPart4
-    loopCount=30 #The number of cycles, the sleep time of each cycle is 100s
+    loopCount=30 #    ，        100s
     checkBlockHashfun $loopCount
 
     #############################################
-    #Add the result check according to specific needs here
-    #4 Check the transaction results
+    #              
+    #4       
     dapp_run forkCheckRst
 
     #############################################
-    echo "=========== Type 1 fork test ends ========== "
+    echo "===========   1       ========== "
 }
 
 function forkType2() {
-    echo "=========== Start of type 2 bifurcation testing ========== "
+    echo "===========       2     ========== "
     base_init
     dapp_run fork2Init
 
@@ -317,41 +309,41 @@ function forkType2() {
 
     optDockerPart1
     #############################################
-    #Here to join according to specific needs; such as transferring from the wallet to a specific contract account
-    #1 Initialize the transaction balance
+    #          ；               
+    #1        
     initCoinsAccount
     dapp_run fork2Config
 
     #############################################
     type2_optDockerPart2
     #############################################
-    #Here according to specific needs to join in a test chain to send test data
-    #2 Construct the first chain transaction
+    #                       
+    #2          
     genFirstChainCoinstx
     dapp_run fork2AGroupRun
     #############################################
     type2_optDockerPart3
     #############################################
-    #Here, according to specific needs, join to send test data in the second test chain
-    #3 Construct the second chain transaction
+    #                        
+    #3          
     genSecondChainCoinstx
     dapp_run fork2BGroupRun
 
     #############################################
     type2_optDockerPart4
-    loopCount=30 #The number of cycles, the sleep time of each cycle is 100s
+    loopCount=30 #    ，        100s
     checkBlockHashfun $loopCount
     #############################################
-    #Add the result check according to specific needs here
-    #4 Check the transaction results
+    #              
+    #4       
     checkCoinsResult
     dapp_run fork2CheckRst
     #############################################
-    echo "=========== Type 2 fork test ends ========== "
+    echo "===========   2       ========== "
 }
 
 function optDockerPart1() {
-    echo "====== Block generation ======"
+    echo "======       ======"
     #sleep 100
     block_wait_timeout "${CLI}" 10 100
 
@@ -372,7 +364,7 @@ function optDockerPart1() {
         else
             break
         fi
-        #Check whether the maximum number of detections has been exceeded
+        #             
         if [ $i -ge $((loopCount - 1)) ]; then
             echo "====== peers not enough ======"
             exit 1
@@ -394,13 +386,13 @@ function optDockerPart2() {
     fi
 
     echo "==================================="
-    echo "====== Step 1: The first group of docker mining======"
+    echo "======    ：   docker  ======"
     echo "==================================="
 
-    echo "======Stop the second group of docker ======"
+    echo "======     docker ======"
     docker pause "${NODE4}" "${NODE5}" "${NODE6}"
 
-    echo "======Start the first set of docker node mining======"
+    echo "======     docker    ======"
     sleep 3
     result=$($CLI wallet auto_mine -f 1 | jq ".isok")
     if [ "${result}" = "false" ]; then
@@ -422,32 +414,32 @@ function optDockerPart2() {
 }
 
 function optDockerPart3() {
-    echo "======The first group of docker nodes is mining======"
+    echo "======   docker     ======"
     block_wait_timeout "${CLI}" 5 100
-    echo "======Stop the first set of docker node mining======"
+    echo "======     docker    ======"
     result=$($CLI wallet auto_mine -f 0 | jq ".isok")
     if [ "${result}" = "false" ]; then
         echo "stop wallet2 mine fail"
         exit 1
     fi
 
-    echo "====== The first group of internal synchronization ======"
+    echo "======          ======"
     names[0]="${NODE3}"
     names[1]="${NODE2}"
     names[2]="${NODE1}"
     syn_block_timeout "${CLI}" 3 50 "${names[@]}"
 
     echo "======================================="
-    echo "======== Step 2: The second group of docker mining ======="
+    echo "========    ：   docker   ======="
     echo "======================================="
 
-    echo "======Stop the first group of docker======"
+    echo "======     docker======"
     docker pause "${NODE1}" "${NODE2}" "${NODE3}"
 
     echo "======sleep 5s======"
     sleep 5
 
-    echo "======Start the second group of docker======"
+    echo "======     docker======"
     docker unpause "${NODE4}" "${NODE5}" "${NODE6}"
 
     echo "======sleep 20s======"
@@ -469,7 +461,7 @@ function optDockerPart3() {
         exit 1
     fi
 
-    echo "======Start the second set of docker node mining======"
+    echo "======     docker    ======"
     sleep 1
     result=$($CLI4 wallet auto_mine -f 1 | jq ".isok")
     if [ "${result}" = "false" ]; then
@@ -485,19 +477,19 @@ function optDockerPart3() {
 }
 
 function optDockerPart4() {
-    echo "======The second group of docker nodes is mining======"
+    echo "======   docker     ======"
     block_wait_timeout "${CLI4}" 3 50
-    echo "====== The second group of internal synchronization ======"
+    echo "======          ======"
     names[0]="${NODE4}"
     names[1]="${NODE5}"
     names[2]="${NODE6}"
     syn_block_timeout "${CLI4}" 3 50 "${names[@]}"
 
     echo "======================================="
-    echo "====== The third step: two groups of docker mining together ======="
+    echo "======    ：  docker     ======="
     echo "======================================="
 
-    echo "======Start the first group of docker======"
+    echo "======     docker======"
     docker unpause "${NODE1}" "${NODE2}" "${NODE3}"
 
     echo "======sleep 20s======"
@@ -507,7 +499,7 @@ function optDockerPart4() {
         echo "wallet2 unlock fail"
         exit 1
     fi
-    echo "======Start the first set of docker node mining======"
+    echo "======     docker    ======"
     sleep 1
     result=$($CLI wallet auto_mine -f 1 | jq ".isok")
     if [ "${result}" = "false" ]; then
@@ -515,7 +507,7 @@ function optDockerPart4() {
         exit 1
     fi
 
-    echo "======Two groups of docker nodes are mining together======"
+    echo "======  docker       ======"
     block_wait_timeout "${CLI}" 5 100
 }
 
@@ -547,17 +539,17 @@ function type2_optDockerPart2() {
         exit 1
     fi
 
-    echo "=============== Backup public node data =============="
+    echo "===============          =============="
     copyData
 
     echo "==================================="
-    echo "====== Step 1: The first group of docker mining======"
+    echo "======    ：   docker  ======"
     echo "==================================="
 
-    echo "======Stop the second group of docker======"
+    echo "======     docker ======"
     docker pause "${NODE4}" "${NODE5}" "${NODE6}"
 
-    echo "======Start the first set of docker node mining======"
+    echo "======     docker    ======"
     sleep 3
     result=$($CLI wallet auto_mine -f 1 | jq ".isok")
     if [ "${result}" = "false" ]; then
@@ -579,36 +571,36 @@ function type2_optDockerPart2() {
 }
 
 function type2_optDockerPart3() {
-    echo "======The first group of docker nodes is mining======"
+    echo "======   docker     ======"
     block_wait_timeout "${CLI}" 5 100
-    echo "======Stop the first set of docker node mining======"
+    echo "======     docker    ======"
     result=$($CLI wallet auto_mine -f 0 | jq ".isok")
     if [ "${result}" = "false" ]; then
         echo "stop wallet2 mine fail"
         exit 1
     fi
 
-    echo "====== The first group of internal synchronization ======"
+    echo "======          ======"
     names[0]="${NODE3}"
     names[1]="${NODE2}"
     names[2]="${NODE1}"
     syn_block_timeout "${CLI}" 3 50 "${names[@]}"
 
     echo "======================================="
-    echo "======== Step 2: The second group of docker mining ======="
+    echo "========    ：   docker   ======="
     echo "======================================="
 
-    echo "======Stop docker except public nodes in the first group======"
+    echo "======            docker======"
     docker pause "${NODE1}" "${NODE2}"
 
-    echo "=============== Restore public node data=============="
+    echo "===============          =============="
     restoreData
     docker pause "${NODE3}"
 
     echo "======sleep 5s======"
     sleep 5
 
-    echo "======Start the second group of docker======"
+    echo "======     docker======"
     docker unpause "${NODE3}" "${NODE4}" "${NODE5}" "${NODE6}"
 
     name="${CLI}"
@@ -624,7 +616,7 @@ function type2_optDockerPart3() {
 
     echo "======sleep 20s======"
     sleep 20
-    echo "======Start the second set of docker node mining======"
+    echo "======     docker    ======"
 
     result=$($CLI wallet unlock -p 1314fuzamei -t 0 | jq ".isok")
     if [ "${result}" = "false" ]; then
@@ -662,9 +654,9 @@ function type2_optDockerPart3() {
 }
 
 function type2_optDockerPart4() {
-    echo "======The second group of docker nodes is mining======"
+    echo "======   docker     ======"
     block_wait_timeout "${CLI}" 3 50
-    echo "====== The second group of internal synchronization ======"
+    echo "======          ======"
     names[0]="${NODE4}"
     names[1]="${NODE5}"
     names[2]="${NODE6}"
@@ -672,13 +664,13 @@ function type2_optDockerPart4() {
     syn_block_timeout "${CLI}" 3 50 "${names[@]}"
 
     echo "======================================="
-    echo "====== The third step: two groups of docker mining together ======="
+    echo "======    ：  docker     ======="
     echo "======================================="
 
-    echo "======Start the first group of docker======"
+    echo "======     docker======"
     docker unpause "${NODE1}" "${NODE2}"
 
-    echo "======Two groups of docker nodes are mining together======"
+    echo "======  docker       ======"
     block_wait_timeout "${CLI}" 5 100
 }
 
@@ -706,30 +698,30 @@ function checkMineHeight() {
     height2=$($CLI block last_header | jq ".height")
     if [ "${height2}" -ge "${height1}" ]; then
         height=$height2
-        printf 'Current maximum height %s \n' "${height}"
+        printf '       %s \n' "${height}"
     else
         height=$height1
-        printf 'Current maximum height %s \n' "${height}"
+        printf '       %s \n' "${height}"
     fi
 
     if [ "${height}" -eq 0 ]; then
-        echo "Failed to get the current maximum height"
+        echo "          "
         return 1
     fi
     loopCount=20
     for ((k = 0; k < ${#forkContainers[*]}; k++)); do
         for ((j = 0; j < loopCount; j++)); do
             height1=$(${forkContainers[$k]} block last_header | jq ".height")
-            if [ "${height1}" -gt "${height}" ]; then #If it is larger than it means that the block has not been completely generated, replace the expected height
+            if [ "${height1}" -gt "${height}" ]; then #                ，      
                 height=$height1
-                printf 'Inquire %s The highest height of the current block is %s \n' "${containers[$k]}" "${height}"
-            elif [ "${height1}" -eq "${height}" ]; then #Find the target height
+                printf '   %s            %s \n' "${containers[$k]}" "${height}"
+            elif [ "${height1}" -eq "${height}" ]; then #      
                 break
             else
-                printf 'Inquire %s NS %d Times, current height %d, Need height%d, synchronizing, sleep 60s Post query\n' "${containers[$k]}" $j "${height1}" "${height}"
+                printf '   %s   %d  ，     %d,     %d,    ，sleep 60s    \n' "${containers[$k]}" $j "${height1}" "${height}"
                 sleep 60
             fi
-            #Check whether the maximum number of detections has been exceeded
+            #             
             if [ $j -ge $((loopCount - 1)) ]; then
                 echo "====== syn blockchain fail======"
                 return 1
@@ -747,12 +739,12 @@ function peersCount() {
 
     for ((i = 0; i < time; i++)); do
         peersCount=$($name net peer | jq '.[] | length')
-        printf 'Query node %s, the required number of nodes %d, the current number of nodes %s \n' "${name}" "${needCount}" "${peersCount}"
+        printf '     %s ,      %d ,      %s \n' "${name}" "${needCount}" "${peersCount}"
         if [ "${peersCount}" = "$needCount" ]; then
-            echo "============= Meet the requirements of the number of nodes ============="
+            echo "=============         ============="
             return 0
         else
-            echo "============= Sleep for 30s to continue query ============="
+            echo "=============    30s      ============="
             sleep 30
         fi
     done
@@ -771,12 +763,12 @@ function checkBlockHashfun() {
     height2=$($CLI4 block last_header | jq ".height")
     if [ "${height2}" -ge "${height1}" ]; then
         height=$height2
-        printf "The main chain is $CLI Current maximum height %d \\n" "${height}"
+        printf "    $CLI        %d \\n" "${height}"
         sleep 1
         hash=$($CLI block hash -t "${height}" | jq ".hash")
     else
         height=$height1
-        printf "The main chain is $CLI4 Current maximum height %d \\n" "${height}"
+        printf "    $CLI4        %d \\n" "${height}"
         sleep 1
         hash=$($CLI4 block hash -t "${height}" | jq ".hash")
     fi
@@ -804,9 +796,9 @@ function checkBlockHashfun() {
         fi
         peersCount=0
         peersCount=$(${forkContainers[0]} net peer | jq '.[] | length')
-        printf 'NS %d times, The network synchronization has not been queried, the current number of nodes is %d, and it will be queried after 100s \n' $j "${peersCount}"
+        printf '  %d  ，        ，      %d  ，100s   \n' $j "${peersCount}"
         sleep 100
-        #Check whether the maximum number of detections has been exceeded
+        #             
         var=$(($1 - 1))
         if [ $j -ge "${var}" ]; then
             echo "====== syn blockchain fail======"

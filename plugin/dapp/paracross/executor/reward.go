@@ -18,7 +18,7 @@ const (
 	opUnBind = 2
 )
 
-/  ， 
+//                       ，         
 func (a *action) getBindAddrs(nodes []string, statusHeight int64) (*pt.ParaNodeBindList, error) {
 	nodesMap := make(map[string]bool)
 	for _, n := range nodes {
@@ -31,7 +31,7 @@ func (a *action) getBindAddrs(nodes []string, statusHeight int64) (*pt.ParaNodeB
 		clog.Error("paracross getBindAddrs err", "height", statusHeight)
 		return nil, err
 	}
-	/ lis  node  )
+	//       list     ，    nodes   (      )
 	for _, m := range list.Miners {
 		if nodesMap[m.SuperNode] {
 			newLists.Miners = append(newLists.Miners, m)
@@ -72,13 +72,13 @@ func (a *action) rewardDeposit(rewards []*pt.ParaMinerReward, statusHeight int64
 	return receipt, nil
 }
 
-/ 
+//        
 func (a *action) rewardBindAddr(coinReward int64, bindList *pt.ParaNodeBindList, statusHeight int64) (*types.Receipt, int64, error) {
 	if coinReward <= 0 {
 		return nil, 0, nil
 	}
 
-	/ bindAddr nod  
+	//     bindAddr    node  ，       
 	var bindAddrList []*pt.ParaBindMinerInfo
 	for _, node := range bindList.Miners {
 		info, err := getBindAddrInfo(a.db, node.SuperNode, node.Miner)
@@ -93,12 +93,12 @@ func (a *action) rewardBindAddr(coinReward int64, bindList *pt.ParaNodeBindList,
 		totalCoins += addr.BindCoins
 	}
 
-	/ 
+	//          
 	minerUnit := coinReward / totalCoins
 	var change int64
 	receipt := &types.Receipt{Ty: types.ExecOk}
 	if minerUnit > 0 {
-		/ 
+		//           
 		change = coinReward % minerUnit
 		for _, miner := range bindAddrList {
 			rep, err := a.coinsAccount.ExecDeposit(miner.Addr, a.execaddr, minerUnit*miner.BindCoins)
@@ -113,11 +113,11 @@ func (a *action) rewardBindAddr(coinReward int64, bindList *pt.ParaNodeBindList,
 	return receipt, change, nil
 }
 
-// reward ，   
+// reward     ，           ，       ，          
 func (a *action) reward(nodeStatus *pt.ParacrossNodeStatus, stat *pt.ParacrossHeightStatus) (*types.Receipt, error) {
-	/   
+	//        ，           ，        
 	cfg := a.api.GetConfig()
-	/     
+	//     0         ，           0         
 	if nodeStatus.Height == 0 && cfg.IsDappFork(nodeStatus.Height, pt.ParaX, pt.ForkParaFullMinerHeight) {
 		return nil, nil
 	}
@@ -129,17 +129,17 @@ func (a *action) reward(nodeStatus *pt.ParacrossNodeStatus, stat *pt.ParacrossHe
 	coinReward, fundReward, coinBaseReward := minerrewards.MinerRewards[mode].GetConfigReward(cfg, nodeStatus.Height)
 
 	fundAddr := cfg.MGStr("mver.consensus.fundKeyAddr", nodeStatus.Height)
-	/ 
+	//      
 	nodeAddrs := getSuperNodes(stat.Details, nodeStatus.BlockHash)
-	/ 
+	//    
 	bindAddrs, err := a.getBindAddrs(nodeAddrs, nodeStatus.Height)
 	if err != nil {
 		return nil, err
 	}
 
-	/ 
+	//      
 	minderRewards := coinReward
-	/  baseRewar  
+	//         ，      baseReward  ，    
 	if len(bindAddrs.Miners) > 0 {
 		minderRewards = coinBaseReward
 	}
@@ -151,7 +151,7 @@ func (a *action) reward(nodeStatus *pt.ParacrossNodeStatus, stat *pt.ParacrossHe
 	fundReward += change
 	mergeReceipt(receipt, r)
 
-	/ 
+	//        
 	r, change, err = a.rewardBindAddr(coinReward-minderRewards, bindAddrs, nodeStatus.Height)
 	if err != nil {
 		return nil, err
@@ -159,7 +159,7 @@ func (a *action) reward(nodeStatus *pt.ParacrossNodeStatus, stat *pt.ParacrossHe
 	fundReward += change
 	mergeReceipt(receipt, r)
 
-	/ 
+	//      
 	if fundReward > 0 {
 		rep, err := a.coinsAccount.ExecDeposit(fundAddr, a.execaddr, fundReward)
 		if err != nil {
@@ -173,7 +173,7 @@ func (a *action) reward(nodeStatus *pt.ParacrossNodeStatus, stat *pt.ParacrossHe
 	return receipt, nil
 }
 
-// getSuperNodes 
+// getSuperNodes              
 func getSuperNodes(detail *pt.ParacrossStatusDetails, blockHash []byte) []string {
 	addrs := make([]string, 0)
 	for i, hash := range detail.BlockHash {
@@ -237,14 +237,14 @@ func makeNodeBindReceipt(prev, current *pt.ParaNodeBindList) *types.Receipt {
 	}
 }
 
-/ 
+//       
 func (a *action) bind2Node(node string) (*types.Receipt, error) {
 	list, err := getBindNodeInfo(a.db)
 	if err != nil {
 		return nil, errors.Wrap(err, "bind2Node")
 	}
 
-	/ kvmvc  nil  ，unbin   ，titl 
+	//  kvmvcc    ，       nil，     ，           ，unbind ，           ，    ，title        
 	if len(list.Title) <= 0 {
 		list.Title = a.api.GetConfig().GetTitle()
 	}
@@ -256,7 +256,7 @@ func (a *action) bind2Node(node string) (*types.Receipt, error) {
 
 }
 
-/ 
+//       
 func (a *action) unbind2Node(node string) (*types.Receipt, error) {
 	list, err := getBindNodeInfo(a.db)
 	if err != nil {
@@ -323,8 +323,7 @@ func (a *action) bindOp(cmd *pt.ParaBindMinerCmd) (*types.Receipt, error) {
 		return nil, errors.Wrap(err, "getBindAddrInfo")
 	}
 
-	coinPrecision := a.api.GetConfig().GetCoinPrecision()
-	//found, 
+	//found,        
 	if current != nil && current.BindStatus == opBind {
 		var receipt *types.Receipt
 
@@ -332,15 +331,15 @@ func (a *action) bindOp(cmd *pt.ParaBindMinerCmd) (*types.Receipt, error) {
 			return nil, errors.Wrapf(types.ErrInvalidParam, "bind coins same current=%d, cmd=%d", current.BindCoins, cmd.BindCoins)
 		}
 
-		/ coins
+		//     coins
 		if cmd.BindCoins < current.BindCoins {
-			receipt, err = a.coinsAccount.ExecActive(a.fromaddr, a.execaddr, (current.BindCoins-cmd.BindCoins)*coinPrecision)
+			receipt, err = a.coinsAccount.ExecActive(a.fromaddr, a.execaddr, (current.BindCoins-cmd.BindCoins)*types.Coin)
 			if err != nil {
 				return nil, errors.Wrapf(err, "bindOp Active addr=%s,execaddr=%s,coins=%d", a.fromaddr, a.execaddr, current.BindCoins-cmd.BindCoins)
 			}
 		} else {
-			/ 
-			receipt, err = a.coinsAccount.ExecFrozen(a.fromaddr, a.execaddr, (cmd.BindCoins-current.BindCoins)*coinPrecision)
+			//    
+			receipt, err = a.coinsAccount.ExecFrozen(a.fromaddr, a.execaddr, (cmd.BindCoins-current.BindCoins)*types.Coin)
 			if err != nil {
 				return nil, errors.Wrapf(err, "bindOp frozen more addr=%s,execaddr=%s,coins=%d", a.fromaddr, a.execaddr, cmd.BindCoins-current.BindCoins)
 			}
@@ -352,8 +351,8 @@ func (a *action) bindOp(cmd *pt.ParaBindMinerCmd) (*types.Receipt, error) {
 		return mergeReceipt(receipt, r), nil
 	}
 
-	//not bind, 
-	receipt, err := a.coinsAccount.ExecFrozen(a.fromaddr, a.execaddr, cmd.BindCoins*coinPrecision)
+	//not bind,      
+	receipt, err := a.coinsAccount.ExecFrozen(a.fromaddr, a.execaddr, cmd.BindCoins*types.Coin)
 	if err != nil {
 		return nil, errors.Wrapf(err, "bindOp frozen addr=%s,execaddr=%s,count=%d", a.fromaddr, a.execaddr, cmd.BindCoins)
 	}
@@ -370,7 +369,7 @@ func (a *action) bindOp(cmd *pt.ParaBindMinerCmd) (*types.Receipt, error) {
 	rBind := makeAddrBindReceipt(cmd.TargetNode, a.fromaddr, current, newer)
 	mergeReceipt(receipt, rBind)
 
-	/ 
+	//      
 	rList, err := a.bind2Node(cmd.TargetNode)
 	if err != nil {
 		return nil, err
@@ -397,13 +396,13 @@ func (a *action) unBindOp(cmd *pt.ParaBindMinerCmd) (*types.Receipt, error) {
 	}
 
 	//unfrozen
-	receipt, err := a.coinsAccount.ExecActive(a.fromaddr, a.execaddr, acct.BindCoins*cfg.GetCoinPrecision())
+	receipt, err := a.coinsAccount.ExecActive(a.fromaddr, a.execaddr, acct.BindCoins*types.Coin)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unBindOp addr=%s,execaddr=%s,count=%d", a.fromaddr, a.execaddr, acct.BindCoins)
 	}
 
-	/  bind addr
-	/ kvmvc  ke =ni ，kvmvc  ，&struct{ ，len=0 
+	//   bind addr
+	//  kvmvcc   ，       key =nil     ，kvmvcc          ，         ，&struct{}   ，len=0          
 	acctCopy := *acct
 	acct.BindStatus = opUnBind
 	acct.BlockHeight = a.height
@@ -411,7 +410,7 @@ func (a *action) unBindOp(cmd *pt.ParaBindMinerCmd) (*types.Receipt, error) {
 	rUnBind := makeAddrBindReceipt(cmd.TargetNode, a.fromaddr, &acctCopy, acct)
 	mergeReceipt(receipt, rUnBind)
 
-	/ 
+	//     
 	rUnList, err := a.unbind2Node(cmd.TargetNode)
 	if err != nil {
 		return nil, err
@@ -426,7 +425,7 @@ func (a *action) bindMiner(info *pt.ParaBindMinerCmd) (*types.Receipt, error) {
 		return nil, errors.Wrapf(types.ErrInvalidParam, "bindMiner TargetNode should not be nil to addr %s", a.fromaddr)
 	}
 
-	/ 
+	//        
 	if !types.IsParaExecName(string(a.tx.Execer)) {
 		return nil, errors.Wrapf(types.ErrInvalidParam, "exec=%s,should prefix with user.p.", string(a.tx.Execer))
 	}

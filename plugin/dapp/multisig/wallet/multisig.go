@@ -24,7 +24,7 @@ func init() {
 	wcom.RegisterPolicy(mtypes.MultiSigX, New())
 }
 
-// New 
+// New           
 func New() wcom.WalletBizPolicy {
 	return &multisigPolicy{
 		mtx:      &sync.Mutex{},
@@ -61,7 +61,7 @@ func (policy *multisigPolicy) getRescanMultisigAddr() bool {
 	return policy.cfg.RescanMultisigAddr
 }
 
-// Init 
+// Init      
 func (policy *multisigPolicy) Init(walletOperate wcom.WalletOperate, sub []byte) {
 	policy.setWalletOperate(walletOperate)
 	policy.store = newStore(walletOperate.GetDBStore())
@@ -72,7 +72,7 @@ func (policy *multisigPolicy) Init(walletOperate wcom.WalletOperate, sub []byte)
 	policy.cfg = &subcfg
 }
 
-// OnCreateNewAccount 
+// OnCreateNewAccount                        
 func (policy *multisigPolicy) OnCreateNewAccount(acc *types.Account) {
 	if policy.getRescanMultisigAddr() {
 		policy.rescanwg.Add(1)
@@ -80,7 +80,7 @@ func (policy *multisigPolicy) OnCreateNewAccount(acc *types.Account) {
 	}
 }
 
-// OnImportPrivateKey 
+// OnImportPrivateKey                         
 func (policy *multisigPolicy) OnImportPrivateKey(acc *types.Account) {
 	if policy.getRescanMultisigAddr() {
 		policy.rescanwg.Add(1)
@@ -88,46 +88,46 @@ func (policy *multisigPolicy) OnImportPrivateKey(acc *types.Account) {
 	}
 }
 
-// OnAddBlockTx 
+// OnAddBlockTx            
 func (policy *multisigPolicy) OnAddBlockTx(block *types.BlockDetail, tx *types.Transaction, index int32, dbbatch db.Batch) *types.WalletTxDetail {
 	policy.filterMultisigTxsFromBlock(tx, index, block, dbbatch, true)
 	return policy.proceWalletTxDetail(block, tx, index)
 }
 
-// OnDeleteBlockTx 
+// OnDeleteBlockTx            
 func (policy *multisigPolicy) OnDeleteBlockTx(block *types.BlockDetail, tx *types.Transaction, index int32, dbbatch db.Batch) *types.WalletTxDetail {
 	policy.filterMultisigTxsFromBlock(tx, index, block, dbbatch, false)
 	return policy.proceWalletTxDetail(block, tx, index)
 }
 
-// OnAddBlockFinish 
+// OnAddBlockFinish               
 func (policy *multisigPolicy) OnAddBlockFinish(block *types.BlockDetail) {
 
 }
 
-// OnDeleteBlockFinish 
+// OnDeleteBlockFinish               
 func (policy *multisigPolicy) OnDeleteBlockFinish(block *types.BlockDetail) {
 
 }
 
-// OnClose 
+// OnClose            
 func (policy *multisigPolicy) OnClose() {
 
 }
 
-// OnSetQueueClient 
+// OnSetQueueClient                 
 func (policy *multisigPolicy) OnSetQueueClient() {
 }
 
-// OnWalletLocked 
+// OnWalletLocked            
 func (policy *multisigPolicy) OnWalletLocked() {
 }
 
-// OnWalletUnlocked 
+// OnWalletUnlocked            
 func (policy *multisigPolicy) OnWalletUnlocked(WalletUnLock *types.WalletUnLock) {
 }
 
-// Call 
+// Call        
 func (policy *multisigPolicy) Call(funName string, in types.Message) (ret types.Message, err error) {
 	err = types.ErrNotSupport
 	return
@@ -188,7 +188,7 @@ func (policy *multisigPolicy) filterMultisigTxsFromBlock(tx *types.Transaction, 
 	}
 }
 
-/ add/Rollback
+//        add/Rollback
 func (policy *multisigPolicy) saveMultiSigAccCreate(multiSig *mtypes.MultiSig, newbatch db.Batch, addOrRollback bool) {
 	wallet := policy.getWalletOperate()
 
@@ -206,7 +206,7 @@ func (policy *multisigPolicy) saveMultiSigAccCreate(multiSig *mtypes.MultiSig, n
 					OwnerAddr:    owner.OwnerAddr,
 					Weight:       owner.Weight,
 				}
-				/ owner
+				//     owner
 				if err == types.ErrNotFound {
 					AddOwnerAttr(true, nil, ownerAttr, newbatch)
 				} else if ownerAttrs != nil {
@@ -219,7 +219,7 @@ func (policy *multisigPolicy) saveMultiSigAccCreate(multiSig *mtypes.MultiSig, n
 	}
 }
 
-/ owne add/de  add/del 
+//  owner add/del  .    add/del   
 func (policy *multisigPolicy) saveMultiSigOwnerAddOrDel(ownerOp *mtypes.ReceiptOwnerAddOrDel, newbatch db.Batch, addOrRollback bool) {
 	wallet := policy.getWalletOperate()
 	owner := ownerOp.Owner
@@ -247,10 +247,10 @@ func (policy *multisigPolicy) saveMultiSigOwnerAddOrDel(ownerOp *mtypes.ReceiptO
 				DelOwnerAttr(ownerAttrs, owner.OwnerAddr, ownerOp.MultiSigAddr, newbatch)
 			}
 		} else {
-			/ add owner
+			//  add owner
 			if ownerOp.AddOrDel && ownerAttrs != nil {
 				DelOwnerAttr(ownerAttrs, owner.OwnerAddr, ownerOp.MultiSigAddr, newbatch)
-			} else if !ownerOp.AddOrDel { /  del owner
+			} else if !ownerOp.AddOrDel { //   del owner
 				if err == types.ErrNotFound {
 					AddOwnerAttr(true, nil, ownerAttr, newbatch)
 				} else if ownerAttrs != nil {
@@ -261,14 +261,14 @@ func (policy *multisigPolicy) saveMultiSigOwnerAddOrDel(ownerOp *mtypes.ReceiptO
 	}
 }
 
-/ owne mod/replac 
+//  owner mod/replace  
 func (policy *multisigPolicy) saveMultiSigOwnerModOrRep(ownerOp *mtypes.ReceiptOwnerModOrRep, newbatch db.Batch, addOrRollback bool) {
 	wallet := policy.getWalletOperate()
 	prevOwner := ownerOp.PrevOwner
 	curOwner := ownerOp.CurrentOwner
 	multiSigAddr := ownerOp.MultiSigAddr
 
-	/ prevOwner
+	//    prevOwner
 	if wallet.AddrInWallet(prevOwner.OwnerAddr) {
 		ownerAttrs, err := policy.store.listOwnerAttrsByAddr(prevOwner.OwnerAddr)
 		if err != nil && err != types.ErrNotFound {
@@ -287,7 +287,7 @@ func (policy *multisigPolicy) saveMultiSigOwnerModOrRep(ownerOp *mtypes.ReceiptO
 			} else {
 				DelOwnerAttr(ownerAttrs, prevOwner.OwnerAddr, multiSigAddr, newbatch)
 			}
-		} else if !addOrRollback { / Rollbac 
+		} else if !addOrRollback { //  Rollback   
 			if ownerOp.ModOrRep && ownerAttrs != nil {
 				ModOwnerAttr(ownerAttrs, prevOwner.OwnerAddr, multiSigAddr, prevOwner.Weight, newbatch)
 			} else {
@@ -299,7 +299,7 @@ func (policy *multisigPolicy) saveMultiSigOwnerModOrRep(ownerOp *mtypes.ReceiptO
 			}
 		}
 	}
-	/ curOwner,replac 
+	//    curOwner,replace    
 	if wallet.AddrInWallet(curOwner.OwnerAddr) && !ownerOp.ModOrRep {
 		ownerAttrs, err := policy.store.listOwnerAttrsByAddr(curOwner.OwnerAddr)
 		if err != nil && err != types.ErrNotFound {
@@ -323,7 +323,7 @@ func (policy *multisigPolicy) saveMultiSigOwnerModOrRep(ownerOp *mtypes.ReceiptO
 	}
 }
 
-//AddOwnerAttr : owme 
+//AddOwnerAttr :   owmer  
 func AddOwnerAttr(firstAdd bool, ownerAttrs *mtypes.OwnerAttrs, ownerAttr *mtypes.OwnerAttr, newbatch db.Batch) {
 	if firstAdd {
 		var firstownerAttrs mtypes.OwnerAttrs
@@ -335,11 +335,11 @@ func AddOwnerAttr(firstAdd bool, ownerAttrs *mtypes.OwnerAttrs, ownerAttr *mtype
 	batchSet(ownerAttrs, ownerAttr.OwnerAddr, newbatch)
 }
 
-//DelOwnerAttr  owne 
+//DelOwnerAttr ：  owner  
 func DelOwnerAttr(ownerAttrs *mtypes.OwnerAttrs, ownerAddr string, multiSigAddr string, newbatch db.Batch) {
 	index, find := getOwnerAttr(ownerAttrs, multiSigAddr)
 	if find {
-		/ valu 
+		//         value     
 		if len(ownerAttrs.Items) == 1 && index == 0 {
 			newbatch.Delete(calcMultisigAddr(ownerAddr))
 		} else {
@@ -349,7 +349,7 @@ func DelOwnerAttr(ownerAttrs *mtypes.OwnerAttrs, ownerAddr string, multiSigAddr 
 	}
 }
 
-//ModOwnerAttr  owner weigh 
+//ModOwnerAttr ：  owner weight  
 func ModOwnerAttr(ownerAttrs *mtypes.OwnerAttrs, ownerAddr string, multiSigAddr string, weight uint64, newbatch db.Batch) {
 	index, find := getOwnerAttr(ownerAttrs, multiSigAddr)
 	if find {
@@ -368,10 +368,10 @@ func batchSet(ownerAttrs *mtypes.OwnerAttrs, addr string, newbatch db.Batch) {
 //delOwnerAttr :
 func delOwnerAttr(ownerAttrs *mtypes.OwnerAttrs, index int) *mtypes.OwnerAttrs {
 	ownerSize := len(ownerAttrs.Items)
-	/ owner
+	//     owner
 	if index == 0 {
 		ownerAttrs.Items = ownerAttrs.Items[1:]
-	} else if (ownerSize) == index+1 { / owner
+	} else if (ownerSize) == index+1 { //      owner
 		ownerAttrs.Items = ownerAttrs.Items[0 : ownerSize-1]
 	} else {
 		ownerAttrs.Items = append(ownerAttrs.Items[0:index], ownerAttrs.Items[index+1:]...)
@@ -395,7 +395,7 @@ func getOwnerAttr(ownerAttrs *mtypes.OwnerAttrs, multiSigAddr string) (int, bool
 	return 0, false
 }
 
-//  blockchai  
+//            ， blockchain            ，               
 func (policy *multisigPolicy) rescanOwnerAttrByAddr(addr string) {
 	beg := types.Now()
 	defer func() {
@@ -410,7 +410,7 @@ func (policy *multisigPolicy) rescanOwnerAttrByAddr(addr string) {
 
 	operater := policy.getWalletOperate()
 	cfg := policy.getWalletOperate().GetAPI().GetConfig()
-	/ 
+	//             
 	msg, err := operater.GetAPI().Query(cfg.ExecName(mtypes.MultiSigX), "MultiSigAccCount", &types.ReqNil{})
 	if err != nil {
 		bizlog.Error("rescanOwnerAttrByAddr Query MultiSigAccCount err", "MultiSigX", mtypes.MultiSigX, "addr", addr, "err", err)

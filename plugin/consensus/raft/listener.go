@@ -11,11 +11,13 @@ import (
 	"time"
 )
 
+//   TCP keep-alive  ，  stopc
 type stoppableListener struct {
 	*net.TCPListener
 	ctx context.Context
 }
 
+//   tcp  
 func newStoppableListener(ctx context.Context, addr string) (*stoppableListener, error) {
 	ln, err := net.Listen("tcp", addr)
 	if err != nil {

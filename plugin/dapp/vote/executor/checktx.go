@@ -9,7 +9,7 @@ import (
 	vty "github.com/33cn/plugin/plugin/dapp/vote/types"
 )
 
-// CheckTx  
+// CheckTx            ，     
 func (v *vote) CheckTx(tx *types.Transaction, index int) error {
 	// implement code
 
@@ -37,7 +37,7 @@ func (v *vote) CheckTx(tx *types.Transaction, index int) error {
 	}
 
 	if err != nil {
-		elog.Error("vote CheckTx", "txHash", txHash, "actionName", tx.ActionName(), "err", err, "actionData", action.String())
+		elog.Error("vote CheckTx", "txHash", txHash, "actionName", tx.ActionName(), "err", err, "actionData", action)
 	}
 	return err
 }
@@ -62,11 +62,11 @@ func (v *vote) checkCreateGroup(create *vty.CreateGroup) error {
 		return errEmptyName
 	}
 
-	/ 
+	//          
 	if err := checkMemberValidity(create.GetMembers()); err != nil {
 		return err
 	}
-	/ 
+	//          
 	if checkSliceItemDuplicate(create.GetAdmins()) {
 		return errDuplicateAdmin
 	}
@@ -85,7 +85,7 @@ func (v *vote) checkUpdateGroup(update *vty.UpdateGroup, tx *types.Transaction, 
 		return errAddrPermissionDenied
 	}
 
-	/ 
+	//          
 	if len(update.RemoveAdmins) >= len(groupInfo.GetAdmins()) && len(update.AddAdmins) == 0 {
 		return errAddrPermissionDenied
 	}
@@ -107,7 +107,7 @@ func (v *vote) checkUpdateGroup(update *vty.UpdateGroup, tx *types.Transaction, 
 		}
 	}
 
-	/ 
+	//          
 	for _, addr := range update.GetAddAdmins() {
 		if err := dapp.CheckAddress(v.GetAPI().GetConfig(), addr, v.GetHeight()); err != nil {
 			elog.Error("checkUpdateGroup", "addr", addr, "CheckAddress err", err)
@@ -150,6 +150,13 @@ func (v *vote) checkCommitVote(commit *vty.CommitVote, tx *types.Transaction, in
 	voteInfo, err := action.getVoteInfo(commit.GetVoteID())
 	if err != nil {
 		return err
+	}
+
+	if voteInfo.BeginTimestamp > action.blockTime {
+		return errVoteNotStarted
+	}
+	if voteInfo.EndTimestamp <= action.blockTime {
+		return errVoteAlreadyFinished
 	}
 
 	if voteInfo.Status == voteStatusClosed {

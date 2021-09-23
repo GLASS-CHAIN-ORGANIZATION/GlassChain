@@ -78,7 +78,7 @@ func (d *DownloadJob) isBusyPeer(pid string) bool {
 	d.mtx.Lock()
 	defer d.mtx.Unlock()
 	if pjob, ok := d.busyPeer[pid]; ok {
-		return atomic.LoadInt32(&pjob.limit) >= d.MaxJob / 1 
+		return atomic.LoadInt32(&pjob.limit) >= d.MaxJob //          10     
 	}
 	return false
 }
@@ -145,7 +145,7 @@ func (d *DownloadJob) setFreePeer(pid string) {
 	}
 }
 
-/ 
+//       
 func (d *DownloadJob) appendRetryItem(item *pb.Inventory) {
 	d.mtx.Lock()
 	defer d.mtx.Unlock()
@@ -157,7 +157,7 @@ func (d *DownloadJob) GetFreePeer(blockHeight int64) *Peer {
 	infos := d.p2pcli.network.node.nodeInfo.peerInfos.GetPeerInfos()
 	var minJobNum int32 = 10
 	var bestPeer *Peer
-	/ download pee 
+	// download peer        
 	for _, peer := range d.getDownloadPeers() {
 
 		peerName := peer.GetPeerName()
@@ -190,9 +190,9 @@ func (d *DownloadJob) DownloadBlock(invs []*pb.Inventory,
 		return nil
 	}
 
-	for _, inv := range invs { /   
+	for _, inv := range invs { //             ，      ，       
 
-		/   
+		//            ，             
 		freePeer := d.GetFreePeer(inv.GetHeight())
 		for freePeer == nil {
 			log.Debug("no free peer")
@@ -207,7 +207,7 @@ func (d *DownloadJob) DownloadBlock(invs []*pb.Inventory,
 			if err != nil {
 				d.removePeer(peer.GetPeerName())
 				log.Error("DownloadBlock:syncDownloadBlock", "height", inv.GetHeight(), "peer", peer.GetPeerName(), "err", err)
-				d.appendRetryItem(inv) /  ReDownloa 
+				d.appendRetryItem(inv) //     ，     ReDownload    
 
 			} else {
 				d.setFreePeer(peer.GetPeerName())
@@ -217,10 +217,10 @@ func (d *DownloadJob) DownloadBlock(invs []*pb.Inventory,
 
 	}
 
-	/ 
+	//      
 	d.wg.Wait()
 	retryInvs := d.retryItems
-	/ 
+	//     
 	if retryInvs.Len() > 0 {
 		d.retryItems = make([]*pb.Inventory, 0)
 		sort.Sort(retryInvs)
@@ -229,7 +229,7 @@ func (d *DownloadJob) DownloadBlock(invs []*pb.Inventory,
 }
 
 func (d *DownloadJob) syncDownloadBlock(peer *Peer, inv *pb.Inventory, bchan chan *pb.BlockPid) error {
-	/  bcha 
+	//           ，  bchan    
 	if peer == nil {
 		return fmt.Errorf("peer is not exist")
 	}
@@ -241,7 +241,7 @@ func (d *DownloadJob) syncDownloadBlock(peer *Peer, inv *pb.Inventory, bchan cha
 	p2pdata.Version = d.p2pcli.network.node.nodeInfo.channelVersion
 	p2pdata.Invs = []*pb.Inventory{inv}
 	ctx, cancel := context.WithCancel(context.Background())
-	/ grp , 
+	//    grpc ,       
 	defer cancel()
 	beg := pb.Now()
 	resp, err := peer.mconn.gcli.GetData(ctx, &p2pdata, grpc.FailFast(true))
@@ -259,13 +259,13 @@ func (d *DownloadJob) syncDownloadBlock(peer *Peer, inv *pb.Inventory, bchan cha
 		log.Error("syncDownloadBlock", "RecvData err", err.Error())
 		return err
 	}
-	/ 
+	//        
 	if invData == nil || len(invData.Items) != 1 {
 		return fmt.Errorf("InvalidRecvData")
 	}
 
 	block := invData.Items[0].GetBlock()
 	log.Debug("download", "frompeer", peer.Addr(), "blockheight", inv.GetHeight(), "blockSize", block.Size())
-	bchan <- &pb.BlockPid{Pid: peer.GetPeerName(), Block: block} / 
+	bchan <- &pb.BlockPid{Pid: peer.GetPeerName(), Block: block} //       
 	return nil
 }

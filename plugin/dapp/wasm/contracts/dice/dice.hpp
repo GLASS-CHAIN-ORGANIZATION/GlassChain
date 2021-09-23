@@ -27,8 +27,8 @@ struct gamestatus {
     bool is_active;
 };
 
-#ifdef __cplusplus /  __cplusplus cp ，
-extern "C" { / cp )  
+#ifdef __cplusplus //            ，     __cplusplus(    cpp  ，
+extern "C" { //  cpp         ),   C        
 #endif
 
 int startgame(int64_t amount);

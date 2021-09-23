@@ -11,18 +11,34 @@ import (
 	"github.com/33cn/plugin/plugin/dapp/evm/executor/vm/state"
 )
 
-
+// GasParam       Gas           Gas       
+//        ，       、   、Gas      
+//             
 type GasParam struct {
+	// Gas         Gas（            ）
 	Gas uint64
 
+	// Address            
+	//   ，     CallCode   ，                  ，        
 	Address common.Address
 }
 
+// EVMParam       Gas           EVM       
+//        ，       、Gas      
+//          StateDB CallGasTemp  ，     Gas       ：
+// 1.   EVM  EVMParam（   CallGasTemp ，      ）；
+// 2.  EVMParam   ，  Gas  ；
+// 3.      ，  EVMParam      EVM ；
 type EVMParam struct {
 
+	// EVMStateDB         
 	StateDB state.EVMStateDB
 
+	// CallGasTemp               Gas   
+	//       ，      gasCost  ，           Gas，          
+	//      opCall ，         Gas 
 	CallGasTemp uint64
 
+	// BlockNumber NUMBER   ，      
 	BlockNumber *big.Int
 }

@@ -11,12 +11,12 @@ import (
 	oty "github.com/33cn/plugin/plugin/dapp/oracle/types"
 )
 
-/ statedb 
+// statedb       
 func (o *oracle) Query_QueryOraclesByIDs(in *oty.QueryOracleInfos) (types.Message, error) {
 	return getOracleLisByIDs(o.GetStateDB(), in)
 }
 
-/ ids
+//      ids
 func (o *oracle) Query_QueryEventIDsByStatus(in *oty.QueryEventID) (types.Message, error) {
 	eventIds, err := getEventIDListByStatus(o.GetLocalDB(), in.Status, in.EventID)
 	if err != nil {
@@ -26,7 +26,7 @@ func (o *oracle) Query_QueryEventIDsByStatus(in *oty.QueryEventID) (types.Messag
 	return eventIds, nil
 }
 
-/   
+//           
 func (o *oracle) Query_QueryEventIDsByAddrAndStatus(in *oty.QueryEventID) (types.Message, error) {
 	eventIds, err := getEventIDListByAddrAndStatus(o.GetLocalDB(), in.Addr, in.Status, in.EventID)
 	if err != nil {
@@ -36,7 +36,7 @@ func (o *oracle) Query_QueryEventIDsByAddrAndStatus(in *oty.QueryEventID) (types
 	return eventIds, nil
 }
 
-/ 
+//         
 func (o *oracle) Query_QueryEventIDsByTypeAndStatus(in *oty.QueryEventID) (types.Message, error) {
 	eventIds, err := getEventIDListByTypeAndStatus(o.GetLocalDB(), in.Type, in.Status, in.EventID)
 	if err != nil {

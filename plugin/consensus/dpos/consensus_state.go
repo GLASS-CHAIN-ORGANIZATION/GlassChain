@@ -33,8 +33,10 @@ const (
 	voteSuccess    = 1
 	voteFail       = 2
 
+	//VrfQueryTypeM vrf query type    M  
 	VrfQueryTypeM = 0
 
+	//VrfQueryTypeRP vrf query type    RP  
 	VrfQueryTypeRP = 1
 )
 
@@ -74,10 +76,13 @@ type ConsensusState struct {
 	stopped          uint32 // atomic
 	Quit             chan struct{}
 
+	//    
 	dposState State
 
+	//    ，              
 	dposVotes []*dpostype.DPosVote
 
+	//         
 	currentVote *dpostype.VoteItem
 	lastVote    *dpostype.VoteItem
 
@@ -87,6 +92,7 @@ type ConsensusState struct {
 	notify     *dpostype.DPosNotify
 	lastNotify *dpostype.DPosNotify
 
+	//    ，              
 	cachedVotes []*dpostype.DPosVote
 
 	cachedNotify *dpostype.DPosNotify
@@ -271,6 +277,7 @@ func (cs *ConsensusState) handleTimeout() {
 	cs.mtx.Lock()
 	defer cs.mtx.Unlock()
 
+	//             
 	cs.dposState.timeOut(cs)
 }
 
@@ -367,10 +374,12 @@ func (cs *ConsensusState) AddVotes(vote *dpostype.DPosVote) {
 		}
 	}
 
+	//     ，      
 	if repeatFlag {
 		return
 	}
 
+	//     ，        ，     ;       ，       
 	if !addrExistFlag {
 		cs.dposVotes = append(cs.dposVotes, vote)
 	} else if vote.VoteTimestamp > cs.dposVotes[index].VoteTimestamp {
@@ -395,10 +404,12 @@ func (cs *ConsensusState) CacheVotes(vote *dpostype.DPosVote) {
 		}
 	}
 
+	//     ，      
 	if repeatFlag {
 		return
 	}
 
+	//     ，        ，     ;       ，       
 	if !addrExistFlag {
 		cs.cachedVotes = append(cs.cachedVotes, vote)
 	} else if vote.VoteTimestamp > cs.cachedVotes[index].VoteTimestamp {
@@ -410,6 +421,7 @@ func (cs *ConsensusState) CacheVotes(vote *dpostype.DPosVote) {
 func (cs *ConsensusState) CheckVotes() (ty int, vote *dpostype.VoteItem) {
 	major32 := int(dposDelegateNum * 2 / 3)
 
+	//       2/3，     
 	if len(cs.dposVotes) < major32 {
 		return continueToVote, nil
 	}
@@ -434,6 +446,7 @@ func (cs *ConsensusState) CheckVotes() (ty int, vote *dpostype.VoteItem) {
 		}
 	}
 
+	//             2/3，         2/3   
 	if value >= major32 {
 		for i := 0; i < len(cs.dposVotes); i++ {
 			if key == string(cs.dposVotes[i].VoteItem.VoteID) {
@@ -441,6 +454,7 @@ func (cs *ConsensusState) CheckVotes() (ty int, vote *dpostype.VoteItem) {
 			}
 		}
 	} else if (value + (int(dposDelegateNum) - len(cs.dposVotes))) < major32 {
+		//       ，          ，    2/3  ，      。
 		return voteFail, nil
 	}
 
@@ -790,6 +804,7 @@ func (cs *ConsensusState) SendCBTx(info *dty.DposCBInfo) bool {
 
 	cs.privValidator.SignTx(tx)
 	dposlog.Info("Sign RecordCBTx ok.")
+	//         ，                  
 	msg := cs.client.GetQueueClient().NewMessage("mempool", types.EventTx, tx)
 	err = cs.client.GetQueueClient().Send(msg, false)
 	if err != nil {
@@ -811,6 +826,7 @@ func (cs *ConsensusState) SendRegistVrfMTx(info *dty.DposVrfMRegist) bool {
 	}
 	cs.privValidator.SignTx(tx)
 	dposlog.Info("Sign RegistVrfMTx ok.")
+	//         ，                  
 	msg := cs.client.GetQueueClient().NewMessage("mempool", types.EventTx, tx)
 	err = cs.client.GetQueueClient().Send(msg, false)
 	if err != nil {
@@ -833,6 +849,7 @@ func (cs *ConsensusState) SendRegistVrfRPTx(info *dty.DposVrfRPRegist) bool {
 
 	cs.privValidator.SignTx(tx)
 	dposlog.Info("Sign RegVrfRPTx ok.")
+	//         ，                  
 	msg := cs.client.GetQueueClient().NewMessage("mempool", types.EventTx, tx)
 	err = cs.client.GetQueueClient().Send(msg, false)
 	if err != nil {
@@ -1019,6 +1036,7 @@ func (cs *ConsensusState) ShuffleValidators(cycle int64) {
 	}
 
 	if cycle == cs.validatorMgr.ShuffleCycle {
+		//       ，     ，     
 		dposlog.Info("Shuffle for this cycle is done already.", "cycle", cycle)
 		return
 	}
@@ -1080,6 +1098,7 @@ func (cs *ConsensusState) ShuffleValidators(cycle int64) {
 	cs.validatorMgr.ShuffleType = ShuffleTypePartVrf
 
 	for i := 0; i < len(set); i++ {
+		//        VrfValidators，        VRF  ，    NoVrfValidators 
 		if !isValidatorExist(set[i].PubKey, vrfValidators) {
 			item := &ttypes.Validator{
 				PubKey:  set[i].PubKey,
@@ -1150,6 +1169,7 @@ func (cs *ConsensusState) SendTopNRegistTx(reg *dty.TopNCandidatorRegist) bool {
 
 	cs.privValidator.SignTx(tx)
 	dposlog.Info("Sign TopNRegistTx ok.")
+	//         ，                  
 	msg := cs.client.GetQueueClient().NewMessage("mempool", types.EventTx, tx)
 	err = cs.client.GetQueueClient().Send(msg, false)
 	if err != nil {

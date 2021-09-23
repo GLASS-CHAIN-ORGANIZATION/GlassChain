@@ -8,12 +8,12 @@ import (
 )
 
 /*
- * 
- * 
+ *        
+ *         
  */
 
 var (
-	/ 
+	//  
 	elog = log.New("module", "x2ethereum.executor")
 )
 
@@ -52,9 +52,9 @@ func (x *x2ethereum) GetDriverName() string {
 	return driverName
 }
 
-// CheckTx  
+// CheckTx            ，     
 // todo
-// 
+//   
 func (x *x2ethereum) CheckTx(tx *types.Transaction, index int) error {
 	//var action x2ethereumtypes.X2EthereumAction
 	//err := types.Decode(tx.Payload, &action)

@@ -360,14 +360,14 @@ func (b *btcdClient) GetTransaction(hash string) (*ty.BtcTransaction, error) {
 	for index, in := range tx.Vin {
 		var v ty.Vin
 		// v.Address = in.
-		v.Value = uint64(float64(in.Vout) * coinsPrecision)
+		v.Value = uint64(in.Vout) * 1e8
 		vin[index] = &v
 	}
 	btxTx.Vin = vin
 	vout := make([]*ty.Vout, len(tx.Vout))
 	for index, in := range tx.Vout {
 		var out ty.Vout
-		out.Value = uint64(in.Value * coinsPrecision)
+		out.Value = uint64(in.Value) * 1e8
 		out.Address = in.ScriptPubKey.Addresses[0]
 		vout[index] = &out
 	}

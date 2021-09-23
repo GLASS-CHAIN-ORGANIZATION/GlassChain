@@ -6,8 +6,13 @@ import (
 	"github.com/33cn/chain33/types"
 )
 
+/*
+ *         
+ *   action      log  ，          
+ *    action log   id   name      
+ */
 
-
+// action  id name，           
 const (
 	TyUnknowAction = iota + 100
 	TyRegisterAction
@@ -29,6 +34,7 @@ const (
 	FuncNameQueryBalanceByID      = "QueryBalanceByID"
 )
 
+// log  id 
 const (
 	TyUnknownLog = iota + 100
 	TyRegisterLog
@@ -38,6 +44,7 @@ const (
 	TyApplyLog
 )
 
+//  
 const (
 	Normal = int32(iota)
 	Frozen
@@ -68,11 +75,14 @@ const (
 	ListSeek = int32(2)
 )
 const (
+	//Count   list    
 	Count = int32(10)
 )
 
 var (
+	//AccountmanagerX        
 	AccountmanagerX = "accountmanager"
+	//  actionMap
 	actionMap = map[string]int32{
 		NameRegisterAction:  TyRegisterAction,
 		NameResetAction:     TyResetAction,
@@ -80,6 +90,7 @@ var (
 		NameTransferAction:  TyTransferAction,
 		NameSuperviseAction: TySuperviseAction,
 	}
+	//  log id   log     ，       log  
 	logMap = map[int64]*types.LogInfo{
 		TyRegisterLog:  {Ty: reflect.TypeOf(AccountReceipt{}), Name: "TyRegisterLog"},
 		TyResetLog:     {Ty: reflect.TypeOf(TransferReceipt{}), Name: "TyResetLog"},
@@ -93,6 +104,7 @@ var (
 // init defines a register function
 func init() {
 	types.AllowUserExec = append(types.AllowUserExec, []byte(AccountmanagerX))
+	//        
 	types.RegFork(AccountmanagerX, InitFork)
 	types.RegExec(AccountmanagerX, InitExecutor)
 }
@@ -120,14 +132,17 @@ func NewType(cfg *types.Chain33Config) *AccountmanagerType {
 	return c
 }
 
+// GetPayload     action  
 func (a *AccountmanagerType) GetPayload() types.Message {
 	return &AccountmanagerAction{}
 }
 
+// GetTypeMap     action id name  
 func (a *AccountmanagerType) GetTypeMap() map[string]int32 {
 	return actionMap
 }
 
+// GetLogMap     log    
 func (a *AccountmanagerType) GetLogMap() map[int64]*types.LogInfo {
 	return logMap
 }

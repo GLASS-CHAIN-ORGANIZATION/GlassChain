@@ -1,39 +1,39 @@
-# 
-   
+#              
+>                    ，      ，           
 
-## 
-1.  
-1. 2/ 
+##       
+1.                            ，            
+1.                    2/3                
 
-## 
-1.  
-1.  A,B,C,D A,B,C，  2/    A,B,C   
+##         
+1.                          ，                    
+1.         4     A,B,C,D，  A,B,C，D         ，    2/3   ， C             ，       A,B,C， D          ，       
 
-##  )
-1.   coin paracros  
-1. 
-1. coin 
-1.  
-1. bin coins coin  unbin 
+##         （     )
+1.           ，         ，         coins paracross  ，            
+1.                       
+1.        coins            
+1.                      ，               
+1.         bind   coins              coins  ，    unbind              
 
-## 
- 
+##        
+>          
 ```
     [mver.consensus.paracross]
-     
+    #        
     coinReward=18
-     
+    #      
     coinDevFund=12
-      coinBaseReward (coinReward-coinBaseReward 
+    #              ，       coinBaseReward，    (coinReward-coinBaseReward)         
     coinBaseReward=3
-      )
+    #           (   )
     unBindTime=24
 ```
-1. coinDevFund+coinReward=30  12 1 coi 
-1.  coinBaseReward (coinReward-coinBaseReward 。
+1.                  coinDevFund+coinReward=30，     ，        12，   18 coin           
+1.                      ，          coinBaseReward，    (coinReward-coinBaseReward)                      。
 
-## 
-1.      ）
+##       
+1.      /          （   ）
 
     ```
     {
@@ -52,15 +52,15 @@
     }
     ```
 
-    * ：**
+    **    ：**
 
-       |
+    |  |  |  |
     |----|----|----|
     |method|string|Chain33.CreateTransaction|
-    |execer|string user.p.para.paracross,title:user.p.para |
+    |execer|string|          user.p.para.paracross,title:user.p.para.    |
     |actionName|string|ParaBindMiner|
-    |bindAction|string :1 :2|
-    |bindCoins|int   |
-    |targetNode|string  |
+    |bindAction|string|  :1，   :2|
+    |bindCoins|int|          ，          ，         |
+    |targetNode|string|        ，           |
 
 

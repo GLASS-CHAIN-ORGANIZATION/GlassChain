@@ -46,6 +46,7 @@ func NewType(cfg *types.Chain33Config) *LotteryType {
 	return c
 }
 
+// GetName        
 func (lottery *LotteryType) GetName() string {
 	return LotteryX
 }

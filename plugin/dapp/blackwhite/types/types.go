@@ -39,10 +39,12 @@ func InitExecutor(cfg *types.Chain33Config) {
 	types.RegistorExecutor(BlackwhiteX, NewType(cfg))
 }
 
+// BlackwhiteType         
 type BlackwhiteType struct {
 	types.ExecTypeBase
 }
 
+// NewType        
 func NewType(cfg *types.Chain33Config) *BlackwhiteType {
 	c := &BlackwhiteType{}
 	c.SetChild(c)
@@ -50,22 +52,27 @@ func NewType(cfg *types.Chain33Config) *BlackwhiteType {
 	return c
 }
 
+// GetPayload   blackwhite action
 func (b *BlackwhiteType) GetPayload() types.Message {
 	return &BlackwhiteAction{}
 }
 
+// GetName        
 func (b *BlackwhiteType) GetName() string {
 	return BlackwhiteX
 }
 
+// GetLogMap   log       
 func (b *BlackwhiteType) GetLogMap() map[int64]*types.LogInfo {
 	return logInfo
 }
 
+// GetTypeMap   action name  type
 func (b *BlackwhiteType) GetTypeMap() map[string]int32 {
 	return actionName
 }
 
+// ActionName      payLoad  blackwhite action name
 func (b BlackwhiteType) ActionName(tx *types.Transaction) string {
 	var g BlackwhiteAction
 	err := types.Decode(tx.Payload, &g)
@@ -89,6 +96,8 @@ func (b BlackwhiteType) Amount(tx *types.Transaction) (int64, error) {
 	return 0, nil
 }
 
+// CreateTx ...
+// TODO        ，         
 func (b BlackwhiteType) CreateTx(action string, message json.RawMessage) (*types.Transaction, error) {
 	glog.Debug("Blackwhite.CreateTx", "action", action)
 	var tx *types.Transaction

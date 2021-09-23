@@ -13,7 +13,7 @@ func init() {
 	drivers.Reg("para", New)
 }
 
-//New price cache  mempool
+//New   price cache     mempool
 func New(cfg *types.Mempool, sub []byte) queue.Module {
 	return NewMempool(cfg)
 }

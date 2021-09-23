@@ -146,8 +146,8 @@ func (e *Paracross) ExecLocal_NodeGroupConfig(payload *pt.ParaNodeGroupConfig, t
 func (e *Paracross) ExecLocal_AssetTransfer(payload *types.AssetsTransfer, tx *types.Transaction, receiptData *types.ReceiptData, index int) (*types.LocalDBSet, error) {
 	var set types.LocalDBSet
 
-	//  ，
-	//   commit done ， t 
+	//        ，
+	//      commit done    ，            tx  
 	asset, err := e.getAssetTransferInfo(tx, payload.Cointoken, false)
 	if err != nil {
 		return nil, err
@@ -175,8 +175,8 @@ func (e *Paracross) ExecLocal_CrossAssetTransfer(payload *pt.CrossAssetTransfer,
 		clog.Crit("local CrossAssetTransfer getCrossAction failed", "error", err)
 		return nil, err
 	}
-	//  ，
-	//   commit done 
+	//              ，
+	//              commit done    
 	if !cfg.IsPara() && (act == pt.ParacrossMainAssetWithdraw || act == pt.ParacrossParaAssetTransfer) {
 		return nil, nil
 	}
@@ -199,7 +199,7 @@ func setMinerTxResult(cfg *types.Chain33Config, payload *pt.ParacrossMinerAction
 	for _, tx := range txs {
 		hash := tx.Hash()
 		curTxHashs = append(curTxHashs, hash)
-		/ user.p.xx.paracross ,actionTy==commit t 
+		// user.p.xx.paracross ,actionTy==commit  tx        
 		if cfg.IsMyParaExecName(string(tx.Execer)) && bytes.HasSuffix(tx.Execer, []byte(pt.ParaX)) {
 			var payload pt.ParacrossAction
 			err := types.Decode(tx.Payload, &payload)
@@ -211,7 +211,7 @@ func setMinerTxResult(cfg *types.Chain33Config, payload *pt.ParacrossMinerAction
 				isCommitTx[string(hash)] = true
 			}
 		}
-		/  
+		//           ，      
 		if cfg.IsMyParaExecName(string(tx.Execer)) && !isCommitTx[string(hash)] {
 			paraTxHashs = append(paraTxHashs, hash)
 		}
@@ -250,20 +250,20 @@ func setMinerTxResultFork(cfg *types.Chain33Config, status *pt.ParacrossNodeStat
 		}
 	}
 
-	/ t user.p.x.paracros commit t 0
+	// tx    user.p.x.paracross commit tx    0
 	status.NonCommitTxCounts = 1
 	if len(curTxHashs) != 0 && len(curTxHashs) == len(isCommitTx) {
 		status.NonCommitTxCounts = 0
 	}
 
-	/ tx， t  tx map
-	/ t 
+	//         tx，          tx      ，                tx map
+	//     tx  
 	status.TxResult = []byte(hex.EncodeToString(util.CalcSingleBitMap(curTxHashs, receipts)))
 	clog.Debug("setMinerTxResultFork", "height", status.Height, "txResult", string(status.TxResult))
 
-	//ForkLoopCheckCommitTxDone txreseult 
+	//ForkLoopCheckCommitTxDone       txreseult   
 	if !pt.IsParaForkHeight(cfg, status.MainBlockHeight, pt.ForkLoopCheckCommitTxDone) {
-		/ t 
+		//  tx  
 		crossTxHashs := FilterParaCrossTxHashes(txs)
 		status.CrossTxResult = []byte(hex.EncodeToString(util.CalcBitMap(crossTxHashs, curTxHashs, receipts)))
 		status.TxHashs = [][]byte{CalcTxHashsHash(curTxHashs)}

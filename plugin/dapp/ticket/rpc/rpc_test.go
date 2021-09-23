@@ -42,7 +42,7 @@ func TestChannelClient_BindMiner(t *testing.T) {
 	head := &types.Header{Height: 2, StateHash: []byte("sdfadasds")}
 	api.On("GetLastHeader").Return(head, nil).Times(4)
 
-	var acc = &types.Account{Addr: "1Jn2qu84Z1SUUosWjySggBS9pKWdAP3tZt", Balance: 100000 * types.DefaultCoinPrecision}
+	var acc = &types.Account{Addr: "1Jn2qu84Z1SUUosWjySggBS9pKWdAP3tZt", Balance: 100000 * types.Coin}
 	accv := types.Encode(acc)
 	storevalue := &types.StoreReplyValue{}
 	storevalue.Values = append(storevalue.Values, accv)
@@ -53,7 +53,7 @@ func TestChannelClient_BindMiner(t *testing.T) {
 	var in = &ty.ReqBindMiner{
 		BindAddr:     "1Jn2qu84Z1SUUosWjySggBS9pKWdAP3tZt",
 		OriginAddr:   "1Jn2qu84Z1SUUosWjySggBS9pKWdAP3tZt",
-		Amount:       10000 * types.DefaultCoinPrecision,
+		Amount:       10000 * types.Coin,
 		CheckBalance: false,
 	}
 	_, err := client.CreateBindMiner(context.Background(), in)
@@ -62,7 +62,7 @@ func TestChannelClient_BindMiner(t *testing.T) {
 	var in2 = &ty.ReqBindMiner{
 		BindAddr:     "",
 		OriginAddr:   "1Jn2qu84Z1SUUosWjySggBS9pKWdAP3tZt",
-		Amount:       10000 * types.DefaultCoinPrecision,
+		Amount:       10000 * types.Coin,
 		CheckBalance: false,
 	}
 	_, err = client.CreateBindMiner(context.Background(), in2)
@@ -140,7 +140,7 @@ func TestJrpc_GetTicketCount(t *testing.T) {
 
 func TestRPC_CallTestNode(t *testing.T) {
 	cfg := types.NewChain33Config(types.GetDefaultCfgstring())
-	//  solo 
+	//      ，        solo，    
 	cfg.GetModuleConfig().Consensus.Name = "ticket"
 
 	api := new(mocks.QueueProtocolAPI)
@@ -178,7 +178,7 @@ func TestRPC_CallTestNode(t *testing.T) {
 	assert.Equal(t, ret.GetIsOk(), isSnyc)
 
 	flag := &ty.MinerFlag{Flag: 1}
-	/ ticket.AutoMiner
+	//  ticket.AutoMiner
 	api.On("ExecWalletFunc", "ticket", "WalletAutoMiner", flag).Return(&types.Reply{IsOk: true}, nil)
 	var res rpctypes.Reply
 	err = jsonClient.Call("ticket.SetAutoMining", flag, &res)
@@ -275,143 +275,10 @@ ForkRootHash=1
 [fork.sub.coins]
 Enable=0
 
-[fork.sub.coinsx]
-Enable=0
-
-[fork.sub.ticket]
-Enable=0
-ForkTicketId =0
-ForkTicketVrf =0
-
-[fork.sub.retrieve]
-Enable=0
-ForkRetrive=0
-ForkRetriveAsset=0
-
-[fork.sub.hashlock]
-Enable=0
-ForkBadRepeatSecret=0
-
 [fork.sub.manage]
 Enable=0
 ForkManageExec=100000
 
-[fork.sub.token]
-Enable=0
-ForkTokenBlackList= 0
-ForkBadTokenSymbol= 0
-ForkTokenPrice=0
-ForkTokenSymbolWithNumber=0
-ForkTokenCheck= 0
-
-[fork.sub.trade]
-Enable=0
-ForkTradeBuyLimit= 0
-ForkTradeAsset= 0
-ForkTradeID = 0
-ForkTradeFixAssetDB = 0
-ForkTradePrice = 0
-
-[fork.sub.paracross]
-Enable=0
-ForkParacrossWithdrawFromParachain=0
-ForkParacrossCommitTx=0
-ForkLoopCheckCommitTxDone=0
-   0 720000   selfConsensEnablePreContrac 
-ForkParaSelfConsStages=0
-ForkParaAssetTransferRbk=0
-        
-ForkParaFullMinerHeight=0
-
-[fork.sub.evm]
-Enable=0
-ForkEVMState=0
-ForkEVMABI=0
-ForkEVMFrozen=0
-ForkEVMKVHash=0
-ForkEVMYoloV1=0
-ForkEVMTxGroup=0
-
-[fork.sub.blackwhite]
-Enable=0
-ForkBlackWhiteV2=0
-
-[fork.sub.cert]
-Enable=0
-
-[fork.sub.guess]
-Enable=0
-
-[fork.sub.lottery]
-Enable=0
-
-[fork.sub.oracle]
-Enable=0
-
-[fork.sub.relay]
-Enable=0
-
-[fork.sub.norm]
-Enable=0
-
-[fork.sub.pokerbull]
-Enable=0
-
-[fork.sub.privacy]
-Enable=0
-
-[fork.sub.game]
-Enable=0
-
-[fork.sub.vote]
-Enable=0
-
-[fork.sub.accountmanager]
-Enable=0
-
-[fork.sub.exchange]
-Enable=0
-
-[fork.sub.wasm]
-Enable=0
-
-[fork.sub.valnode]
-Enable=0
-[fork.sub.dpos]
-Enable=0
-[fork.sub.echo]
-Enable=0
-[fork.sub.storage]
-Enable=0
-ForkStorageLocalDB=0
-
-
-[fork.sub.multisig]
-Enable=0
-
-[fork.sub.unfreeze]
-Enable=0
-ForkTerminatePart=0
-ForkUnfreezeIDX= 0
-
-[fork.sub.autonomy]
-Enable=0
-
-[fork.sub.jsvm]
-Enable=0
-
-[fork.sub.issuance]
-Enable=0
-ForkIssuanceTableUpdate=0
-
-[fork.sub.collateralize]
-Enable=0
-ForkCollateralizeTableUpdate=0
-
-[fork.sub.qbftNode]
-Enable=0
-
-   kvmvccmav fork  ，statehas mav 
 [fork.sub.store-kvmvccmavl]
 ForkKvmvccmavl=1
 

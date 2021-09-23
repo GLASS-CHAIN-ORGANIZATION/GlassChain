@@ -51,7 +51,7 @@ func (a *action) procEth2Chain33_lock(ethBridgeClaim *x2eTy.Eth2Chain33) (*types
 
 	ID := strconv.Itoa(int(ethBridgeClaim.EthereumChainID)) + strconv.Itoa(int(ethBridgeClaim.Nonce)) + ethBridgeClaim.EthereumSender + ethBridgeClaim.TokenContractAddress + "lock"
 
-	/ ethProphecy
+	//  ethProphecy
 	bz, err := a.db.Get(x2eTy.CalProphecyPrefix(ID))
 	if err != nil {
 		return nil, x2eTy.ErrProphecyGet
@@ -71,7 +71,7 @@ func (a *action) procEth2Chain33_lock(ethBridgeClaim *x2eTy.Eth2Chain33) (*types
 
 	if status.Text == x2eTy.EthBridgeStatus_SuccessStatusText {
 		// mavl-x2ethereum-eth+tokenAddress
-		// tokensymbo tokenAddres 
+		//         tokensymbol  tokenAddress      
 		accDB, err := account.NewAccountDB(a.api.GetConfig(), x2eTy.X2ethereumX, strings.ToLower(ethBridgeClaim.IssuerDotSymbol+ethBridgeClaim.TokenContractAddress), a.db)
 		if err != nil {
 			return nil, errors.Wrapf(err, "relay procMsgEth2Chain33,exec=%s,sym=%s", x2eTy.X2ethereumX, ethBridgeClaim.IssuerDotSymbol)
@@ -84,7 +84,7 @@ func (a *action) procEth2Chain33_lock(ethBridgeClaim *x2eTy.Eth2Chain33) (*types
 		receipt.KV = append(receipt.KV, r.KV...)
 		receipt.Logs = append(receipt.Logs, r.Logs...)
 
-		/ loc 
+		//    lock   
 		msgEthBridgeClaimBytes := types.Encode(ethBridgeClaim)
 
 		receipt.KV = append(receipt.KV, &types.KeyValue{Key: x2eTy.CalEth2Chain33Prefix(), Value: msgEthBridgeClaimBytes})
@@ -114,7 +114,7 @@ func (a *action) procEth2Chain33_lock(ethBridgeClaim *x2eTy.Eth2Chain33) (*types
 }
 
 // chain33 -> ethereum
-// chain3 erc2 
+//    chain33    erc20  
 func (a *action) procChain33ToEth_burn(msgBurn *x2eTy.Chain33ToEth) (*types.Receipt, error) {
 	receipt, err := a.checkConsensusThreshold()
 	if err != nil {
@@ -211,7 +211,7 @@ func (a *action) procEth2Chain33_burn(withdrawEth *x2eTy.Eth2Chain33) (*types.Re
 
 	ID := strconv.Itoa(int(withdrawEth.EthereumChainID)) + strconv.Itoa(int(withdrawEth.Nonce)) + withdrawEth.EthereumSender + withdrawEth.TokenContractAddress + "burn"
 
-	/ ethProphecy
+	//  ethProphecy
 	bz, err := a.db.Get(x2eTy.CalProphecyPrefix(ID))
 	if err != nil {
 		return nil, x2eTy.ErrProphecyGet
@@ -351,9 +351,9 @@ func (a *action) procMsgWithDrawFromExec(msgWithdrawFromExec *types.AssetsWithdr
 	return receipt, nil
 }
 
-/ validator
-/ validato powe 1 
-/ ，K validato powe ，Lo validato powe 
+//         validator
+//     validator power      1，         
+//      ，KV    validator power ，Log        validator power 
 func (a *action) procAddValidator(msgAddValidator *x2eTy.MsgValidator) (*types.Receipt, error) {
 	elog.Info("procAddValidator", "start", msgAddValidator)
 

@@ -8,6 +8,7 @@ import (
 	"github.com/33cn/chain33/types"
 )
 
+// ExecDelLocal       ，    
 func (a *Autonomy) ExecDelLocal(tx *types.Transaction, receipt *types.ReceiptData, index int) (*types.LocalDBSet, error) {
 	return a.execAutoDelLocal(tx, receipt)
 }

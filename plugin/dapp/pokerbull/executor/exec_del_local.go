@@ -39,17 +39,17 @@ func (g *PokerBull) execDelLocal(receiptData *types.ReceiptData) (*types.LocalDB
 	return dbSet, nil
 }
 
-// ExecDelLocal_Start 
+// ExecDelLocal_Start         
 func (g *PokerBull) ExecDelLocal_Start(payload *pkt.PBGameStart, tx *types.Transaction, receiptData *types.ReceiptData, index int) (*types.LocalDBSet, error) {
 	return g.execDelLocal(receiptData)
 }
 
-// ExecDelLocal_Continue 
+// ExecDelLocal_Continue         
 func (g *PokerBull) ExecDelLocal_Continue(payload *pkt.PBGameContinue, tx *types.Transaction, receiptData *types.ReceiptData, index int) (*types.LocalDBSet, error) {
 	return g.execDelLocal(receiptData)
 }
 
-// ExecDelLocal_Quit 
+// ExecDelLocal_Quit         
 func (g *PokerBull) ExecDelLocal_Quit(payload *pkt.PBGameQuit, tx *types.Transaction, receiptData *types.ReceiptData, index int) (*types.LocalDBSet, error) {
 	return g.execDelLocal(receiptData)
 }

@@ -31,20 +31,20 @@ func (p *privacy) execDelLocal(tx *types.Transaction, receiptData *types.Receipt
 		txhashInByte := tx.Hash()
 		txhash := common.ToHex(txhashInByte)
 		for m, keyOutput := range receiptPrivacyOutput.Keyoutput {
-			//kv1 UTXO toke   txhas UTXO
+			//kv1，       UTXO，          token      ，     ，  txhash UTXO
 			key := CalcPrivacyUTXOkeyHeight(assetExec, assetSymbol, keyOutput.Amount, p.GetHeight(), txhash, i, m)
 			kv := &types.KeyValue{Key: key, Value: nil}
 			dbSet.KV = append(dbSet.KV, kv)
 
-			//kv2 k  UTXO
+			//kv2，         kv  ，                        UTXO
 			var amountTypes ty.AmountsOfUTXO
 			key2 := CalcprivacyKeyTokenAmountType(assetExec, assetSymbol)
 			value2, err := localDB.Get(key2)
-			/ toke 
+			//    token           
 			if err == nil && value2 != nil {
 				err := types.Decode(value2, &amountTypes)
 				if err == nil {
-					/  
+					//              ，     
 					if count, ok := amountTypes.AmountMap[keyOutput.Amount]; ok {
 						count--
 						if 0 == count {
@@ -56,13 +56,13 @@ func (p *privacy) execDelLocal(tx *types.Transaction, receiptData *types.Receipt
 						value2 := types.Encode(&amountTypes)
 						kv := &types.KeyValue{Key: key2, Value: value2}
 						dbSet.KV = append(dbSet.KV, kv)
-						/ quer  amou kv 
+						//    query       ，           amout       kv,        
 						localDB.Set(key2, nil)
 					}
 				}
 			}
 
-			//kv3 toke 
+			//kv3,        token   
 			assetKey := calcExecLocalAssetKey(assetExec, assetSymbol)
 			var tokenNames ty.TokenNamesOfUTXO
 			key3 := CalcprivacyKeyTokenTypes()

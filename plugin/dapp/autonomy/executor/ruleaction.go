@@ -14,20 +14,30 @@ import (
 )
 
 const (
+	//         
 	minBoardApproveRatio = 50
+	//         
 	maxBoardApproveRatio = 66
+	//           
 	minPubOpposeRatio = 33
+	//           
 	maxPubOpposeRatio = 50
+	//       
 	minPublicPeriod int32 = 17280 * 7
+	//       
 	maxPublicPeriod int32 = 17280 * 14
-	minLargeProjectAmount = 100 * 10000
-	maxLargeProjectAmount = 300 * 10000
-	minProposalAmount = 20
-	maxProposalAmount = 2000
+	//         
+	minLargeProjectAmount = types.Coin * 100 * 10000
+	//         
+	maxLargeProjectAmount = types.Coin * 300 * 10000
+	//      
+	minProposalAmount = types.Coin * 20
+	//      
+	maxProposalAmount = types.Coin * 2000
 )
 
 func (a *action) propRule(prob *auty.ProposalRule) (*types.Receipt, error) {
-	cfg := a.api.GetConfig()
+	//       0,             
 	if prob.RuleCfg == nil || prob.RuleCfg.BoardApproveRatio <= 0 && prob.RuleCfg.PubOpposeRatio <= 0 &&
 		prob.RuleCfg.ProposalAmount <= 0 && prob.RuleCfg.LargeProjectAmount <= 0 && prob.RuleCfg.PublicPeriod <= 0 {
 		alog.Error("propRule ", "ProposalRule RuleCfg invaild or have no modify param", prob.RuleCfg)
@@ -36,8 +46,8 @@ func (a *action) propRule(prob *auty.ProposalRule) (*types.Receipt, error) {
 	if (prob.RuleCfg.BoardApproveRatio > 0 && (prob.RuleCfg.BoardApproveRatio > maxBoardApproveRatio || prob.RuleCfg.BoardApproveRatio < minBoardApproveRatio)) ||
 		(prob.RuleCfg.PubOpposeRatio > 0 && (prob.RuleCfg.PubOpposeRatio > maxPubOpposeRatio || prob.RuleCfg.PubOpposeRatio < minPubOpposeRatio)) ||
 		(prob.RuleCfg.PublicPeriod > 0 && (prob.RuleCfg.PublicPeriod > maxPublicPeriod || prob.RuleCfg.PublicPeriod < minPublicPeriod)) ||
-		(prob.RuleCfg.LargeProjectAmount > 0 && (prob.RuleCfg.LargeProjectAmount > maxLargeProjectAmount*cfg.GetCoinPrecision() || prob.RuleCfg.LargeProjectAmount < minLargeProjectAmount*cfg.GetCoinPrecision())) ||
-		(prob.RuleCfg.ProposalAmount > 0 && (prob.RuleCfg.ProposalAmount > maxProposalAmount*cfg.GetCoinPrecision() || prob.RuleCfg.ProposalAmount < minProposalAmount*cfg.GetCoinPrecision())) {
+		(prob.RuleCfg.LargeProjectAmount > 0 && (prob.RuleCfg.LargeProjectAmount > maxLargeProjectAmount || prob.RuleCfg.LargeProjectAmount < minLargeProjectAmount)) ||
+		(prob.RuleCfg.ProposalAmount > 0 && (prob.RuleCfg.ProposalAmount > maxProposalAmount || prob.RuleCfg.ProposalAmount < minProposalAmount)) {
 		alog.Error("propRule RuleCfg invaild", "ruleCfg", prob.RuleCfg)
 		return nil, types.ErrInvalidParam
 	}
@@ -49,6 +59,7 @@ func (a *action) propRule(prob *auty.ProposalRule) (*types.Receipt, error) {
 		return nil, auty.ErrSetBlockHeight
 	}
 
+	//           ,           
 	rule, err := a.getActiveRule()
 	if err != nil {
 		alog.Error("propRule ", "addr", a.fromaddr, "execaddr", a.execaddr, "getActiveRule failed", err)
@@ -97,6 +108,7 @@ func (a *action) rvkPropRule(rvkProb *auty.RevokeProposalRule) (*types.Receipt, 
 	}
 	pre := copyAutonomyProposalRule(cur)
 
+	//       
 	if cur.Status != auty.AutonomyStatusProposalRule {
 		err := auty.ErrProposalStatus
 		alog.Error("rvkPropRule ", "addr", a.fromaddr, "status", cur.Status, "status is not match",
@@ -149,6 +161,7 @@ func (a *action) votePropRule(voteProb *auty.VoteProposalRule) (*types.Receipt, 
 	}
 	pre := copyAutonomyProposalRule(cur)
 
+	//       
 	if cur.Status == auty.AutonomyStatusRvkPropRule ||
 		cur.Status == auty.AutonomyStatusTmintPropRule {
 		err := auty.ErrProposalStatus
@@ -174,6 +187,7 @@ func (a *action) votePropRule(voteProb *auty.VoteProposalRule) (*types.Receipt, 
 				return nil, types.ErrInvalidAddress
 			}
 		}
+		//       
 		addr, err := a.verifyMinerAddr(voteProb.OriginAddr, a.fromaddr)
 		if err != nil {
 			alog.Error("votePropRule ", "from addr", a.fromaddr, "error addr", addr, "ProposalID",
@@ -182,6 +196,7 @@ func (a *action) votePropRule(voteProb *auty.VoteProposalRule) (*types.Receipt, 
 		}
 	}
 
+	//         
 	var addrs []string
 	if len(voteProb.OriginAddr) == 0 {
 		addrs = append(addrs, a.fromaddr)
@@ -189,15 +204,17 @@ func (a *action) votePropRule(voteProb *auty.VoteProposalRule) (*types.Receipt, 
 		addrs = append(addrs, voteProb.OriginAddr...)
 	}
 
+	//           
 	votes, err := a.checkVotesRecord(addrs, votesRecord(voteProb.ProposalID))
 	if err != nil {
 		alog.Error("votePropRule ", "addr", a.fromaddr, "execaddr", a.execaddr, "checkVotesRecord failed",
 			voteProb.ProposalID, "err", err)
 		return nil, err
 	}
+	//       
 	votes.Address = append(votes.Address, addrs...)
 
-	if cur.GetVoteResult().TotalVotes == 0 { 
+	if cur.GetVoteResult().TotalVotes == 0 { //      
 		vtCouts, err := a.getTotalVotes(start)
 		if err != nil {
 			return nil, err
@@ -205,6 +222,7 @@ func (a *action) votePropRule(voteProb *auty.VoteProposalRule) (*types.Receipt, 
 		cur.VoteResult.TotalVotes = vtCouts
 	}
 
+	//       
 	vtCouts, err := a.batchGetAddressVotes(addrs, start)
 	if err != nil {
 		alog.Error("votePropRule ", "addr", a.fromaddr, "execaddr", a.execaddr, "batchGetAddressVotes failed",
@@ -220,6 +238,7 @@ func (a *action) votePropRule(voteProb *auty.VoteProposalRule) (*types.Receipt, 
 	var logs []*types.ReceiptLog
 	var kv []*types.KeyValue
 
+	//        ,             
 	if cur.Status == auty.AutonomyStatusProposalRule {
 		receipt, err := a.coinsAccount.ExecTransferFrozen(cur.Address, a.execaddr, a.execaddr, cur.CurRule.ProposalAmount)
 		if err != nil {
@@ -245,8 +264,10 @@ func (a *action) votePropRule(voteProb *auty.VoteProposalRule) (*types.Receipt, 
 	}
 	kv = append(kv, &types.KeyValue{Key: key, Value: types.Encode(cur)})
 
+	//   VotesRecord
 	kv = append(kv, &types.KeyValue{Key: votesRecord(voteProb.ProposalID), Value: types.Encode(votes)})
 
+	//       
 	if cur.VoteResult.Pass {
 		upRule := upgradeRule(cur.CurRule, cur.PropRule.RuleCfg)
 		kv = append(kv, &types.KeyValue{Key: activeRuleID(), Value: types.Encode(upRule)})
@@ -272,6 +293,7 @@ func (a *action) tmintPropRule(tmintProb *auty.TerminateProposalRule) (*types.Re
 
 	pre := copyAutonomyProposalRule(cur)
 
+	//       
 	if cur.Status == auty.AutonomyStatusTmintPropRule ||
 		cur.Status == auty.AutonomyStatusRvkPropRule {
 		err := auty.ErrProposalStatus
@@ -289,7 +311,7 @@ func (a *action) tmintPropRule(tmintProb *auty.TerminateProposalRule) (*types.Re
 		return nil, err
 	}
 
-	if cur.GetVoteResult().TotalVotes == 0 { 
+	if cur.GetVoteResult().TotalVotes == 0 { //      
 		vtCouts, err := a.getTotalVotes(start)
 		if err != nil {
 			return nil, err
@@ -308,6 +330,7 @@ func (a *action) tmintPropRule(tmintProb *auty.TerminateProposalRule) (*types.Re
 	var logs []*types.ReceiptLog
 	var kv []*types.KeyValue
 
+	//         ，                
 	if cur.Status == auty.AutonomyStatusProposalRule {
 		receipt, err := a.coinsAccount.ExecTransferFrozen(cur.Address, a.execaddr, a.execaddr, cur.CurRule.ProposalAmount)
 		if err != nil {
@@ -323,6 +346,7 @@ func (a *action) tmintPropRule(tmintProb *auty.TerminateProposalRule) (*types.Re
 
 	kv = append(kv, &types.KeyValue{Key: propRuleID(tmintProb.ProposalID), Value: types.Encode(cur)})
 
+	//       
 	if cur.VoteResult.Pass {
 		upRule := upgradeRule(cur.CurRule, cur.PropRule.RuleCfg)
 		kv = append(kv, &types.KeyValue{Key: activeRuleID(), Value: types.Encode(upRule)})
@@ -387,7 +411,8 @@ func (a *action) getProposalRule(ID string) (*auty.AutonomyProposalRule, error) 
 	return cur, nil
 }
 
-
+// getReceiptLog         log
+//     ：
 func getRuleReceiptLog(pre, cur *auty.AutonomyProposalRule, ty int32) *types.ReceiptLog {
 	log := &types.ReceiptLog{}
 	log.Ty = ty

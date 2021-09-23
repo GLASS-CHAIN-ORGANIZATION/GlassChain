@@ -5,11 +5,11 @@
 package executor
 
 /*
-coins exec 。
+coins       exec。        。
 
- ：
+        ：
 
-EventTransfer -> 
+EventTransfer ->     
 */
 
 //package none execer for unknow execer
@@ -63,7 +63,7 @@ func (t *Ticket) GetDriverName() string {
 }
 
 func (t *Ticket) saveTicketBind(b *ty.ReceiptTicketBind) (kvs []*types.KeyValue) {
-	/ 
+	//       
 	if len(b.OldMinerAddress) > 0 {
 		kv := &types.KeyValue{
 			Key:   calcBindMinerKey(b.OldMinerAddress, b.ReturnAddress),
@@ -86,14 +86,14 @@ func (t *Ticket) saveTicketBind(b *ty.ReceiptTicketBind) (kvs []*types.KeyValue)
 }
 
 func (t *Ticket) delTicketBind(b *ty.ReceiptTicketBind) (kvs []*types.KeyValue) {
-	/  
+	//    ，     
 	kv := &types.KeyValue{
 		Key:   calcBindMinerKey(b.NewMinerAddress, b.ReturnAddress),
 		Value: nil,
 	}
 	kvs = append(kvs, kv)
 	if len(b.OldMinerAddress) > 0 {
-		/ 
+		//      
 		kv := &types.KeyValue{Key: calcBindReturnKey(b.ReturnAddress), Value: []byte(b.OldMinerAddress)}
 		kvs = append(kvs, kv)
 		kv = &types.KeyValue{
@@ -102,7 +102,7 @@ func (t *Ticket) delTicketBind(b *ty.ReceiptTicketBind) (kvs []*types.KeyValue) 
 		}
 		kvs = append(kvs, kv)
 	} else {
-		/ 
+		//      
 		kv := &types.KeyValue{Key: calcBindReturnKey(b.ReturnAddress), Value: nil}
 		kvs = append(kvs, kv)
 	}
@@ -169,7 +169,7 @@ func delticket(addr string, ticketID string, status int32) *types.KeyValue {
 // IsFriend check is fri
 func (t *Ticket) IsFriend(myexec, writekey []byte, tx *types.Transaction) bool {
 	clog.Error("ticket  IsFriend", "myex", string(myexec), "writekey", string(writekey))
-	/ 
+	//      
 	return false
 }
 

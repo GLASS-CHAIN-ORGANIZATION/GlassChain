@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
 
+//nolint:unparam //        golangci-linter  
 package bls12381
 
 import (
@@ -29,6 +30,7 @@ type GT struct {
 	fp12 *fp12
 }
 
+// Set   E
 func (e *E) Set(e2 *E) *E {
 	return e.set(e2)
 }

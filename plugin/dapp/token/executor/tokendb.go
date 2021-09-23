@@ -29,7 +29,7 @@ func newTokenDB(cfg *types.Chain33Config, preCreate *pty.TokenPreCreate, creator
 	t.token.Introduction = preCreate.GetIntroduction()
 	t.token.Total = preCreate.GetTotal()
 	t.token.Price = preCreate.GetPrice()
-	//toke  
+	//token         ，                
 	t.token.Owner = preCreate.GetOwner()
 	t.token.Creator = creator
 	t.token.Status = pty.TokenStatusPreCreated
@@ -267,7 +267,7 @@ func (action *tokenAction) finishCreate(tokenFinish *pty.TokenFinishCreate) (*ty
 	if cfg.IsDappFork(action.height, pty.TokenX, "ForkTokenPrice") && token.GetPrice() == 0 {
 		// pay for create token offline
 	} else {
-		/ fun 
+		//           fund     
 		receiptForCoin, err := action.coinsAccount.ExecTransferFrozen(token.Creator, action.toaddr, action.execaddr, token.Price)
 		if err != nil {
 			tokenlog.Error("token finishcreate ", "addr", action.fromaddr, "execaddr", action.execaddr, "token", token.Symbol)
@@ -277,7 +277,7 @@ func (action *tokenAction) finishCreate(tokenFinish *pty.TokenFinishCreate) (*ty
 		kv = append(kv, receiptForCoin.KV...)
 	}
 
-	/ toke  
+	//  token     ，           
 
 	tokenAccount, err := account.NewAccountDB(cfg, "token", tokenFinish.GetSymbol(), action.db)
 	if err != nil {
@@ -288,7 +288,7 @@ func (action *tokenAction) finishCreate(tokenFinish *pty.TokenFinishCreate) (*ty
 	if err != nil {
 		return nil, err
 	}
-	/ toke 
+	//  token        
 	token.Status = pty.TokenStatusCreated
 	tokendb := &tokenDB{*token}
 	var key []byte
@@ -305,7 +305,7 @@ func (action *tokenAction) finishCreate(tokenFinish *pty.TokenFinishCreate) (*ty
 	kv = append(kv, tokendb.getKVSet(key)...)
 
 	key = calcTokenKey(tokendb.token.Symbol)
-	/ toke  token 
+	//   token     ，         token，          
 	tokendb.save(action.db, key)
 	kv = append(kv, tokendb.getKVSet(key)...)
 	receipt := &types.Receipt{Ty: types.ExecOk, KV: kv, Logs: logs}
@@ -328,8 +328,8 @@ func (action *tokenAction) revokeCreate(tokenRevoke *pty.TokenRevokeCreate) (*ty
 		return nil, pty.ErrTokenCanotRevoked
 	}
 
-	/ ，toke toke 
-	//toke owne 
+	//          ，token          token   
+	//token owner      
 	if action.fromaddr != token.Owner && action.fromaddr != token.Creator {
 		tokenlog.Error("tprocTokenRevokeCreate, different creator/owner vs actor of this revoke",
 			"action.fromaddr", action.fromaddr, "creator", token.Creator, "owner", token.Owner)
@@ -341,7 +341,7 @@ func (action *tokenAction) revokeCreate(tokenRevoke *pty.TokenRevokeCreate) (*ty
 	if cfg.IsDappFork(action.height, pty.TokenX, pty.ForkTokenPriceX) && token.GetPrice() == 0 {
 		// pay for create token offline
 	} else {
-		/ 
+		//         
 		receipt, err := action.coinsAccount.ExecActive(token.Creator, action.execaddr, token.Price)
 		if err != nil {
 			tokenlog.Error("token revokeCreate error ", "error info", err, "creator addr", token.Creator, "execaddr", action.execaddr, "token", token.Symbol)
@@ -478,7 +478,7 @@ func getTokenAssetsKey(addr string, db dbm.KVDB) (*types.ReplyStrings, error) {
 	return &assets, nil
 }
 
-// AddTokenToAssets 
+// AddTokenToAssets         
 func AddTokenToAssets(addr string, db dbm.KVDB, symbol string) []*types.KeyValue {
 	tokenAssets, err := getTokenAssetsKey(addr, db)
 	if err != nil {
@@ -550,10 +550,10 @@ func validSymbolWithHeight(cfg *types.Chain33Config, cs []byte, height int64) bo
 	return validSymbolOriginal(cs)
 }
 
-// ， 。  1
-// 1. 
-// 2.   
-//  1
+//      ，     。 2 1
+// 1.      
+// 2.                   
+//        1
 func (action *tokenAction) mint(mint *pty.TokenMint) (*types.Receipt, error) {
 	if mint == nil {
 		return nil, types.ErrInvalidParam

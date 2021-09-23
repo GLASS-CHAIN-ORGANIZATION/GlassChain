@@ -56,7 +56,7 @@ func (a *action) createGroup(create *vty.CreateGroup) (*types.Receipt, error) {
 	group := &vty.GroupInfo{}
 	group.Name = create.Name
 	group.ID = formatGroupID(dapp.HeightIndexStr(a.height, int64(a.index)))
-	/ 
+	//            
 	group.Admins = append(group.Admins, a.fromAddr)
 	for _, addr := range create.GetAdmins() {
 		if addr != a.fromAddr {
@@ -165,21 +165,9 @@ func (a *action) commitVote(commit *vty.CommitVote) (*types.Receipt, error) {
 	receipt := &types.Receipt{Ty: types.ExecOk}
 	vote, err := a.getVoteInfo(commit.VoteID)
 	if err != nil {
-		elog.Error("vote exec commitVote", "txHash", a.txHash, "vid", commit.VoteID, "get vote err", err)
+		elog.Error("vote exec commitVote", "txHash", a.txHash, "get vote err", err)
 		return nil, errStateDBGet
 	}
-	//  
-	if vote.BeginTimestamp > a.blockTime {
-		elog.Error("vote exec commitVote", "txHash", a.txHash, "vid", commit.VoteID,
-			"beginTime", vote.BeginTimestamp, "blockTime", a.blockTime, "err", errVoteNotStarted)
-		return nil, errVoteNotStarted
-	}
-	if vote.EndTimestamp <= a.blockTime {
-		elog.Error("vote exec commitVote", "txHash", a.txHash, "vid", commit.VoteID,
-			"endTime", vote.EndTimestamp, "blockTime", a.blockTime, "err", errVoteAlreadyFinished)
-		return nil, errVoteAlreadyFinished
-	}
-
 	group, err := a.getGroupInfo(vote.GroupID)
 	if err != nil {
 		elog.Error("vote exec commitVote", "txHash", a.txHash, "get group err", err)
@@ -195,7 +183,7 @@ func (a *action) commitVote(commit *vty.CommitVote) (*types.Receipt, error) {
 	info := &vty.CommitInfo{Addr: a.fromAddr}
 	vote.CommitInfos = append(vote.CommitInfos, info)
 	voteValue := types.Encode(vote)
-	/ stated 
+	//               statedb 
 	info.VoteWeight = voteWeight
 	info.TxHash = hex.EncodeToString(a.txHash)
 	receipt.KV = append(receipt.KV, &types.KeyValue{Key: formatStateIDKey(vote.ID), Value: voteValue})

@@ -13,7 +13,7 @@ import (
 	ptypes "github.com/33cn/plugin/plugin/dapp/trade/types"
 )
 
-//CreateRawTradeSellTx : toke 
+//CreateRawTradeSellTx :     token      
 func (jrpc *Jrpc) CreateRawTradeSellTx(in *ptypes.TradeSellTx, result *interface{}) error {
 	if in == nil {
 		return types.ErrInvalidParam
@@ -40,7 +40,7 @@ func (jrpc *Jrpc) CreateRawTradeSellTx(in *ptypes.TradeSellTx, result *interface
 	return nil
 }
 
-//CreateRawTradeBuyTx : toke  
+//CreateRawTradeBuyTx :     token      ,         
 func (jrpc *Jrpc) CreateRawTradeBuyTx(in *ptypes.TradeBuyTx, result *interface{}) error {
 	if in == nil {
 		return types.ErrInvalidParam
@@ -58,7 +58,7 @@ func (jrpc *Jrpc) CreateRawTradeBuyTx(in *ptypes.TradeBuyTx, result *interface{}
 	return nil
 }
 
-//CreateRawTradeRevokeTx : 
+//CreateRawTradeRevokeTx :       
 func (jrpc *Jrpc) CreateRawTradeRevokeTx(in *ptypes.TradeRevokeTx, result *interface{}) error {
 	if in == nil {
 		return types.ErrInvalidParam
@@ -75,7 +75,7 @@ func (jrpc *Jrpc) CreateRawTradeRevokeTx(in *ptypes.TradeRevokeTx, result *inter
 	return nil
 }
 
-//CreateRawTradeBuyLimitTx : token
+//CreateRawTradeBuyLimitTx :      token
 func (jrpc *Jrpc) CreateRawTradeBuyLimitTx(in *ptypes.TradeBuyLimitTx, result *interface{}) error {
 	if in == nil {
 		return types.ErrInvalidParam
@@ -99,7 +99,7 @@ func (jrpc *Jrpc) CreateRawTradeBuyLimitTx(in *ptypes.TradeBuyLimitTx, result *i
 	return nil
 }
 
-//CreateRawTradeSellMarketTx : token
+//CreateRawTradeSellMarketTx :        token
 func (jrpc *Jrpc) CreateRawTradeSellMarketTx(in *ptypes.TradeSellMarketTx, result *interface{}) error {
 	if in == nil {
 		return types.ErrInvalidParam
@@ -117,7 +117,7 @@ func (jrpc *Jrpc) CreateRawTradeSellMarketTx(in *ptypes.TradeSellMarketTx, resul
 	return nil
 }
 
-//CreateRawTradeRevokeBuyTx : 
+//CreateRawTradeRevokeBuyTx :       
 func (jrpc *Jrpc) CreateRawTradeRevokeBuyTx(in *ptypes.TradeRevokeBuyTx, result *interface{}) error {
 	if in == nil {
 		return types.ErrInvalidParam

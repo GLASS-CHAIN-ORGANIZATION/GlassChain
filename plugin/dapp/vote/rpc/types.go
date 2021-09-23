@@ -5,15 +5,15 @@ import (
 )
 
 /*
- * rp 
+ * rpc          
  */
 
-// grp servic 
+//   grpc service  
 type channelClient struct {
 	rpctypes.ChannelClient
 }
 
-// Jrpc json rp 
+// Jrpc   json rpc    
 type Jrpc struct {
 	cli *channelClient
 }

@@ -1,16 +1,24 @@
 Title="local"
 
-[crypto]
 [log]
+#     ，  debug(dbug)/info/warn/error(eror)/crit
 loglevel = "debug"
 logConsoleLevel = "info"
+#      ，    ，                
 logFile = "logs/chain33.log"
+#           （  ： ）
 maxFileSize = 300
+#              
 maxBackups = 100
+#            （  ： ）
 maxAge = 28
+#              （    UTC  ）
 localTime = true
+#           （     gz）
 compress = true
+#             
 callerFile = false
+#         
 callerFunction = false
 
 [blockchain]
@@ -90,7 +98,9 @@ blockInterval=2
 continueBlockNum=12
 isValidator=true
 rpcAddr="http://localhost:9801"
+#shuffleType 1          ， 2    vrf          
 shuffleType=2
+#    topN，   true，             topN  ;   false，            ，       
 whetherUpdateTopN=true
 blockNumToUpdateDelegate=200
 registTopNHeightLimit=10
@@ -124,6 +134,9 @@ alias=["token1:token","token2:token","token3:token"]
 saveTokenTxList=false
 
 [exec.sub.cert]
+#            
 enable=false
+#       
 cryptoPath="authdir/crypto"
+#        ，  "auth_ecdsa", "auth_sm2"
 signType="auth_ecdsa"

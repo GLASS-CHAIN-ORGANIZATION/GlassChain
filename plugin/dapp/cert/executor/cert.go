@@ -15,6 +15,7 @@ import (
 var clog = log.New("module", "execs.cert")
 var driverName = ct.CertX
 
+// Init    
 func Init(name string, cfg *types.Chain33Config, sub []byte) {
 	driverName = name
 	var scfg ct.Authority
@@ -36,10 +37,12 @@ func InitExecType() {
 	ety.InitFuncList(types.ListMethod(&Cert{}))
 }
 
+// GetName   cert    
 func GetName() string {
 	return newCert().GetName()
 }
 
+// Cert cert   
 type Cert struct {
 	drivers.DriverBase
 }
@@ -52,22 +55,26 @@ func newCert() drivers.Driver {
 	return c
 }
 
+// GetDriverName   cert    
 func (c *Cert) GetDriverName() string {
 	return driverName
 }
 
+// CheckTx cert   tx    
 func (c *Cert) CheckTx(tx *types.Transaction, index int) error {
-
+	//     
 	err := c.DriverBase.CheckTx(tx, index)
 	if err != nil {
 		return err
 	}
 
+	// auth       
 	if !authority.IsAuthEnable {
 		clog.Error("Authority is not available. Please check the authority config or authority initialize error logs.")
 		return ct.ErrInitializeAuthority
 	}
 
+	//   
 	if authority.Author.HistoryCertCache.CurHeight == -1 {
 		err := c.loadHistoryByPrefix()
 		if err != nil {
@@ -75,6 +82,7 @@ func (c *Cert) CheckTx(tx *types.Transaction, index int) error {
 		}
 	}
 
+	//     <        ，cert  
 	if c.GetHeight() <= authority.Author.HistoryCertCache.CurHeight {
 		err := c.loadHistoryByPrefix()
 		if err != nil {
@@ -82,6 +90,7 @@ func (c *Cert) CheckTx(tx *types.Transaction, index int) error {
 		}
 	}
 
+	//     >        ，      -1，          ，  cert               
 	nxtHeight := authority.Author.HistoryCertCache.NxtHeight
 	if nxtHeight != -1 && c.GetHeight() > nxtHeight {
 		err := c.loadHistoryByHeight()
@@ -90,10 +99,13 @@ func (c *Cert) CheckTx(tx *types.Transaction, index int) error {
 		}
 	}
 
+	// auth  
 	return authority.Author.Validate(tx.GetSignature())
 }
 
-
+/**
+            ，cert  、  、    
+*/
 func (c *Cert) loadHistoryByPrefix() error {
 	parm := &types.LocalDBList{
 		Prefix:    []byte("LODB-cert-"),
@@ -106,11 +118,13 @@ func (c *Cert) loadHistoryByPrefix() error {
 		return err
 	}
 
+	//          ，        cert  
 	if len(result.Values) == 0 {
 		authority.Author.HistoryCertCache.CurHeight = 0
 		return nil
 	}
 
+	//              
 	var historyData types.HistoryCertStore
 	for _, v := range result.Values {
 		err := types.Decode(v, &historyData)
@@ -125,7 +139,9 @@ func (c *Cert) loadHistoryByPrefix() error {
 	return ct.ErrGetHistoryCertData
 }
 
-
+/**
+            ，cert    
+*/
 func (c *Cert) loadHistoryByHeight() error {
 	key := calcCertHeightKey(c.GetHeight())
 	parm := &types.LocalDBGet{Keys: [][]byte{key}}

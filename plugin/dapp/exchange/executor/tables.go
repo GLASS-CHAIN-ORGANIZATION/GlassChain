@@ -9,13 +9,20 @@ import (
 	ety "github.com/33cn/plugin/plugin/dapp/exchange/types"
 )
 
-
+/*
+ *       kv   ，key           
+ *  key = keyPrefix + userKey
+ *          ，  ’-‘      
+ */
 
 const (
+	//KeyPrefixStateDB state db key    
 	KeyPrefixStateDB = "mavl-exchange-"
+	//KeyPrefixLocalDB local db key    
 	KeyPrefixLocalDB = "LODB-exchange"
 )
 
+//              
 func calcOrderKey(orderID int64) []byte {
 	key := fmt.Sprintf("%s"+"orderID:%022d", KeyPrefixStateDB, orderID)
 	return []byte(key)
@@ -28,6 +35,7 @@ var opt_exchange_depth = &table.Option{
 	Index:   nil,
 }
 
+//     ，list         localdb   
 var opt_exchange_order = &table.Option{
 	Prefix:  KeyPrefixLocalDB,
 	Name:    "order",
@@ -42,6 +50,7 @@ var opt_exchange_history = &table.Option{
 	Index:   []string{"name", "addr_status"},
 }
 
+//NewMarketDepthTable    
 func NewMarketDepthTable(kvdb db.KV) *table.Table {
 	rowmeta := NewMarketDepthRow()
 	table, err := table.NewTable(rowmeta, kvdb, opt_exchange_depth)
@@ -71,10 +80,12 @@ func NewHistoryOrderTable(kvdb db.KV) *table.Table {
 	return table
 }
 
+//OrderRow table meta   
 type OrderRow struct {
 	*ety.Order
 }
 
+//NewOrderRow     meta   
 func NewOrderRow() *OrderRow {
 	return &OrderRow{Order: &ety.Order{}}
 }
@@ -84,6 +95,7 @@ func (r *OrderRow) CreateRow() *table.Row {
 	return &table.Row{Data: &ety.Order{}}
 }
 
+//SetPayload     
 func (r *OrderRow) SetPayload(data types.Message) error {
 	if txdata, ok := data.(*ety.Order); ok {
 		r.Order = txdata
@@ -92,6 +104,7 @@ func (r *OrderRow) SetPayload(data types.Message) error {
 	return types.ErrTypeAsset
 }
 
+//Get   indexName    indexValue
 func (r *OrderRow) Get(key string) ([]byte, error) {
 	if key == "orderID" {
 		return []byte(fmt.Sprintf("%022d", r.OrderID)), nil
@@ -103,6 +116,7 @@ func (r *OrderRow) Get(key string) ([]byte, error) {
 	return nil, types.ErrNotFound
 }
 
+//HistoryOrderRow table meta   
 type HistoryOrderRow struct {
 	*ety.Order
 }
@@ -117,6 +131,7 @@ func (m *HistoryOrderRow) CreateRow() *table.Row {
 	return &table.Row{Data: &ety.Order{Value: &ety.Order_LimitOrder{LimitOrder: &ety.LimitOrder{}}}}
 }
 
+//SetPayload     
 func (m *HistoryOrderRow) SetPayload(data types.Message) error {
 	if txdata, ok := data.(*ety.Order); ok {
 		m.Order = txdata
@@ -125,6 +140,7 @@ func (m *HistoryOrderRow) SetPayload(data types.Message) error {
 	return types.ErrTypeAsset
 }
 
+//Get   indexName    indexValue
 func (m *HistoryOrderRow) Get(key string) ([]byte, error) {
 	if key == "index" {
 		return []byte(fmt.Sprintf("%022d", m.Index)), nil
@@ -136,18 +152,22 @@ func (m *HistoryOrderRow) Get(key string) ([]byte, error) {
 	return nil, types.ErrNotFound
 }
 
+//MarketDepthRow table meta   
 type MarketDepthRow struct {
 	*ety.MarketDepth
 }
 
+//NewMarketDepthRow     meta   
 func NewMarketDepthRow() *MarketDepthRow {
 	return &MarketDepthRow{MarketDepth: &ety.MarketDepth{}}
 }
 
+//CreateRow      (  index             ,     eventid)
 func (m *MarketDepthRow) CreateRow() *table.Row {
 	return &table.Row{Data: &ety.MarketDepth{}}
 }
 
+//SetPayload     
 func (m *MarketDepthRow) SetPayload(data types.Message) error {
 	if txdata, ok := data.(*ety.MarketDepth); ok {
 		m.MarketDepth = txdata
@@ -156,6 +176,7 @@ func (m *MarketDepthRow) SetPayload(data types.Message) error {
 	return types.ErrTypeAsset
 }
 
+//Get   indexName    indexValue
 func (m *MarketDepthRow) Get(key string) ([]byte, error) {
 	if key == "price" {
 		return []byte(fmt.Sprintf("%s:%s:%d:%016d", m.LeftAsset.GetSymbol(), m.RightAsset.GetSymbol(), m.Op, m.Price)), nil

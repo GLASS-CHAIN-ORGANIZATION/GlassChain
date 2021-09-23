@@ -11,6 +11,7 @@ import (
 	"github.com/33cn/chain33/common"
 	"github.com/33cn/chain33/common/address"
 	"github.com/33cn/chain33/common/db"
+	coins "github.com/33cn/chain33/system/dapp/coins/types"
 	"github.com/33cn/chain33/types"
 	pt "github.com/33cn/plugin/plugin/dapp/paracross/types"
 	token "github.com/33cn/plugin/plugin/dapp/token/types"
@@ -21,32 +22,32 @@ import (
 const SymbolBty = "bty"
 
 /*
- 　=　assetExec + assetSymbol 
+  　=　assetExec + assetSymbol         
 
 				exec              		symbol								tx.title=user.p.test1   tx.title=user.p.test2
-1. ：
+1.       ：
 				coins					bty                     	  		transfer                 transfer
 				paracross				user.p.test1.coins.fzm    			withdraw                 transfer
 
-2. ：
+2.        ：
 				user.p.test1.coins		fzm              					transfer                 NAN
     			user.p.test1.paracross	coins.bty    						withdraw                 NAN
     			user.p.test1.paracross	paracross.user.p.test2.coins.cny	withdraw                 NAN
 
- user.p.test1.paracross.paracross.user.p.test2.coins.cn ：
-user.p.test1.paracross paracros ，　paracross.user.p.test2.coins.cn paracros paracros user.p.test2.coins.cn 
+  user.p.test1.paracross.paracross.user.p.test2.coins.cny    ：
+user.p.test1.paracross.    paracross   ，　paracross.user.p.test2.coins.cny paracross      paracross     user.p.test2.coins.cny  
 */
 func getCrossAction(transfer *pt.CrossAssetTransfer, txExecer string) (int64, error) {
 	paraTitle, ok := types.GetParaExecTitleName(txExecer)
 	if !ok {
 		return pt.ParacrossNoneTransfer, errors.Wrapf(types.ErrInvalidParam, "asset cross transfer execer:%s should be user.p.xx", txExecer)
 	}
-	/ 
+	//            
 	if types.IsParaExecName(transfer.AssetExec) && !strings.Contains(transfer.AssetExec, paraTitle) {
 		return pt.ParacrossNoneTransfer, errors.Wrapf(types.ErrInvalidParam, "asset execer=%s not belong to title=%s", transfer.AssetExec, paraTitle)
 	}
 
-	//paracros withdra  
+	//paracross          withdraw  ，                  
 	if types.IsParaExecName(transfer.AssetExec) {
 		if strings.Contains(transfer.AssetExec, pt.ParaX) {
 			return pt.ParacrossMainAssetWithdraw, nil
@@ -62,7 +63,7 @@ func getCrossAction(transfer *pt.CrossAssetTransfer, txExecer string) (int64, er
 }
 
 /*
- 
+         
 								      								type			realExec    realSymbol
 coins+bty															mainTransfer	coins		bty
 paracross+user.p.test1.coins.bty									paraWithdraw	coins		bty
@@ -70,11 +71,11 @@ user.p.test1.coins+bty												paraTransfer    coins		bty
 user.p.test1.paracross+coins.bty									mainWithdraw	coins		bty
 paracross+user.p.test1.coins.bty(->user.p.test2)					mainTransfer 	paracross   user.p.test1.coins.bty
 user.p.test2.paracross+paracross.user.p.test1.coins.bty 			mainWithdraw	paracross   user.p.test1.coins.bty
- :
-1. user.p.test1.coins+bt  coins accoun mavl-coins-bty-  mavl-user.p.test.coins-bty-
-2. paracros  withdra  symbo 
-　　a. 　mavl-paracross-coins.bty-exec-addr(user)
-　　b. 　mavl-coins-bty-exec-addr{paracross}:addr{user}, coin 
+  :
+1. user.p.test1.coins+bty           ，       coins，  account   mavl-coins-bty-　          ，        mavl-user.p.test.coins-bty-
+2. paracross             ， withdraw  ，          symbol  
+　　a.     　mavl-paracross-coins.bty-exec-addr(user)
+　　b.     　mavl-coins-bty-exec-addr{paracross}:addr{user},    coins        
 */
 func amendTransferParam(transfer *pt.CrossAssetTransfer, act int64) (*pt.CrossAssetTransfer, error) {
 	newTransfer := *transfer
@@ -103,7 +104,7 @@ func amendTransferParam(transfer *pt.CrossAssetTransfer, act int64) (*pt.CrossAs
 		return &newTransfer, nil
 	}
 
-	/ user.p.{para}.coins.ccny prefi  coins.ccny
+	// user.p.{para}.coins.ccny prefix  ，  coins.ccny
 	if act == pt.ParacrossParaAssetWithdraw {
 		e := strings.Split(transfer.AssetSymbol, ".")
 		if len(e) <= 1 {
@@ -137,45 +138,45 @@ func (a *action) crossAssetTransfer(transfer *pt.CrossAssetTransfer, act int64, 
 	}
 }
 
-/ transfer, create　asset,  rollback
+//   transfer,      create　asset,        ，   rollback
 func (a *action) mainAssetTransfer(transfer *pt.CrossAssetTransfer, transferTx *types.Transaction) (*types.Receipt, error) {
 	cfg := a.api.GetConfig()
 	isPara := cfg.IsPara()
-	/ , 
+	//      ,    
 	if !isPara {
 		return a.execTransfer(transfer, transferTx)
 	}
 	return a.execCreateAsset(transfer, transferTx)
 }
 
-/ ， withdraw
+//      ，　      withdraw
 func (a *action) mainAssetWithdraw(withdraw *pt.CrossAssetTransfer, withdrawTx *types.Transaction) (*types.Receipt, error) {
 	cfg := a.api.GetConfig()
 	isPara := cfg.IsPara()
-	/  ，a.t 
+	//      ，     ，a.tx     
 	if !isPara {
 		return a.execWithdraw(withdraw, withdrawTx)
 	}
 	return a.execDestroyAsset(withdraw, withdrawTx)
 }
 
-/ ， create asset
+//      ，　     create asset
 func (a *action) paraAssetTransfer(transfer *pt.CrossAssetTransfer, transferTx *types.Transaction) (*types.Receipt, error) {
 	cfg := a.api.GetConfig()
 	isPara := cfg.IsPara()
-	/  
+	//        ，   
 	if isPara {
 		return a.execTransfer(transfer, transferTx)
 	}
-	/ 
+	//       
 	return a.execCreateAsset(transfer, transferTx)
 }
 
-/ ，  ，  
+//        ，　      ，        ，　         ，        
 func (a *action) paraAssetWithdraw(withdraw *pt.CrossAssetTransfer, withdrawTx *types.Transaction) (*types.Receipt, error) {
 	cfg := a.api.GetConfig()
 	isPara := cfg.IsPara()
-	/  
+	//        ，   
 	if isPara {
 		return a.execWithdraw(withdraw, withdrawTx)
 	}
@@ -189,10 +190,10 @@ func (a *action) execTransfer(transfer *pt.CrossAssetTransfer, transferTx *types
 		return nil, errors.Wrapf(err, "execTransfer.createAccount,exec=%s,symbol=%s", transfer.AssetExec, transfer.AssetSymbol)
 	}
 
-	/ toAdd user.p.xx.paracros 
+	//     toAddr user.p.xx.paracross  
 	execAddr := address.ExecAddress(pt.ParaX)
 	toAddr := address.ExecAddress(string(transferTx.Execer))
-	/ toAdd paracros 
+	//       toAddr paracross  
 	if cfg.IsPara() {
 		execAddr = address.ExecAddress(string(transferTx.Execer))
 		toAddr = address.ExecAddress(pt.ParaX)
@@ -201,7 +202,7 @@ func (a *action) execTransfer(transfer *pt.CrossAssetTransfer, transferTx *types
 	clog.Debug("paracross.execTransfer", "execer", string(transferTx.Execer), "assetexec", transfer.AssetExec, "symbol", transfer.AssetSymbol,
 		"txHash", common.ToHex(transferTx.Hash()))
 
-	/ paracros  paracros    
+	//  paracross          ，       paracross      ，       A           B     
 	if transfer.AssetExec == pt.ParaX {
 		r, err := accDB.Transfer(transferTx.From(), toAddr, transfer.Amount)
 		if err != nil {
@@ -221,7 +222,7 @@ func (a *action) execTransfer(transfer *pt.CrossAssetTransfer, transferTx *types
 	return r, nil
 }
 
-//withdra ，a.t ，　withdrawT withdra tx
+//withdraw        ，a.tx     ，　withdrawTx      withdraw tx
 func (a *action) execWithdraw(withdraw *pt.CrossAssetTransfer, withdrawTx *types.Transaction) (*types.Receipt, error) {
 	cfg := a.api.GetConfig()
 	accDB, err := a.createAccount(cfg, a.db, withdraw.AssetExec, withdraw.AssetSymbol)
@@ -238,7 +239,7 @@ func (a *action) execWithdraw(withdraw *pt.CrossAssetTransfer, withdrawTx *types
 	clog.Debug("Paracross.execWithdraw", "amount", withdraw.Amount, "from", fromAddr,
 		"assetExec", withdraw.AssetExec, "symbol", withdraw.AssetSymbol, "execAddr", execAddr, "txHash", common.ToHex(withdrawTx.Hash()))
 
-	/ paracros  paracros    
+	//  paracross          ，       paracross      ，       A           B     
 	if withdraw.AssetExec == pt.ParaX {
 		r, err := accDB.Transfer(fromAddr, withdraw.ToAddr, withdraw.Amount)
 		if err != nil {
@@ -254,9 +255,9 @@ func (a *action) execWithdraw(withdraw *pt.CrossAssetTransfer, withdrawTx *types
 	return r, nil
 }
 
-/ Alic toke user.p.bb  mavl-paracross-token.symbol-Addr(Alice) Addr(user.p.bb.paracross 
-/ toke mavl-paracross-user.p.aa.token.symbol-exec-Addr(Alice) user.p.bb  transfe paracros 
-/ b  mavl-paracross-paracross.user.p.aa.token.symbol-exec-Addr(Alice) paracros paracross
+//  Alice token   user.p.bb.   ，        mavl-paracross-token.symbol-Addr(Alice),       Addr(user.p.bb.paracross)    
+//         token      mavl-paracross-user.p.aa.token.symbol-exec-Addr(Alice)，       user.p.bb.   ，   transfer paracross    
+//    bb     ，   mavl-paracross-paracross.user.p.aa.token.symbol-exec-Addr(Alice)，   paracross           paracross
 func (a *action) createParaAccount(cross *pt.CrossAssetTransfer, crossTx *types.Transaction) (*account.DB, error) {
 	cfg := a.api.GetConfig()
 	paraTitle, err := getTitleFrom(crossTx.Execer)
@@ -306,7 +307,7 @@ func (a *action) execDestroyAsset(withdraw *pt.CrossAssetTransfer, withdrawTx *t
 	return r, nil
 }
 
-/  
+//    ，          
 func (a *action) assetTransfer(transfer *types.AssetsTransfer) (*types.Receipt, error) {
 	tr := &pt.CrossAssetTransfer{
 		AssetSymbol: transfer.Cointoken,
@@ -318,7 +319,7 @@ func (a *action) assetTransfer(transfer *types.AssetsTransfer) (*types.Receipt, 
 	return a.mainAssetTransfer(tr, a.tx)
 }
 
-/  
+//    ，          
 func (a *action) assetWithdraw(withdraw *types.AssetsWithdraw, withdrawTx *types.Transaction) (*types.Receipt, error) {
 	tr := &pt.CrossAssetTransfer{
 		AssetExec:   withdraw.ExecName,
@@ -327,7 +328,7 @@ func (a *action) assetWithdraw(withdraw *types.AssetsWithdraw, withdrawTx *types
 		Note:        string(withdraw.Note),
 		ToAddr:      withdraw.To,
 	}
-	/ withdra  cointoke  token 
+	//             withdraw  ，  cointoken  ，     token，      
 	if withdraw.Cointoken != "" {
 		tr.AssetExec = token.TokenX
 	}
@@ -338,7 +339,7 @@ func (a *action) assetWithdraw(withdraw *types.AssetsWithdraw, withdrawTx *types
 func (a *action) assetTransferRollback(transfer *pt.CrossAssetTransfer, transferTx *types.Transaction) (*types.Receipt, error) {
 	cfg := a.api.GetConfig()
 	isPara := cfg.IsPara()
-	/ 
+	//      
 	if !isPara {
 		accDB, err := a.createAccount(cfg, a.db, transfer.AssetExec, transfer.AssetSymbol)
 		if err != nil {
@@ -353,11 +354,11 @@ func (a *action) assetTransferRollback(transfer *pt.CrossAssetTransfer, transfer
 	return nil, nil
 }
 
-/ withdra   
+//      withdraw        ，      ，    
 func (a *action) paraAssetWithdrawRollback(wtw *pt.CrossAssetTransfer, withdrawTx *types.Transaction) (*types.Receipt, error) {
 	cfg := a.api.GetConfig()
 	isPara := cfg.IsPara()
-	/ 
+	//      
 	if !isPara {
 		withdraw, err := amendTransferParam(wtw, pt.ParacrossParaAssetWithdraw)
 		if err != nil {
@@ -387,12 +388,9 @@ func (a *action) createAccount(cfg *types.Chain33Config, db db.KV, exec, symbol 
 	return account.NewAccountDB(cfg, exec, symbol, db)
 }
 
-/ assetTransfer,assetWithdra  AssetExec coins coins   。
-/ AssetExec  tom 
-/ coinsx coinsx.bt ，withdra coinsx
 func adaptNullAssetExec(transfer *pt.CrossAssetTransfer) {
 	if transfer.AssetSymbol == "" {
-		transfer.AssetExec = "coins"
+		transfer.AssetExec = coins.CoinsX
 		transfer.AssetSymbol = SymbolBty
 		return
 	}

@@ -23,9 +23,10 @@ var codecache *lru.Cache
 
 var isinit int64
 
+//Init      
 func Init(name string, cfg *types.Chain33Config, sub []byte) {
 	if atomic.CompareAndSwapInt64(&isinit, 0, 1) {
-
+		//   64 code cache
 		var err error
 		codecache, err = lru.New(512)
 		if err != nil {
@@ -63,10 +64,12 @@ func newjs() drivers.Driver {
 	return t
 }
 
+//GetName     
 func GetName() string {
 	return newjs().GetName()
 }
 
+//GetDriverName        
 func (u *js) GetDriverName() string {
 	return driverName
 }
@@ -120,7 +123,8 @@ func (u *js) callVM(prefix string, payload *jsproto.Call, tx *types.Transaction,
 	vm.Set("args", payload.Args)
 	callfunc := "callcode(context, f, args, loglist)"
 	jsvalue, err := vm.Run(callfunc)
-
+	//        ，         ，            ，           。
+	//               ，          ，           。
 	if u.GetExecutorAPI().IsErr() {
 		return nil, status.New(codes.Aborted, "jsvm operation is abort").Err()
 	}
@@ -153,7 +157,7 @@ func jslogs(receiptData *types.ReceiptData) ([]string, error) {
 	}
 	for i := 0; i < len(receiptData.Logs); i++ {
 		logitem := receiptData.Logs[i]
-
+		//    json     ，          
 		if logitem.Ty != ptypes.TyLogJs {
 			continue
 		}
@@ -300,7 +304,7 @@ func (u *js) createVM(name string, tx *types.Transaction, index int) (*otto.Otto
 		if err != nil {
 			return nil, err
 		}
-
+		//cache       ，  cache     
 		cachevm := basevm.Copy()
 		cachevm.Run(code)
 		codecache.Add(name, cachevm)
@@ -376,12 +380,15 @@ func (o *object) value() otto.Value {
 	return v
 }
 
+// Allow               
 func (u *js) Allow(tx *types.Transaction, index int) error {
 	err := u.DriverBase.Allow(tx, index)
 	if err == nil {
 		return nil
 	}
-
+	//      :
+	//  : user.jsvm.xxx     jsvm   
+	//   : user.p.guodun.user.jsvm.xxx    jsvm   
 	cfg := u.GetAPI().GetConfig()
 	exec := cfg.GetParaExec(tx.Execer)
 	if u.AllowIsUserDot2(exec) {

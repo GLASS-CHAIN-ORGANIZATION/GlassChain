@@ -8,12 +8,12 @@ import (
 )
 
 /*
- * 
- * actio lo  
- * actio lo i nam 
+ *         
+ *   action      log  ，          
+ *    action log   id   name      
  */
 
-// actio i name 
+// action  id name，           
 const (
 	TyUnknowAction = iota + 100
 	TyCreateGroupAction
@@ -31,7 +31,7 @@ const (
 	NameUpdateMemberAction = "UpdateMember"
 )
 
-// lo i 
+// log  id 
 const (
 	TyUnknownLog = iota + 100
 	TyCreateGroupLog
@@ -50,9 +50,9 @@ const (
 )
 
 var (
-	//VoteX 
+	//VoteX        
 	VoteX = "vote"
-	/ actionMap
+	//  actionMap
 	actionMap = map[string]int32{
 		NameCreateGroupAction:  TyCreateGroupAction,
 		NameUpdateGroupAction:  TyUpdateGroupAction,
@@ -61,7 +61,7 @@ var (
 		NameCloseVoteAction:    TyCloseVoteAction,
 		NameUpdateMemberAction: TyUpdateMemberAction,
 	}
-	/ lo i lo  lo 
+	//  log id   log     ，       log  
 	logMap = map[int64]*types.LogInfo{
 		TyCreateGroupLog:  {Ty: reflect.TypeOf(GroupInfo{}), Name: NameCreateGroupLog},
 		TyUpdateGroupLog:  {Ty: reflect.TypeOf(GroupInfo{}), Name: NameUpdateGroupLog},
@@ -76,7 +76,7 @@ var (
 // init defines a register function
 func init() {
 	types.AllowUserExec = append(types.AllowUserExec, []byte(VoteX))
-	/ 
+	//        
 	types.RegFork(VoteX, InitFork)
 	types.RegExec(VoteX, InitExecutor)
 }
@@ -102,17 +102,17 @@ func NewType(cfg *types.Chain33Config) *voteType {
 	return c
 }
 
-// GetPayload actio 
+// GetPayload     action  
 func (v *voteType) GetPayload() types.Message {
 	return &VoteAction{}
 }
 
-// GeTypeMap actio i nam 
+// GeTypeMap     action id name  
 func (v *voteType) GetTypeMap() map[string]int32 {
 	return actionMap
 }
 
-// GetLogMap lo 
+// GetLogMap     log    
 func (v *voteType) GetLogMap() map[int64]*types.LogInfo {
 	return logMap
 }

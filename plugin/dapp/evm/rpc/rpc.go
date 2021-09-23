@@ -13,43 +13,25 @@ import (
 
 	"github.com/33cn/chain33/common"
 	"github.com/33cn/chain33/common/address"
+	cty "github.com/33cn/chain33/system/dapp/coins/types"
 	"github.com/33cn/chain33/types"
-	evmAbi "github.com/33cn/plugin/plugin/dapp/evm/executor/abi"
 	evmtypes "github.com/33cn/plugin/plugin/dapp/evm/types"
 )
 
-func (c *channelClient) CreateDeployTx(ctx context.Context, in evmtypes.EvmContractCreateReq) (*types.UnsignTx, error) {
-	amountInt64 := in.Amount
-	exec := in.ParaName + evmtypes.ExecutorName
-	toAddr := address.ExecAddress(exec)
-
+// CreateEvmCallTx         evm  
+func (c *channelClient) Create(ctx context.Context, in evmtypes.EvmContractCreateReq) (*types.UnsignTx, error) {
 	bCode, err := common.FromHex(in.Code)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "parse evm code error", err)
 		return nil, err
 	}
-	if "" != in.Parameter {
-		packData, err := evmAbi.PackContructorPara(in.Parameter, in.Abi)
-		if err != nil {
-			return nil, err
-		}
 
-		bCode = append(bCode, packData...)
-	}
-
-	action := evmtypes.EVMContractAction{
-		Amount:       uint64(amountInt64),
-		GasLimit:     0,
-		GasPrice:     0,
-		Code:         bCode,
-		Para:         nil,
-		Alias:        in.Alias,
-		Note:         in.Note,
-		ContractAddr: toAddr,
-	}
+	action := evmtypes.EVMContractAction{Amount: 0, Code: bCode, GasLimit: 0, GasPrice: 0, Note: in.Note, Abi: in.Abi}
 
 	cfg := c.GetConfig()
-	tx := &types.Transaction{Execer: []byte(exec), Payload: types.Encode(&action), Fee: 0, To: toAddr}
+	execer := cfg.ExecName(in.ParaName + "evm")
+	addr := address.ExecAddress(cfg.ExecName(in.ParaName + "evm"))
+	tx := &types.Transaction{Execer: []byte(execer), Payload: types.Encode(&action), Fee: 0, To: addr}
 
 	tx.Fee, _ = tx.GetRealFee(cfg.GetMinTxFeeRate())
 	if tx.Fee < in.Fee {
@@ -64,29 +46,20 @@ func (c *channelClient) CreateDeployTx(ctx context.Context, in evmtypes.EvmContr
 	return &types.UnsignTx{Data: txHex}, nil
 }
 
-func (c *channelClient) CreateCallTx(ctx context.Context, in evmtypes.EvmContractCallReq) (*types.UnsignTx, error) {
-	amountInt64 := in.Amount
-	feeInt64 := in.Fee
-	exec := in.ParaName + evmtypes.ExecutorName
-	toAddr := address.ExecAddress(exec)
+func (c *channelClient) Call(ctx context.Context, in evmtypes.EvmContractCallReq) (*types.UnsignTx, error) {
+	amountInt64 := in.Amount * 1e4 * 1e4
+	feeInt64 := in.Fee * 1e4 * 1e4
+	toAddr := address.ExecAddress(in.Exec)
 
-	_, packedParameter, err := evmAbi.Pack(in.Parameter, in.Abi, false)
+	bCode, err := common.FromHex(in.Code)
 	if err != nil {
+		fmt.Fprintln(os.Stderr, "parse evm code error", err)
 		return nil, err
 	}
 
-	action := evmtypes.EVMContractAction{
-		Amount:       uint64(amountInt64),
-		GasLimit:     0,
-		GasPrice:     0,
-		Code:         nil,
-		Para:         packedParameter,
-		Alias:        "",
-		Note:         in.Note,
-		ContractAddr: in.ContractAddr,
-	}
+	action := evmtypes.EVMContractAction{Amount: amountInt64, Code: bCode, GasLimit: 0, GasPrice: 0, Note: in.Note, Abi: in.Abi}
 
-	tx := &types.Transaction{Execer: []byte(exec), Payload: types.Encode(&action), Fee: 0, To: toAddr}
+	tx := &types.Transaction{Execer: []byte(in.Exec), Payload: types.Encode(&action), Fee: 0, To: toAddr}
 
 	cfg := c.GetConfig()
 	tx.Fee, _ = tx.GetRealFee(cfg.GetMinTxFeeRate())
@@ -102,29 +75,32 @@ func (c *channelClient) CreateCallTx(ctx context.Context, in evmtypes.EvmContrac
 	return &types.UnsignTx{Data: txHex}, nil
 }
 
-func (c *channelClient) CreateTransferOnlyTx(ctx context.Context, in evmtypes.EvmTransferOnlyReq) (*types.UnsignTx, error) {
-	exec := in.ParaName + evmtypes.ExecutorName
-	toAddr := address.ExecAddress(exec)
+func (c *channelClient) Transfer(ctx context.Context, in evmtypes.EvmContractTransferReq, isWithdraw bool) (*types.UnsignTx, error) {
+	var tx *types.Transaction
+	transfer := &cty.CoinsAction{}
+	amountInt64 := int64(in.Amount*1e4) * 1e4
+	execName := in.Exec
 
-	r_addr, err := address.NewAddrFromString(in.To)
-	if nil != err {
+	if isWithdraw {
+		transfer.Value = &cty.CoinsAction_Withdraw{Withdraw: &types.AssetsWithdraw{Amount: amountInt64, ExecName: execName, To: address.ExecAddress(execName)}}
+		transfer.Ty = cty.CoinsActionWithdraw
+	} else {
+		transfer.Value = &cty.CoinsAction_TransferToExec{TransferToExec: &types.AssetsTransferToExec{Amount: amountInt64, ExecName: execName, To: address.ExecAddress(execName)}}
+		transfer.Ty = cty.CoinsActionTransferToExec
+	}
+	cfg := c.GetConfig()
+	if in.ParaName == "" {
+		tx = &types.Transaction{Execer: []byte(cfg.ExecName(in.ParaName + "coins")), Payload: types.Encode(transfer), To: address.ExecAddress(execName)}
+	} else {
+		tx = &types.Transaction{Execer: []byte(cfg.ExecName(in.ParaName + "coins")), Payload: types.Encode(transfer), To: address.ExecAddress(cfg.ExecName(in.ParaName + "coins"))}
+	}
+
+	var err error
+	tx.Fee, err = tx.GetRealFee(cfg.GetMinTxFeeRate())
+	if err != nil {
 		return nil, err
 	}
 
-	action := evmtypes.EVMContractAction{
-		Amount:       uint64(in.Amount),
-		GasLimit:     0,
-		GasPrice:     0,
-		Code:         nil,
-		Para:         r_addr.Hash160[:],
-		Alias:        "",
-		Note:         in.Note,
-		ContractAddr: toAddr,
-	}
-	tx := &types.Transaction{Execer: []byte(exec), Payload: types.Encode(&action), Fee: 0, To: toAddr}
-
-	cfg := c.GetConfig()
-	tx.Fee, _ = tx.GetRealFee(cfg.GetMinTxFeeRate())
 	random := rand.New(rand.NewSource(time.Now().UnixNano()))
 	tx.Nonce = random.Int63()
 	tx.ChainID = cfg.GetChainID()

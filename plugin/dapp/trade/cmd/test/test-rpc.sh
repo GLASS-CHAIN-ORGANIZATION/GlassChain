@@ -152,8 +152,8 @@ function trade_revoke() {
     signRawTxAndQuery "$FUNCNAME" "0x4257d8692ef7fe13c68b65d6a52f03933db2fa5ce8faf210b5b8b80c721ced01"
 }
 
-# 
-#    1:  2: ）
+#          
+#        ，        （  1:        2:       ）
 function queryTransaction() {
     validator=$1
     expectRes=$2

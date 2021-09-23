@@ -5,15 +5,15 @@
 package executor
 
 /*
-trad trad ，
+trade     trade      ，
 
- ：
-1 ；
-2 ；
-3 ；
-4 ；
-5 ；
-6 ；
+           ：
+1）    ；
+2）       ；
+3）    ；
+4）    ；
+5）       ；
+6）    ；
 */
 
 import (
@@ -32,7 +32,7 @@ var (
 	defaultPriceExec = "coins"
 )
 
-// Init : trad 
+// Init :     trade  
 func Init(name string, cfg *types.Chain33Config, sub []byte) {
 	drivers.Register(cfg, GetName(), newTrade, cfg.GetDappFork(driverName, "Enable"))
 	InitExecType()
@@ -44,7 +44,7 @@ func InitExecType() {
 	ety.InitFuncList(types.ListMethod(&trade{}))
 }
 
-// GetName : trad 
+// GetName :   trade    
 func GetName() string {
 	return newTrade().GetName()
 }

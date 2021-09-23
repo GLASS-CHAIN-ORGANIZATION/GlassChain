@@ -6,8 +6,8 @@ import (
 )
 
 /*
- *  
- *  (localDB),  
+ *             ，     
+ *      ，    (localDB),       ，   
  */
 
 func (s *storage) ExecLocal_ContentStorage(payload *ety.ContentOnlyNotaryStorage, tx *types.Transaction, receiptData *types.ReceiptData, index int) (*types.LocalDBSet, error) {
@@ -136,7 +136,7 @@ func (s *storage) ExecLocal_EncryptAdd(payload *ety.EncryptNotaryAdd, tx *types.
 	return s.addAutoRollBack(tx, dbSet.KV), nil
 }
 
-/ 
+//      
 func (s *storage) addAutoRollBack(tx *types.Transaction, kv []*types.KeyValue) *types.LocalDBSet {
 
 	dbSet := &types.LocalDBSet{}

@@ -129,7 +129,7 @@ func DposPerf() {
 	}
 
 	fmt.Println("=======start sendTransferTx sendTransferToExecTx!=======")
-
+	//              
 	sendTransferTx(cfg, genesisKey, validatorAddr, 2000000000000)
 	time.Sleep(3 * time.Second)
 	in := &types.ReqBalance{}
@@ -140,7 +140,7 @@ func DposPerf() {
 	} else {
 		fmt.Println(validatorAddr, " balance:", acct.Acc[0].Balance, "frozen:", acct.Acc[0].Frozen)
 	}
-
+	//      dos      
 	sendTransferToExecTx(cfg, validatorKey, "dpos", 1600000000000)
 
 	time.Sleep(3 * time.Second)
@@ -377,7 +377,6 @@ func initEnvDpos() (queue.Queue, *blockchain.BlockChain, queue.Module, queue.Mod
 	var q = queue.New("channel")
 	q.SetConfig(chain33Cfg)
 	cfg := chain33Cfg.GetModuleConfig()
-	cfg.Log.LogFile = ""
 	sub := chain33Cfg.GetSubConfig()
 
 	chain := blockchain.New(chain33Cfg)
@@ -585,7 +584,7 @@ func sendTransferTx(cfg *types.Chain33Config, fromKey, to string, amount int64) 
 	v := &cty.CoinsAction_Transfer{Transfer: &types.AssetsTransfer{Amount: amount, Note: []byte(""), To: to}}
 	transfer.Value = v
 	transfer.Ty = cty.CoinsActionTransfer
-	execer := []byte(cfg.GetCoinExec())
+	execer := []byte("coins")
 	tx = &types.Transaction{Execer: execer, Payload: types.Encode(transfer), To: to, Fee: fee}
 	tx, err := types.FormatTx(cfg, string(execer), tx)
 	if err != nil {

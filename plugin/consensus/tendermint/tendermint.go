@@ -257,6 +257,7 @@ func (client *Client) SetQueueClient(q queue.Client) {
 
 // StartConsensus a routine that make the consensus start
 func (client *Client) StartConsensus() {
+	//             
 	hint := time.NewTicker(5 * time.Second)
 	beg := time.Now()
 OuterLoop:
@@ -351,19 +352,19 @@ func (client *Client) GetGenesisBlockTime() int64 {
 // CreateGenesisTx ...
 func (client *Client) CreateGenesisTx() (ret []*types.Transaction) {
 	var tx types.Transaction
-	tx.Execer = []byte(client.GetAPI().GetConfig().GetCoinExec())
+	tx.Execer = []byte("coins")
 	tx.To = genesis
 	//gen payload
 	g := &cty.CoinsAction_Genesis{}
 	g.Genesis = &types.AssetsGenesis{}
-	g.Genesis.Amount = genesisAmount * client.GetAPI().GetConfig().GetCoinPrecision()
+	g.Genesis.Amount = genesisAmount * types.Coin
 	tx.Payload = types.Encode(&cty.CoinsAction{Value: g, Ty: cty.CoinsActionGenesis})
 	ret = append(ret, &tx)
 	return
 }
 
 func (client *Client) getBlockInfoTx(current *types.Block) (*tmtypes.ValNodeAction, error) {
-
+	//       
 	if len(current.Txs) == 0 {
 		return nil, types.ErrEmptyTx
 	}
@@ -374,15 +375,18 @@ func (client *Client) getBlockInfoTx(current *types.Block) (*tmtypes.ValNodeActi
 	if err != nil {
 		return nil, err
 	}
+	//      
 	if valAction.GetTy() != tmtypes.ValNodeActionBlockInfo {
 		return nil, ttypes.ErrBaseTxType
 	}
+	//      
 	if valAction.GetBlockInfo() == nil {
 		return nil, ttypes.ErrBlockInfoTx
 	}
 	return &valAction, nil
 }
 
+// CheckBlock     
 func (client *Client) CheckBlock(parent *types.Block, current *types.BlockDetail) error {
 	cfg := client.GetAPI().GetConfig()
 	if current.Block.Difficulty != cfg.GetP(0).PowLimitBits {
@@ -395,6 +399,7 @@ func (client *Client) CheckBlock(parent *types.Block, current *types.BlockDetail
 	if parent.Height+1 != current.Block.Height {
 		return types.ErrBlockHeight
 	}
+	//  exec     
 	if current.Receipts[0].Ty != types.ExecOk {
 		return ttypes.ErrBaseExecErr
 	}
@@ -437,13 +442,11 @@ func (client *Client) CreateBlock() {
 			continue
 		}
 		if !client.CheckTxsAvailable(height) {
-			time.Sleep(1000 * time.Millisecond)
+			time.Sleep(500 * time.Millisecond)
 			continue
 		}
 
-		if height+1 == client.csState.GetRoundState().Height {
-			client.txsAvailable <- height + 1
-		}
+		client.txsAvailable <- height + 1
 		time.Sleep(time.Duration(timeoutTxAvail) * time.Millisecond)
 	}
 }
@@ -466,9 +469,29 @@ func (client *Client) StopC() <-chan struct{} {
 	return client.stopC
 }
 
+// GetMempoolSize get tx num in mempool
+func (client *Client) GetMempoolSize() int64 {
+	msg := client.GetQueueClient().NewMessage("mempool", types.EventGetMempoolSize, nil)
+	err := client.GetQueueClient().Send(msg, true)
+	if err != nil {
+		tendermintlog.Error("GetMempoolSize send", "err", err)
+		return 0
+	}
+	resp, err := client.GetQueueClient().Wait(msg)
+	if err != nil {
+		tendermintlog.Error("GetMempoolSize result", "err", err)
+		return 0
+	}
+	return resp.GetData().(*types.MempoolSize).GetSize()
+}
+
 // CheckTxsAvailable check whether some new transactions arriving
 func (client *Client) CheckTxsAvailable(height int64) bool {
-	txs := client.RequestTx(1, nil)
+	num := client.GetMempoolSize()
+	if num == 0 {
+		return false
+	}
+	txs := client.RequestTx(int(num), nil)
 	txs = client.CheckTxDup(txs, height)
 	return len(txs) != 0
 }
@@ -501,7 +524,7 @@ func (client *Client) BuildBlock() *types.Block {
 	newblock.ParentHash = lastBlock.Hash(cfg)
 	newblock.Height = lastBlock.Height + 1
 	client.AddTxsToBlock(&newblock, txs)
-
+	//    
 	newblock.Difficulty = cfg.GetP(0).PowLimitBits
 	newblock.BlockTime = types.Now().Unix()
 	if lastBlock.BlockTime >= newblock.BlockTime {
@@ -682,6 +705,7 @@ func (client *Client) Query_NodeInfo(req *types.ReqNil) (types.Message, error) {
 	return &tmtypes.ValNodeInfoSet{Nodes: nodes}, nil
 }
 
+// CmpBestBlock   newBlock       
 func (client *Client) CmpBestBlock(newBlock *types.Block, cmpBlock *types.Block) bool {
 	return false
 }

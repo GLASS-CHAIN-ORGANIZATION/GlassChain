@@ -9,8 +9,6 @@ import (
 	"math"
 	"reflect"
 
-	"github.com/pkg/errors"
-
 	"github.com/33cn/chain33/common/address"
 	log "github.com/33cn/chain33/common/log/log15"
 	"github.com/33cn/chain33/types"
@@ -50,6 +48,7 @@ func NewType(cfg *types.Chain33Config) *IssuanceType {
 	return c
 }
 
+// GetName        
 func (issuance *IssuanceType) GetName() string {
 	return IssuanceX
 }
@@ -147,18 +146,9 @@ func CreateRawIssuanceCreateTx(cfg *types.Chain33Config, parm *IssuanceCreateTx)
 		return nil, types.ErrInvalidParam
 	}
 
-	totalBalanceInt64, err := types.FormatFloatDisplay2Value(parm.TotalBalance, cfg.GetCoinPrecision())
-	if err != nil {
-		return nil, errors.Wrapf(types.ErrInvalidParam, "FormatFloatDisplay2Value.totalBalance")
-	}
-	debtCeilingInt64, err := types.FormatFloatDisplay2Value(parm.DebtCeiling, cfg.GetCoinPrecision())
-	if err != nil {
-		return nil, errors.Wrapf(types.ErrInvalidParam, "FormatFloatDisplay2Value.DebtCeiling")
-	}
-
 	v := &IssuanceCreate{
-		TotalBalance:     totalBalanceInt64,
-		DebtCeiling:      debtCeilingInt64,
+		TotalBalance:     int64(math.Trunc((parm.TotalBalance+0.0000001)*1e4)) * 1e4,
+		DebtCeiling:      int64(math.Trunc((parm.DebtCeiling+0.0000001)*1e4)) * 1e4,
 		LiquidationRatio: int64(math.Trunc((parm.LiquidationRatio + 0.0000001) * 1e4)),
 		Period:           parm.Period,
 	}
@@ -173,7 +163,7 @@ func CreateRawIssuanceCreateTx(cfg *types.Chain33Config, parm *IssuanceCreateTx)
 		To:      address.ExecAddress(cfg.ExecName(IssuanceX)),
 	}
 	name := cfg.ExecName(IssuanceX)
-	tx, err = types.FormatTx(cfg, name, tx)
+	tx, err := types.FormatTx(cfg, name, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -186,13 +176,10 @@ func CreateRawIssuanceDebtTx(cfg *types.Chain33Config, parm *IssuanceDebtTx) (*t
 		llog.Error("CreateRawIssuanceBorrowTx", "parm", parm)
 		return nil, types.ErrInvalidParam
 	}
-	valueInt64, err := types.FormatFloatDisplay2Value(parm.Value, cfg.GetCoinPrecision())
-	if err != nil {
-		return nil, errors.Wrapf(types.ErrInvalidParam, "FormatFloatDisplay2Value.Value")
-	}
+
 	v := &IssuanceDebt{
 		IssuanceId: parm.IssuanceID,
-		Value:      valueInt64,
+		Value:      int64(math.Trunc((parm.Value+0.0000001)*1e4)) * 1e4,
 	}
 	debt := &IssuanceAction{
 		Ty:    IssuanceActionDebt,
@@ -205,7 +192,7 @@ func CreateRawIssuanceDebtTx(cfg *types.Chain33Config, parm *IssuanceDebtTx) (*t
 		To:      address.ExecAddress(cfg.ExecName(IssuanceX)),
 	}
 	name := cfg.ExecName(IssuanceX)
-	tx, err = types.FormatTx(cfg, name, tx)
+	tx, err := types.FormatTx(cfg, name, tx)
 	if err != nil {
 		return nil, err
 	}

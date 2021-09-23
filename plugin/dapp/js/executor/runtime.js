@@ -212,6 +212,7 @@ account.prototype.execGetBalance = function(execer, addr) {
     return get_balance(this, execer, addr)
 }
 
+//       ，         ，           
 account.prototype.transfer = function(from, to, amount) {
     var ret = transfer(this, from, to, amount)
     if (this.kvc) {
@@ -236,6 +237,7 @@ account.prototype.withdrawFromExec = function(execer, to, amount) {
     return ret.err
 }
 
+//                 
 account.prototype.execActive = function(execer, addr, amount) {
     var ret = exec_active(this, execer, addr, amount)
     if (this.kvc) {

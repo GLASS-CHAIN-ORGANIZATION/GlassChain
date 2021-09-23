@@ -18,7 +18,7 @@ import (
 type paraTxBlocksJob struct {
 	start        int64
 	end          int64
-	paraTxBlocks map[int64]*types.ParaTxDetail 
+	paraTxBlocks map[int64]*types.ParaTxDetail //       blocks
 	headers      *types.ParaTxDetails
 }
 
@@ -32,6 +32,7 @@ func newJumpDldCli(para *client, cfg *subConfig) *jumpDldClient {
 	return &jumpDldClient{paraClient: para}
 }
 
+//        block hash         blockhash  
 func verifyBlockHash(heights []*types.BlockInfo, blocks []*types.ParaTxDetail) error {
 	heightMap := make(map[int64][]byte)
 	for _, h := range heights {
@@ -61,6 +62,7 @@ func (j *jumpDldClient) getParaHeightList(startHeight, endHeight int64) ([]*type
 		if err == types.ErrNotFound || heights == nil || len(heights.Items) <= 0 {
 			return heightList, nil
 		}
+		//    ，         
 		for _, h := range heights.Items {
 			if h.Height >= startHeight && h.Height <= endHeight {
 				heightList = append(heightList, h)
@@ -78,6 +80,7 @@ func (j *jumpDldClient) getParaHeightList(startHeight, endHeight int64) ([]*type
 	}
 }
 
+//             offset      ，      
 func splitHeights2Rows(heights []*types.BlockInfo, offset int) [][]*types.BlockInfo {
 	var ret [][]*types.BlockInfo
 	for i := 0; i < len(heights); i += offset {
@@ -90,6 +93,8 @@ func splitHeights2Rows(heights []*types.BlockInfo, offset int) [][]*types.BlockI
 	return ret
 }
 
+//         1000          ，          ，                 ，            ，
+//                       1000      
 func getHeaderStartEndRange(startHeight, endHeight int64, arr [][]*types.BlockInfo, i int) (int64, int64) {
 	single := arr[i]
 	s := startHeight
@@ -134,6 +139,7 @@ func (j *jumpDldClient) process(job *paraTxBlocksJob) {
 		headMap[h.Header.Height] = h
 	}
 
+	//  header       paraTxBlocks
 	txBlocks := &types.ParaTxDetails{}
 	for i := job.start; i <= job.end; i++ {
 		if job.paraTxBlocks[i] != nil {
@@ -143,12 +149,14 @@ func (j *jumpDldClient) process(job *paraTxBlocksJob) {
 
 	if len(txBlocks.Items) > 0 {
 		for _, tx := range txBlocks.Items {
+			// 1.            hash                hash
 			if !bytes.Equal(tx.Header.Hash, headMap[tx.Header.Height].Header.Hash) {
 				plog.Error("jumpDldClient.process verifyhash", "height", tx.Header.Height,
 					"txHash", common.ToHex(tx.Header.Hash), "headerHash", common.ToHex(headMap[tx.Header.Height].Header.Hash))
 				atomic.StoreInt32(&j.downFail, 1)
 				return
 			}
+			// 2.     merkle            rootHash
 			if j.paraClient.GetAPI().GetConfig().IsFork(tx.Header.Height, "ForkRootHash") {
 				err := j.verifyTxMerkleRoot(tx, headMap)
 				if err != nil {
@@ -176,6 +184,7 @@ func (j *jumpDldClient) processTxJobs(ch chan *paraTxBlocksJob) {
 	}
 }
 
+//   list       ，              ，          
 func (j *jumpDldClient) fetchHeightListBlocks(hlist []int64, title string) (*types.ParaTxDetails, error) {
 	index := 0
 	retBlocks := &types.ParaTxDetails{}
@@ -192,6 +201,7 @@ func (j *jumpDldClient) fetchHeightListBlocks(hlist []int64, title string) (*typ
 		if index == len(hlist) {
 			return retBlocks, nil
 		}
+		//               
 		if index > len(hlist) {
 			plog.Error("jumpDld.getParaTxs fetchHeightListBlocks len", "index", index, "len", len(hlist), "start", list[0], "end", list[len(list)-1], "title", title)
 			return nil, err
@@ -250,6 +260,7 @@ func (j *jumpDldClient) procParaTxHeaders(startHeight, endHeight int64, paraBloc
 			plog.Error("jumpDld.procParaTxHeaders", "start", startHeight, "end", endHeight, "err", err)
 			return err
 		}
+		// 1000 header    ，                     
 		job := &paraTxBlocksJob{start: s, end: end, paraTxBlocks: paraBlocks, headers: headers}
 		jobCh <- job
 
@@ -260,15 +271,18 @@ func (j *jumpDldClient) procParaTxHeaders(startHeight, endHeight int64, paraBloc
 	return nil
 }
 
+// 1000header               ，            ，    ，1000paraTxBlocks     ，  headers  ，          
 func (j *jumpDldClient) getParaTxs(startHeight, endHeight int64, heights []*types.BlockInfo, jobCh chan *paraTxBlocksJob) error {
 	title := j.paraClient.GetAPI().GetConfig().GetTitle()
 	heightsRows := splitHeights2Rows(heights, int(types.MaxBlockCountPerTime))
 
 	for i, row := range heightsRows {
+		//     1000 paraTxBlocks
 		paraBlocks, err := j.getParaTxsBlocks(row, title)
 		if err != nil {
 			return err
 		}
+		//  1000 paraTxBlocks       header     ，header      paraTxBlocks  
 		headerStart, headerEnd := getHeaderStartEndRange(startHeight, endHeight, heightsRows, i)
 		plog.Debug("jumpDld.getParaTxs", "headerStart", headerStart, "headerEnd", headerEnd, "i", i)
 		err = j.procParaTxHeaders(headerStart, headerEnd, paraBlocks, jobCh)
@@ -284,6 +298,10 @@ func (j *jumpDldClient) getParaTxs(startHeight, endHeight int64, heights []*type
 	return nil
 }
 
+//Jump Download                    ，      ：
+//0.          1w      ，      ，  addType　block
+//1.               ，  5s  
+//2.                         1000  ，          headers，    ，    headers         
 func (j *jumpDldClient) tryJumpDownload() {
 	curMainHeight, err := j.paraClient.GetLastHeightOnMainChain()
 	if err != nil {
@@ -291,6 +309,7 @@ func (j *jumpDldClient) tryJumpDownload() {
 		return
 	}
 
+	//       ，         
 	_, localBlock, err := j.paraClient.switchLocalHashMatchedBlock()
 	if err != nil {
 		plog.Error("tryJumpDownload switch local height", "err", err.Error())
@@ -305,6 +324,7 @@ func (j *jumpDldClient) tryJumpDownload() {
 	}
 	plog.Info("tryJumpDownload", "start", startHeight, "end", endHeight)
 
+	//1.               
 	t1 := types.Now()
 	heights, err := j.getParaHeightList(startHeight, endHeight)
 	if err != nil {
@@ -316,6 +336,7 @@ func (j *jumpDldClient) tryJumpDownload() {
 	}
 	plog.Info("tryJumpDownload.getParaHeightList", "time", types.Since(t1))
 
+	//2.                   
 	jobsCh := make(chan *paraTxBlocksJob, defaultJobBufferNum)
 	j.wg.Add(1)
 	go j.processTxJobs(jobsCh)
@@ -323,6 +344,7 @@ func (j *jumpDldClient) tryJumpDownload() {
 	t1 = types.Now()
 	err = j.getParaTxs(startHeight, endHeight, heights, jobsCh)
 	if err != nil {
+		//  close　processTxJobs　    
 		plog.Error("tryJumpDownload.getParaTxs", "err", err)
 	}
 

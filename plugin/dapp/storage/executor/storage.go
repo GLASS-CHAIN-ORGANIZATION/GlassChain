@@ -8,12 +8,12 @@ import (
 )
 
 /*
- * 
- * 
+ *        
+ *         
  */
 
 var (
-	/ 
+	//  
 	elog = log.New("module", "storage.executor")
 )
 
@@ -51,7 +51,7 @@ func (s *storage) GetDriverName() string {
 	return driverName
 }
 
-//ExecutorOrder Exec   ExecLocal
+//ExecutorOrder Exec          ExecLocal
 func (s *storage) ExecutorOrder() int64 {
 	cfg := s.GetAPI().GetConfig()
 	if cfg.IsDappFork(s.GetHeight(), storagetypes.StorageX, storagetypes.ForkStorageLocalDB) {
@@ -60,7 +60,7 @@ func (s *storage) ExecutorOrder() int64 {
 	return s.DriverBase.ExecutorOrder()
 }
 
-// CheckTx  
+// CheckTx            ，     
 func (s *storage) CheckTx(tx *types.Transaction, index int) error {
 	// implement code
 	return nil

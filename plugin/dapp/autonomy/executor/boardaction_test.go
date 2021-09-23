@@ -111,7 +111,7 @@ var (
 		Addr16,
 		Addr17,
 	}
-	total = types.DefaultCoinPrecision * 30000
+	total = types.Coin * 30000
 )
 
 func init() {
@@ -119,6 +119,7 @@ func init() {
 	Init(auty.AutonomyX, chainTestCfg, nil)
 }
 
+// InitEnv      
 func InitEnv() (*ExecEnv, drivers.Driver, dbm.KV, dbm.KVDB) {
 	//cfg := types.NewChain33Config(types.GetDefaultCfgstring())
 	accountA := types.Account{
@@ -210,7 +211,7 @@ func TestPropBoard(t *testing.T) {
 			StartBlockHeight: env.blockHeight + 5,
 			EndBlockHeight:   env.blockHeight + startEndBlockPeriod + 10,
 		},
-		{ 
+		{ //   
 			Update:           true,
 			Boards:           []string{"18e1nfiux7aVSfN2zYUZhbidMRokbBSPA6"},
 			StartBlockHeight: env.blockHeight + 5,
@@ -229,7 +230,7 @@ func TestPropBoard(t *testing.T) {
 			StartBlockHeight: env.blockHeight + 5,
 			EndBlockHeight:   env.blockHeight + startEndBlockPeriod + 10,
 		},
-		{ 
+		{ //   
 			Update:           false,
 			Boards:           boards,
 			StartBlockHeight: env.blockHeight + 5,
@@ -319,6 +320,7 @@ func testPropBoard(t *testing.T, env *ExecEnv, exec drivers.Driver, stateDB dbm.
 		}
 	}
 
+	//   tahash
 	env.txHash = common.ToHex(pbtx.Hash())
 	env.startHeight = opt1.StartBlockHeight
 	env.endHeight = opt1.EndBlockHeight
@@ -327,7 +329,7 @@ func testPropBoard(t *testing.T, env *ExecEnv, exec drivers.Driver, stateDB dbm.
 	accCoin := account.NewCoinsAccount(chainTestCfg)
 	accCoin.SetDB(stateDB)
 	account := accCoin.LoadExecAccount(AddrA, autonomyAddr)
-	assert.Equal(t, proposalAmount*types.DefaultCoinPrecision, account.Frozen)
+	assert.Equal(t, proposalAmount, account.Frozen)
 }
 
 func propBoardTx(parm *auty.ProposalBoard) (*types.Transaction, error) {
@@ -418,6 +420,7 @@ func voteProposalBoard(t *testing.T, env *ExecEnv, exec drivers.Driver, stateDB 
 	exec.SetAPI(api)
 
 	proposalID := env.txHash
+	// 4     ，3    ，1    
 	type record struct {
 		priv   string
 		appr   bool
@@ -439,6 +442,7 @@ func voteProposalBoard(t *testing.T, env *ExecEnv, exec drivers.Driver, stateDB 
 		assert.NoError(t, err)
 		tx, err = signTx(tx, record.priv)
 		assert.NoError(t, err)
+		//            
 		exec.SetEnv(env.startHeight, env.blockTime, env.difficulty)
 
 		receipt, err := exec.Exec(tx, int(1))
@@ -463,6 +467,7 @@ func voteProposalBoard(t *testing.T, env *ExecEnv, exec drivers.Driver, stateDB 
 		assert.NoError(t, err)
 		assert.NotNil(t, set)
 
+		//         ,                   
 		if i+1 < len(records) {
 			for j := 0; j < len(records[i+1].origin); j++ {
 				acc := &types.Account{
@@ -483,7 +488,7 @@ func voteProposalBoard(t *testing.T, env *ExecEnv, exec drivers.Driver, stateDB 
 	account := accCoin.LoadExecAccount(AddrA, autonomyAddr)
 	assert.Equal(t, int64(0), account.Frozen)
 	account = accCoin.LoadExecAccount(autonomyAddr, autonomyAddr)
-	assert.Equal(t, proposalAmount*types.DefaultCoinPrecision, account.Balance)
+	assert.Equal(t, proposalAmount, account.Balance)
 	// status
 	value, err := stateDB.Get(propBoardID(proposalID))
 	assert.NoError(t, err)
@@ -591,7 +596,7 @@ func TestGetStartHeightVoteAccount(t *testing.T) {
 
 	acc := &types.Account{
 		Currency: 0,
-		Balance:  types.DefaultCoinPrecision,
+		Balance:  types.Coin,
 	}
 	val := types.Encode(acc)
 	values := [][]byte{val}
@@ -603,7 +608,7 @@ func TestGetStartHeightVoteAccount(t *testing.T) {
 	account, err := action.getStartHeightVoteAccount(addr, "", 0)
 	assert.NoError(t, err)
 	assert.NotNil(t, account)
-	assert.Equal(t, types.DefaultCoinPrecision, account.Balance)
+	assert.Equal(t, types.Coin, account.Balance)
 }
 
 func TestGetReceiptLog(t *testing.T) {
@@ -668,6 +673,7 @@ func TestVerifyMinerAddr(t *testing.T) {
 		AddrB,
 		AddrC,
 	}
+	//     AddrD
 	for _, addr := range addrs {
 		tkBind := &ticketTy.TicketBind{
 			MinerAddress:  AddrD,

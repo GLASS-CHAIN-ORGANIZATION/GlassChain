@@ -27,7 +27,7 @@ const (
 const (
 	CollateralizeX                   = "collateralize"
 	CCNYTokenName                    = "CCNY"
-	CollateralizePreLiquidationRatio = 1.1 * 1e4 
+	CollateralizePreLiquidationRatio = 1.1 * 1e4 //TODO      ，         ccny  110%       
 )
 
 //Collateralize status
@@ -36,6 +36,7 @@ const (
 	CollateralizeStatusClose
 )
 
+//     bty
 //const (
 //	CollateralizeAssetTypeBty = 1 + iota
 //	CollateralizeAssetTypeBtc

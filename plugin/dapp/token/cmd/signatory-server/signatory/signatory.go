@@ -20,13 +20,10 @@ import (
 
 var log = l.New("module", "signatory")
 
-// Signatory 
+// Signatory     
 type Signatory struct {
 	Privkey string
 }
-
-const coinExec = "coins"
-const coinPrecision = int64(1e8)
 
 // Echo echo
 func (*Signatory) Echo(in *string, out *interface{}) error {
@@ -37,14 +34,14 @@ func (*Signatory) Echo(in *string, out *interface{}) error {
 	return nil
 }
 
-// TokenFinish toke 
+// TokenFinish token    
 type TokenFinish struct {
 	OwnerAddr string `json:"ownerAddr"`
 	Symbol    string `json:"symbol"`
 	//	Fee       int64  `json:"fee"`
 }
 
-// SignApprove 
+// SignApprove     
 func (signatory *Signatory) SignApprove(in *TokenFinish, out *interface{}) error {
 	if in == nil {
 		return types.ErrInvalidParam
@@ -80,7 +77,7 @@ func (signatory *Signatory) SignApprove(in *TokenFinish, out *interface{}) error
 	return nil
 }
 
-// SignTransfer ，in  out 
+// SignTransfer     ，in         out       
 func (signatory *Signatory) SignTransfer(in *string, out *interface{}) error {
 	if in == nil {
 		return types.ErrInvalidParam
@@ -89,7 +86,7 @@ func (signatory *Signatory) SignTransfer(in *string, out *interface{}) error {
 		return types.ErrInvalidParam
 	}
 
-	amount := 1 * coinPrecision
+	amount := 1 * types.Coin
 	v := &types.AssetsTransfer{
 		Amount: amount,
 		Note:   []byte("transfer 1 bty by signatory-server"),
@@ -100,7 +97,7 @@ func (signatory *Signatory) SignTransfer(in *string, out *interface{}) error {
 	}
 
 	tx := &types.Transaction{
-		Execer:  []byte(coinExec),
+		Execer:  []byte("coins"),
 		Payload: types.Encode(transfer),
 		To:      *in,
 		Nonce:   rand.New(rand.NewSource(time.Now().UnixNano())).Int63(),

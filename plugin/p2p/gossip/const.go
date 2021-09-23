@@ -54,7 +54,7 @@ const (
 	Service int32 = nodeBloom + nodeNetwork + nodeGetUTXO
 )
 
-// leveldb p2p privkey,addrkey
+// leveldb  p2p privkey,addrkey
 const (
 	addrkeyTag = "addrs"
 	privKeyTag = "privkey"
@@ -71,10 +71,10 @@ const (
 // P2pCacheTxSize p2pcache size of transaction
 const (
 	PeerAddrCacheNum = 1000
-	/ mempoo 
+	//             mempool       
 	TxRecvFilterCacheNum = 10240
 	BlockFilterCacheNum  = 50
-	/ , , 
+	//               ,          ,        
 	TxSendFilterCacheNum  = 500
 	BlockCacheNum         = 10
 	MaxBlockCacheByteSize = 100 * 1024 * 1024

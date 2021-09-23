@@ -1,33 +1,33 @@
-## Loan Contract Table Structure
+##        
 
-### Loan table coller table structure
-Field name|Type|Description
+###    coller   
+    |  |  
 ---|---|---
-collateralizeId|string|Lending ID, primary key
-accountAddr|string|big account address
-recordId|string|Loan ID
-status|int32|Lending status (1: loaned 2: recovered)
+collateralizeId|string|  ID，  
+accountAddr|string|    
+recordId|string|  ID
+status|int32|    （1：    2：   ）
 
-### Loan table coller table index
-Index name|Description
+###    coller   
+   |  
 ---|---
-status|Query the loan ID according to the loan status
-addr|Query the loan ID according to the address of the big account
-addr_status|Query the loan ID according to the loan status and the address of the major account
+status|          ID
+addr|          ID
+addr_status|               ID
 
-### Borrow table structure
-Field name|Type|Description
+###    borrow   
+    |  |  
 ---|---|---
-recordId|string|Loan ID, primary key
-collateralizeId|string|Lending ID
-accountAddr|string|User address
-status|int32|Lending status (1: issued 2: price clearing alarm 3: price clearing 4: overtime clearing alarm 5: overtime clearing 6: cleared)
+recordId|string|  ID，  
+collateralizeId|string|  ID
+accountAddr|string|    
+status|int32|    （1：    2：       3：     4：       5：     6：   ）
 
-### Loan table borrow table index
-Index name|Description
+###    borrow   
+   |  
 ---|---
-status|Query the loan ID according to the loan status
-addr|Query the loan ID according to the address of the big account
-addr_status|Query the loan ID according to the loan status and user address
-id_status|Query the loan ID according to the loan ID and loan status
-id_addr|Query the loan ID according to the loan ID and user address
+status|          ID
+addr|          ID
+addr_status|               ID
+id_status|    ID         ID
+id_addr|    ID         ID

@@ -146,6 +146,7 @@ func TestVote_CheckTx_CommitVote(t *testing.T) {
 
 	groupID := formatGroupID(dapp.HeightIndexStr(testHeight, 0))
 	voteID := formatVoteID(dapp.HeightIndexStr(testHeight, 1))
+	vote2 := formatVoteID(dapp.HeightIndexStr(testHeight, 7))
 	tcArr := []*testcase{{
 		index:    0,
 		payload:  &vty.CreateGroup{Name: "test", Members: []*vty.GroupMember{{Addr: testAddrs[0]}}},
@@ -191,10 +192,9 @@ func TestVote_CheckTx_CommitVote(t *testing.T) {
 		},
 		execType: testTypeExecLocal,
 	}, {
-		index:         8,
-		payload:       &vty.CommitVote{VoteID: formatVoteID(dapp.HeightIndexStr(testHeight, 7))},
-		execType:      testTypeExec,
-		expectExecErr: errVoteNotStarted,
+		index:          8,
+		payload:        &vty.CommitVote{VoteID: vote2},
+		expectCheckErr: errVoteNotStarted,
 	}}
 
 	testExec(t, nil, testTypeCheckTx, tcArr, privKeys[0])

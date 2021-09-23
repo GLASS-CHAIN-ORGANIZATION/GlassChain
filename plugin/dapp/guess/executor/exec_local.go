@@ -33,7 +33,7 @@ func (g *Guess) updateIndex(log *gty.ReceiptGuessGame) (kvs []*types.KeyValue, e
 	}
 
 	if log.Status == gty.GuessGameStatusStart {
-
+		//     ,game     
 		game := log.Game
 		log.Game = nil
 
@@ -47,6 +47,7 @@ func (g *Guess) updateIndex(log *gty.ReceiptGuessGame) (kvs []*types.KeyValue, e
 			return nil, err
 		}
 	} else if log.Status == gty.GuessGameStatusBet {
+		//    ，game     (game        )，user       
 		game := log.Game
 		log.Game = nil
 		userBet := g.getUserBet(log)
@@ -66,6 +67,7 @@ func (g *Guess) updateIndex(log *gty.ReceiptGuessGame) (kvs []*types.KeyValue, e
 			return nil, err
 		}
 	} else if log.StatusChange {
+		//    ，      ，     game 
 		game := log.Game
 		log.Game = nil
 

@@ -17,17 +17,21 @@ func (g *Guess) rollbackGame(game *gty.GuessGame, log *gty.ReceiptGuessGame) {
 		return
 	}
 
+	//         ，               
 	if log.StatusChange {
 		game.Status = log.PreStatus
 		game.Index = log.PreIndex
 
+		//      index  
 		for i := 0; i < len(game.Plays); i++ {
 			player := game.Plays[i]
 			player.Bet.Index = player.Bet.PreIndex
 		}
 	}
 
+	//     ，        
 	if log.Bet {
+		//      
 		game.BetStat.TotalBetTimes--
 		game.BetStat.TotalBetsNumber -= log.BetsNumber
 		for i := 0; i < len(game.BetStat.Items); i++ {
@@ -39,6 +43,7 @@ func (g *Guess) rollbackGame(game *gty.GuessGame, log *gty.ReceiptGuessGame) {
 			}
 		}
 
+		//        
 		for i := 0; i < len(game.Plays); i++ {
 			player := game.Plays[i]
 			if player.Addr == log.Addr && player.Bet.Index == log.Index {
@@ -60,7 +65,7 @@ func (g *Guess) rollbackIndex(log *gty.ReceiptGuessGame) (kvs []*types.KeyValue,
 	}
 
 	if log.Status == gty.GuessGameStatusStart {
-
+		//       ,game     
 		err = gameTable.Del([]byte(fmt.Sprintf("%018d", log.StartIndex)))
 		if err != nil {
 			return nil, err
@@ -68,10 +73,11 @@ func (g *Guess) rollbackIndex(log *gty.ReceiptGuessGame) (kvs []*types.KeyValue,
 		kvs, err = tableJoin.Save()
 		return kvs, err
 	} else if log.Status == gty.GuessGameStatusBet {
-
+		//    ，        ，      
 		game := log.Game
 		log.Game = nil
 
+		//       ，     
 		g.rollbackGame(game, log)
 
 		err = tableJoin.MustGetTable("game").Replace(game)
@@ -89,9 +95,11 @@ func (g *Guess) rollbackIndex(log *gty.ReceiptGuessGame) (kvs []*types.KeyValue,
 			return nil, err
 		}
 	} else if log.StatusChange {
+		//                ，         ，       。
 		game := log.Game
 		log.Game = nil
 
+		//       ，     
 		g.rollbackGame(game, log)
 
 		err = tableJoin.MustGetTable("game").Replace(game)
@@ -131,18 +139,22 @@ func (g *Guess) execDelLocal(receipt *types.ReceiptData) (*types.LocalDBSet, err
 	return dbSet, nil
 }
 
+//ExecDelLocal_Start Guess   Start    
 func (g *Guess) ExecDelLocal_Start(payload *gty.GuessGameStart, tx *types.Transaction, receiptData *types.ReceiptData, index int) (*types.LocalDBSet, error) {
 	return g.execLocal(receiptData)
 }
 
+//ExecDelLocal_Bet Guess   Bet    
 func (g *Guess) ExecDelLocal_Bet(payload *gty.GuessGameBet, tx *types.Transaction, receiptData *types.ReceiptData, index int) (*types.LocalDBSet, error) {
 	return g.execLocal(receiptData)
 }
 
+//ExecDelLocal_Publish Guess   Publish    
 func (g *Guess) ExecDelLocal_Publish(payload *gty.GuessGamePublish, tx *types.Transaction, receiptData *types.ReceiptData, index int) (*types.LocalDBSet, error) {
 	return g.execLocal(receiptData)
 }
 
+//ExecDelLocal_Abort Guess   Abort    
 func (g *Guess) ExecDelLocal_Abort(payload *gty.GuessGameAbort, tx *types.Transaction, receiptData *types.ReceiptData, index int) (*types.LocalDBSet, error) {
 	return g.execLocal(receiptData)
 }

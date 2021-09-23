@@ -4,3 +4,17 @@
 
 package executor
 
+/*
+        Dpos  ，  （1）       、   、       。（2）Dpos       ，   TopN（N          ）     VRF            。
+    ：
+（1）       ，                 。
+（2）     ，          ，          10000  （    ），        。
+（3）           ，        。
+（4）                。   ，     ，3          。
+（5）       ，         （  10    ），          ，              。
+（6）          ，  cycle（  cycle ，          ，      ）       VRF    ：
+          ，           VRF M  
+          ，           VRF R、P  
+       VRF M、R、P    。
+（7）  cycle ，    VRF                  ，                 
+*/

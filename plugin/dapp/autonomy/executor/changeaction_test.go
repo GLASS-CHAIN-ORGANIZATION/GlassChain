@@ -107,6 +107,7 @@ func testPropChange(t *testing.T, env *ExecEnv, exec drivers.Driver, stateDB dbm
 		}
 	}
 
+	//   tahash
 	env.txHash = common.ToHex(pbtx.Hash())
 	env.startHeight = opt1.StartBlockHeight
 	env.endHeight = opt1.EndBlockHeight
@@ -115,7 +116,7 @@ func testPropChange(t *testing.T, env *ExecEnv, exec drivers.Driver, stateDB dbm
 	accCoin := account.NewCoinsAccount(chainTestCfg)
 	accCoin.SetDB(stateDB)
 	account := accCoin.LoadExecAccount(AddrA, autonomyAddr)
-	assert.Equal(t, proposalAmount*types.DefaultCoinPrecision, account.Frozen)
+	assert.Equal(t, proposalAmount, account.Frozen)
 }
 
 func propChangeTx(parm *auty.ProposalChange) (*types.Transaction, error) {
@@ -238,6 +239,7 @@ func voteProposalChange(t *testing.T, env *ExecEnv, exec drivers.Driver, stateDB
 		assert.NoError(t, err)
 		tx, err = signTx(tx, record.priv)
 		assert.NoError(t, err)
+		//            
 		exec.SetEnv(env.startHeight, env.blockTime, env.difficulty)
 
 		receipt, err := exec.Exec(tx, int(1))
@@ -262,6 +264,7 @@ func voteProposalChange(t *testing.T, env *ExecEnv, exec drivers.Driver, stateDB
 		assert.NoError(t, err)
 		assert.NotNil(t, set)
 
+		//         
 		acc := &types.Account{
 			Currency: 0,
 			Frozen:   total,
@@ -278,7 +281,7 @@ func voteProposalChange(t *testing.T, env *ExecEnv, exec drivers.Driver, stateDB
 	account := accCoin.LoadExecAccount(AddrA, autonomyAddr)
 	assert.Equal(t, int64(0), account.Frozen)
 	account = accCoin.LoadExecAccount(autonomyAddr, autonomyAddr)
-	assert.Equal(t, proposalAmount*types.DefaultCoinPrecision, account.Balance)
+	assert.Equal(t, proposalAmount, account.Balance)
 	// status
 	value, err := stateDB.Get(propChangeID(proposalID))
 	assert.NoError(t, err)
@@ -359,6 +362,7 @@ func voteErrorProposalChange(t *testing.T, env *ExecEnv, exec drivers.Driver, st
 		assert.NoError(t, err)
 		tx, err = signTx(tx, record.priv)
 		assert.NoError(t, err)
+		//            
 		exec.SetEnv(env.startHeight, env.blockTime, env.difficulty)
 
 		receipt, err := exec.Exec(tx, int(1))
@@ -386,6 +390,7 @@ func voteErrorProposalChange(t *testing.T, env *ExecEnv, exec drivers.Driver, st
 			assert.NoError(t, err)
 			assert.NotNil(t, set)
 
+			//         
 			acc := &types.Account{
 				Currency: 0,
 				Frozen:   total,
@@ -403,7 +408,7 @@ func voteErrorProposalChange(t *testing.T, env *ExecEnv, exec drivers.Driver, st
 	account := accCoin.LoadExecAccount(AddrA, autonomyAddr)
 	assert.Equal(t, int64(0), account.Frozen)
 	account = accCoin.LoadExecAccount(autonomyAddr, autonomyAddr)
-	assert.Equal(t, proposalAmount*types.DefaultCoinPrecision, account.Balance)
+	assert.Equal(t, proposalAmount, account.Balance)
 	// status
 	value, err := stateDB.Get(propChangeID(proposalID))
 	assert.NoError(t, err)
@@ -533,12 +538,14 @@ func TestCheckChangeable(t *testing.T) {
 		Boards: boards,
 	}
 
+	//         
 	changes := []*auty.Change{{Cancel: true, Addr: AddrA}}
 	cur, err := action.checkChangeable(act, changes)
 	assert.NoError(t, err)
 	assert.Equal(t, len(cur.Boards), len(boards)-1)
 	assert.Equal(t, cur.Revboards[0], AddrA)
 
+	//       
 	changes = []*auty.Change{
 		{Cancel: false, Addr: AddrA},
 	}
@@ -547,6 +554,7 @@ func TestCheckChangeable(t *testing.T) {
 	assert.Equal(t, len(ncur.Boards), len(boards))
 	assert.Equal(t, len(ncur.Revboards), 0)
 
+	//       ，      minBoards
 	changes = []*auty.Change{
 		{Cancel: true, Addr: AddrA},
 		{Cancel: true, Addr: AddrB},
@@ -554,12 +562,14 @@ func TestCheckChangeable(t *testing.T) {
 	_, err = action.checkChangeable(act, changes)
 	assert.Equal(t, err, auty.ErrBoardNumber)
 
+	//             
 	changes = []*auty.Change{
 		{Cancel: false, Addr: AddrA},
 	}
 	_, err = action.checkChangeable(act, changes)
 	assert.Equal(t, err, auty.ErrChangeBoardAddr)
 
+	//          
 	changes = []*auty.Change{
 		{Cancel: true, Addr: "1111111111"},
 	}

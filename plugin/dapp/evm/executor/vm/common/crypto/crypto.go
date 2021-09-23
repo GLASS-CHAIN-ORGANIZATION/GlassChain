@@ -8,13 +8,15 @@ import (
 	"crypto/ecdsa"
 	"math/big"
 
-	ethCrypto "github.com/ethereum/go-ethereum/crypto"
-
+	"github.com/33cn/chain33/common/address"
+	"github.com/33cn/chain33/common/crypto"
+	"github.com/33cn/chain33/types"
 	"github.com/33cn/plugin/plugin/dapp/evm/executor/vm/common"
 	"github.com/btcsuite/btcd/btcec"
 	"golang.org/x/crypto/sha3"
 )
 
+// ValidateSignatureValues           
 func ValidateSignatureValues(r, s *big.Int) bool {
 	if r.Cmp(common.Big1) < 0 || s.Cmp(common.Big1) < 0 {
 		return false
@@ -22,15 +24,17 @@ func ValidateSignatureValues(r, s *big.Int) bool {
 	return true
 }
 
+// Ecrecover          ，          
 func Ecrecover(hash, sig []byte) ([]byte, error) {
-	unpressedPub, err := ethCrypto.SigToPub(hash, sig)
+	pub, err := SigToPub(hash, sig)
 	if err != nil {
 		return nil, err
 	}
-	bytes := (*btcec.PublicKey)(unpressedPub).SerializeCompressed()
+	bytes := (*btcec.PublicKey)(pub).SerializeUncompressed()
 	return bytes, err
 }
 
+// SigToPub           
 func SigToPub(hash, sig []byte) (*ecdsa.PublicKey, error) {
 	btcsig := make([]byte, 65)
 	btcsig[0] = sig[64] + 27
@@ -40,6 +44,23 @@ func SigToPub(hash, sig []byte) (*ecdsa.PublicKey, error) {
 	return (*ecdsa.PublicKey)(pub), err
 }
 
+// RandomContractAddress           ，           
+func RandomContractAddress() *common.Address {
+	c, err := crypto.New(types.GetSignName("", types.SECP256K1))
+	if err != nil {
+		return nil
+	}
+	key, err := c.GenKey()
+	if err != nil {
+		return nil
+	}
+
+	acc := address.PubKeyToAddress(key.PubKey().Bytes())
+	ret := common.StringToAddress(address.ExecAddress(acc.String()))
+	return ret
+}
+
+// Keccak256       Keccak256   
 func Keccak256(data ...[]byte) []byte {
 	d := sha3.NewLegacyKeccak256()
 	for _, b := range data {
@@ -57,10 +78,4 @@ func Keccak256Hash(data ...[]byte) (h common.Hash) {
 	}
 	d.Sum(h[:0])
 	return h
-}
-
-// CreateAddress2 creates an ethereum address given the address bytes, initial
-// contract code hash and a salt.
-func CreateAddress2(b common.Address, salt [32]byte, inithash []byte) common.Address {
-	return common.BytesToAddress(Keccak256([]byte{0xff}, b.Bytes(), salt[:], inithash))
 }

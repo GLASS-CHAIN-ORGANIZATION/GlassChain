@@ -141,7 +141,7 @@ func (s *P2pserver) Version2(ctx context.Context, in *pb.P2PVersion) (*pb.P2PVer
 		log.Error("Version2", "get grpc peer addr err", err)
 		return nil, fmt.Errorf("get grpc peer addr err:%s", err.Error())
 	}
-	//addrFrom ，addrRecv 
+	//addrFrom:         ，addrRecv:         
 	_, port, err := net.SplitHostPort(in.AddrFrom)
 	if err != nil {
 		return nil, fmt.Errorf("AddrFrom format err")
@@ -252,7 +252,7 @@ func (s *P2pserver) GetData(in *pb.P2PGetData, stream pb.P2Pgservice_GetDataServ
 
 	invs := in.GetInvs()
 	client := s.node.nodeInfo.client
-	for _, inv := range invs { / 
+	for _, inv := range invs { //         
 		var invdata pb.InvData
 		var memtx = make(map[string]*pb.Transaction)
 		if inv.GetTy() == msgTx {
@@ -279,7 +279,7 @@ func (s *P2pserver) GetData(in *pb.P2PGetData, stream pb.P2Pgservice_GetDataServ
 			err := client.Send(msg, true)
 			if err != nil {
 				log.Error("GetBlocks", "Error", err.Error())
-				return err //blockchain   continue
+				return err //blockchain     ，    ，   continue
 			}
 			resp, err := client.WaitTimeout(msg, time.Second*20)
 			if err != nil {
@@ -420,15 +420,15 @@ func (s *P2pserver) ServerStreamSend(in *pb.P2PPing, stream pb.P2Pgservice_Serve
 		return fmt.Errorf("get grpc peer addr err:%s", err.Error())
 	}
 	peerAddr := fmt.Sprintf("%s:%v", peerIP, in.GetPort())
-	/ ReadStrea versio 
+	//  ReadStream    version  
 	var peerInfo *innerpeer
 	var reTry int32
 	peerName := hex.EncodeToString(in.GetSign().GetPubkey())
-	/ IP:Port key I  peerName 
+	//     IP:Port   key,              IP   , peerName        
 	for ; peerInfo == nil || peerInfo.p2pversion == 0; peerInfo = s.getInBoundPeerInfo(peerName) {
 		time.Sleep(time.Second)
 		reTry++
-		if reTry > 5 { /  goroutine  
+		if reTry > 5 { //         ，  goroutine     ，      
 			return fmt.Errorf("can not find peer:%v", peerAddr)
 		}
 	}
@@ -465,7 +465,7 @@ func (s *P2pserver) ServerStreamRead(stream pb.P2Pgservice_ServerStreamReadServe
 	}
 
 	var peeraddr, peername string
-	/ delet defe ,  , peeradd 
+	//  delete defer  ,       ,      , peeraddr       
 	defer s.deleteInBoundPeerInfo(&peername)
 	defer stream.SendAndClose(&pb.ReqNil{})
 
@@ -482,7 +482,7 @@ func (s *P2pserver) ServerStreamRead(stream pb.P2Pgservice_ServerStreamReadServe
 		if s.node.processRecvP2P(in, peername, s.pubToStream, peeraddr) {
 
 		} else if ver := in.GetVersion(); ver != nil {
-			/ 
+			//      
 			peername = ver.GetPeername()
 			softversion := ver.GetSoftversion()
 			innerpeer := s.getInBoundPeerInfo(peername)
@@ -491,17 +491,17 @@ func (s *P2pserver) ServerStreamRead(stream pb.P2Pgservice_ServerStreamReadServe
 				return pb.ErrP2PChannel
 			}
 			if innerpeer != nil {
-				/ , data race
+				//          ,   data race
 				info := *innerpeer
 				info.p2pversion = p2pVersion
 				info.softversion = softversion
 				s.addInBoundPeerInfo(peername, info)
 			} else {
-				/ peer  pin 
+				//     peer    ，      ping    
 				return pb.ErrStreamPing
 			}
 
-		} else if ping := in.GetPing(); ping != nil { //  ping  inboundpeers.
+		} else if ping := in.GetPing(); ping != nil { ///          ，   ping    ，      inboundpeers.
 			//Ping package
 			if !P2pComm.CheckSign(ping) {
 				log.Error("ServerStreamRead", "check stream", "check sig err")
@@ -540,7 +540,7 @@ func (s *P2pserver) CollectInPeers(ctx context.Context, in *pb.P2PPing) (*pb.Pee
 			continue
 		}
 
-		p2pPeers = append(p2pPeers, &pb.Peer{Name: inpeer.name, Addr: ip, Port: int32(port)}) // name,addr,por  peer num.
+		p2pPeers = append(p2pPeers, &pb.Peer{Name: inpeer.name, Addr: ip, Port: int32(port)}) ///  name,addr,port  ，    peer num.
 	}
 	return &pb.PeerList{Peers: p2pPeers}, nil
 }
@@ -565,7 +565,7 @@ func (s *P2pserver) CollectInPeers2(ctx context.Context, in *pb.P2PPing) (*pb.Pe
 		}
 
 		p2pPeers = append(p2pPeers, &pb.PeersInfo{Name: inpeer.name, Ip: ip, Port: int32(port),
-			Softversion: inpeer.softversion, P2Pversion: inpeer.p2pversion}) // name,addr,por  peer num.
+			Softversion: inpeer.softversion, P2Pversion: inpeer.p2pversion}) ///  name,addr,port  ，    peer num.
 	}
 
 	return &pb.PeersReply{Peers: p2pPeers}, nil
@@ -597,7 +597,7 @@ func (s *P2pserver) loadMempool() (map[string]*pb.Transaction, error) {
 
 func (s *P2pserver) manageStream() {
 
-	go func() { / block stream ping
+	go func() { //    block stream ping
 		ticker := time.NewTicker(StreamPingTimeout)
 		defer ticker.Stop()
 		for {
@@ -624,7 +624,7 @@ func (s *P2pserver) addStreamHandler(peerName string) chan interface{} {
 	s.smtx.Lock()
 	defer s.smtx.Unlock()
 	if dataChan, ok := s.streams[peerName]; ok {
-		/ , , 
+		//         ,        ,         
 		close(dataChan)
 	}
 
@@ -632,7 +632,7 @@ func (s *P2pserver) addStreamHandler(peerName string) chan interface{} {
 	return s.streams[peerName]
 }
 
-/ 
+//          
 func (s *P2pserver) pubToAllStream(data interface{}) {
 	s.smtx.Lock()
 	defer s.smtx.Unlock()
@@ -648,7 +648,7 @@ func (s *P2pserver) pubToAllStream(data interface{}) {
 	}
 }
 
-/ 
+//        
 func (s *P2pserver) pubToStream(data interface{}, peerName string) {
 	s.smtx.Lock()
 	defer s.smtx.Unlock()

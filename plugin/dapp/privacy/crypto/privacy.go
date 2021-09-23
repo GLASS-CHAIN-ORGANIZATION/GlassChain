@@ -158,7 +158,7 @@ func RecoverOnetimePriKey(R []byte, viewSecretKey, spendSecretKey crypto.PrivKey
 
 	var point2 edwards25519.ProjectiveGroupElement
 	zeroValue := &[32]byte{}
-	//TODO aR
+	//TODO,           aR
 	edwards25519.GeDoubleScalarMultVartime(&point2, viewSecAddr, &point, zeroValue)
 	var point3 edwards25519.CompletedGroupElement
 	mul8(&point3, &point2)
@@ -175,7 +175,7 @@ func RecoverOnetimePriKey(R []byte, viewSecretKey, spendSecretKey crypto.PrivKey
 	//Hs(aR)
 	HsAR := derivation2scalar(aR, outputIndex)
 
-	//TODO 
+	//TODO:    
 	//var onetimePriKey PrivKeyEd25519
 	//onetimePriKeyAddr := (*[32]byte)(unsafe.Pointer(&onetimePriKey.Bytes()[0]))
 	//edwards25519.ScAdd(onetimePriKeyAddr, HsAR, spendSecAddr)
@@ -195,7 +195,7 @@ func RecoverOnetimePriKey(R []byte, viewSecretKey, spendSecretKey crypto.PrivKey
 //	return keyImage
 //
 //}
-/ realUtxoIndex utx 
+//   realUtxoIndex，    utxo            
 //func GenerateRingSignature(data []byte, utxos []*types.UTXO, realUtxoIndex int, sk []byte, keyImage []byte) Signature {
 //
 //	return nil

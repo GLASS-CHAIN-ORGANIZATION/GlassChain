@@ -11,6 +11,7 @@ import (
 	evmtypes "github.com/33cn/plugin/plugin/dapp/evm/types"
 )
 
+// ExecLocal           
 func (evm *EVMExecutor) ExecLocal(tx *types.Transaction, receipt *types.ReceiptData, index int) (*types.LocalDBSet, error) {
 	set, err := evm.DriverBase.ExecLocal(tx, receipt, index)
 	if err != nil {
@@ -21,7 +22,7 @@ func (evm *EVMExecutor) ExecLocal(tx *types.Transaction, receipt *types.ReceiptD
 	}
 	cfg := evm.GetAPI().GetConfig()
 	if cfg.IsDappFork(evm.GetHeight(), "evm", evmtypes.ForkEVMState) {
-
+		//    Exec              localdb
 		for _, logItem := range receipt.Logs {
 			if evmtypes.TyLogEVMStateChangeItem == logItem.Ty {
 				data := logItem.Log
@@ -30,6 +31,7 @@ func (evm *EVMExecutor) ExecLocal(tx *types.Transaction, receipt *types.ReceiptD
 				if err != nil {
 					return set, err
 				}
+				//    log key->   key
 				key := []byte(changeItem.Key)
 				if bytes.HasPrefix(key, []byte("mavl-")) {
 					key[0] = 'L'

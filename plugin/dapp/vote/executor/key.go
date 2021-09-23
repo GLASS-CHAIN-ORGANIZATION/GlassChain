@@ -1,15 +1,15 @@
 package executor
 
 /*
- * k ，ke 
- * key = keyPrefix + userKey
- *  ’- 
+ *       kv   ，key           
+ *  key = keyPrefix + userKey
+ *          ，  ’-‘      
  */
 
 var (
-	//keyPrefixStateDB state db ke 
+	//keyPrefixStateDB state db key    
 	keyPrefixStateDB = "mavl-vote-"
-	//keyPrefixLocalDB local d ke 
+	//keyPrefixLocalDB local db key    
 	keyPrefixLocalDB = "LODB-vote-"
 )
 

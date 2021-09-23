@@ -44,7 +44,7 @@ func getRealExecName(cfg *types.Chain33Config, paraName string) string {
 	return cfg.ExecName(paraName + UnfreezeX)
 }
 
-// NewType 
+// NewType         
 func NewType(cfg *types.Chain33Config) *UnfreezeType {
 	c := &UnfreezeType{}
 	c.SetChild(c)
@@ -52,17 +52,17 @@ func NewType(cfg *types.Chain33Config) *UnfreezeType {
 	return c
 }
 
-// UnfreezeType 
+// UnfreezeType        
 type UnfreezeType struct {
 	types.ExecTypeBase
 }
 
-// GetName 
+// GetName        
 func (u *UnfreezeType) GetName() string {
 	return UnfreezeX
 }
 
-// GetLogMap 
+// GetLogMap         
 func (u *UnfreezeType) GetLogMap() map[int64]*types.LogInfo {
 	return map[int64]*types.LogInfo{
 		TyLogCreateUnfreeze:    {Ty: reflect.TypeOf(ReceiptUnfreeze{}), Name: "LogCreateUnfreeze"},
@@ -71,12 +71,12 @@ func (u *UnfreezeType) GetLogMap() map[int64]*types.LogInfo {
 	}
 }
 
-// GetPayload Unfreeze  Payload
+// GetPayload     Unfreeze   Payload
 func (u *UnfreezeType) GetPayload() types.Message {
 	return &UnfreezeAction{}
 }
 
-// GetTypeMap Action 
+// GetTypeMap   Action     
 func (u *UnfreezeType) GetTypeMap() map[string]int32 {
 	return map[string]int32{
 		"Create":    UnfreezeActionCreate,
@@ -85,7 +85,7 @@ func (u *UnfreezeType) GetTypeMap() map[string]int32 {
 	}
 }
 
-// CreateTx 
+// CreateTx     
 func (u *UnfreezeType) CreateTx(action string, message json.RawMessage) (*types.Transaction, error) {
 	tlog.Error("UnfreezeType.CreateTx", "action", action, "message", string(message))
 	if action == Action_CreateUnfreeze {
@@ -117,13 +117,13 @@ func (u *UnfreezeType) CreateTx(action string, message json.RawMessage) (*types.
 	return nil, types.ErrNotSupport
 }
 
-// RPC_UnfreezeCreateTx 
+// RPC_UnfreezeCreateTx           
 func (u *UnfreezeType) RPC_UnfreezeCreateTx(parm *UnfreezeCreate) (*types.Transaction, error) {
 	cfg := u.GetConfig()
 	return CreateUnfreezeCreateTx(cfg, cfg.GetParaName(), parm)
 }
 
-// CreateUnfreezeCreateTx 
+// CreateUnfreezeCreateTx         
 func CreateUnfreezeCreateTx(cfg *types.Chain33Config, title string, parm *UnfreezeCreate) (*types.Transaction, error) {
 	tlog.Error("CreateUnfreezeCreateTx", "parm", parm)
 	if parm == nil {
@@ -153,13 +153,13 @@ func CreateUnfreezeCreateTx(cfg *types.Chain33Config, title string, parm *Unfree
 	return tx, nil
 }
 
-// RPC_UnfreezeWithdrawTx 
+// RPC_UnfreezeWithdrawTx         
 func (u *UnfreezeType) RPC_UnfreezeWithdrawTx(parm *UnfreezeWithdraw) (*types.Transaction, error) {
 	cfg := u.GetConfig()
 	return CreateUnfreezeWithdrawTx(cfg, cfg.GetParaName(), parm)
 }
 
-// CreateUnfreezeWithdrawTx 
+// CreateUnfreezeWithdrawTx       
 func CreateUnfreezeWithdrawTx(cfg *types.Chain33Config, title string, parm *UnfreezeWithdraw) (*types.Transaction, error) {
 	if parm == nil {
 		tlog.Error("RPC_UnfreezeWithdrawTx", "parm", parm)
@@ -183,13 +183,13 @@ func CreateUnfreezeWithdrawTx(cfg *types.Chain33Config, title string, parm *Unfr
 	return tx, nil
 }
 
-// RPC_UnfreezeTerminateTx 
+// RPC_UnfreezeTerminateTx           
 func (u *UnfreezeType) RPC_UnfreezeTerminateTx(parm *UnfreezeTerminate) (*types.Transaction, error) {
 	cfg := u.GetConfig()
 	return CreateUnfreezeTerminateTx(cfg, cfg.GetParaName(), parm)
 }
 
-// CreateUnfreezeTerminateTx 
+// CreateUnfreezeTerminateTx         
 func CreateUnfreezeTerminateTx(cfg *types.Chain33Config, title string, parm *UnfreezeTerminate) (*types.Transaction, error) {
 	if parm == nil {
 		tlog.Error("RPC_UnfreezeTerminateTx", "parm", parm)

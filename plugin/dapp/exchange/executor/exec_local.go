@@ -6,6 +6,10 @@ import (
 	ety "github.com/33cn/plugin/plugin/dapp/exchange/types"
 )
 
+/*
+ *             ，     
+ *      ，    (localDB),       ，   
+ */
 
 func (e *exchange) ExecLocal_LimitOrder(payload *ety.LimitOrder, tx *types.Transaction, receiptData *types.ReceiptData, index int) (*types.LocalDBSet, error) {
 	dbSet := &types.LocalDBSet{}
@@ -61,6 +65,7 @@ func (e *exchange) ExecLocal_RevokeOrder(payload *ety.RevokeOrder, tx *types.Tra
 	return e.addAutoRollBack(tx, dbSet.KV), nil
 }
 
+//      
 func (e *exchange) addAutoRollBack(tx *types.Transaction, kv []*types.KeyValue) *types.LocalDBSet {
 	dbSet := &types.LocalDBSet{}
 	dbSet.KV = e.AddRollbackKV(tx, tx.Execer, kv)
@@ -97,6 +102,7 @@ func (e *exchange) updateIndex(receipt *ety.ReceiptExchange) (kvs []*types.KeyVa
 		}
 	}
 
+	//  KV
 	kv, err := marketTable.Save()
 	if err != nil {
 		elog.Error("updateIndex", "marketTable.Save", err.Error())
@@ -160,7 +166,7 @@ func (e *exchange) updateOrder(marketTable, orderTable, historyTable *table.Tabl
 			return err
 		}
 	case ety.Revoked:
-
+		//     ordered          
 		var marketDepth ety.MarketDepth
 		depth, err := queryMarketDepth(e.GetLocalDB(), left, right, op, price)
 		if err == nil {
@@ -177,14 +183,14 @@ func (e *exchange) updateOrder(marketTable, orderTable, historyTable *table.Tabl
 			}
 		}
 		if marketDepth.Amount <= 0 {
-
+			//  
 			err = marketTable.DelRow(&marketDepth)
 			if err != nil {
 				elog.Error("updateIndex", "marketTable.DelRow", err.Error())
 				return err
 			}
 		}
-
+		//      orderID
 		order.Status = ety.Ordered
 		err = orderTable.DelRow(order)
 		if err != nil {
@@ -193,7 +199,7 @@ func (e *exchange) updateOrder(marketTable, orderTable, historyTable *table.Tabl
 		}
 		order.Status = ety.Revoked
 		order.Index = index
-
+		//       
 		err = historyTable.Replace(order)
 		if err != nil {
 			elog.Error("updateIndex", "historyTable.Replace", err.Error())
@@ -207,18 +213,18 @@ func (e *exchange) updateMatchOrders(marketTable, orderTable, historyTable *tabl
 	right := order.GetLimitOrder().GetRightAsset()
 	op := order.GetLimitOrder().GetOp()
 	if len(matchOrders) > 0 {
-
+		//      
 		cache := make(map[int64]int64)
 		for i, matchOrder := range matchOrders {
 			if matchOrder.Status == ety.Completed {
-
+				//       orderID
 				matchOrder.Status = ety.Ordered
 				err := orderTable.DelRow(matchOrder)
 				if err != nil {
 					elog.Error("updateIndex", "orderTable.DelRow", err.Error())
 					return err
 				}
-
+				//  index,     index
 				matchOrder.Status = ety.Completed
 				matchOrder.Index = index + int64(i+1)
 				err = historyTable.Replace(matchOrder)
@@ -228,7 +234,7 @@ func (e *exchange) updateMatchOrders(marketTable, orderTable, historyTable *tabl
 				}
 			}
 			if matchOrder.Status == ety.Ordered {
-
+				//    
 				err := orderTable.Replace(matchOrder)
 				if err != nil {
 					elog.Error("updateIndex", "orderTable.Replace", err.Error())
@@ -240,7 +246,7 @@ func (e *exchange) updateMatchOrders(marketTable, orderTable, historyTable *tabl
 			cache[matchOrder.GetLimitOrder().Price] = executed
 		}
 
-
+		//        
 		for pr, executed := range cache {
 			var matchDepth ety.MarketDepth
 			depth, err := queryMarketDepth(e.GetLocalDB(), left, right, OpSwap(op), pr)
@@ -260,7 +266,7 @@ func (e *exchange) updateMatchOrders(marketTable, orderTable, historyTable *tabl
 				return err
 			}
 			if matchDepth.Amount <= 0 {
-
+				//  
 				err = marketTable.DelRow(&matchDepth)
 				if err != nil {
 					elog.Error("updateIndex", "marketTable.DelRow", err.Error())

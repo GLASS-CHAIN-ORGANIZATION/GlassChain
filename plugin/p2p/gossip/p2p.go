@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Package gossip gossi 
+// Package gossip    gossip    
 package gossip
 
 import (
@@ -33,33 +33,33 @@ var (
 	log = l.New("module", "p2p")
 )
 
-// p2p 
+// p2p    
 type subConfig struct {
-	// P2 
+	// P2P       
 	Port int32 `protobuf:"varint,1,opt,name=port" json:"port,omitempty"`
-	//  ip:port  seeds=
+	//     ，   ip:port，         ， seeds=
 	Seeds []string `protobuf:"bytes,2,rep,name=seeds" json:"seeds,omitempty"`
-	// 
+	//        
 	IsSeed bool `protobuf:"varint,3,opt,name=isSeed" json:"isSeed,omitempty"`
-	/  seed 
+	//      ，      seeds    
 	FixedSeed bool `protobuf:"varint,4,opt,name=fixedSeed" json:"fixedSeed,omitempty"`
-	// 
+	//            
 	InnerSeedEnable bool `protobuf:"varint,5,opt,name=innerSeedEnable" json:"innerSeedEnable,omitempty"`
-	// Githu 
+	//     Github      
 	UseGithub bool `protobuf:"varint,6,opt,name=useGithub" json:"useGithub,omitempty"`
-	//  
+	//        ，      
 	ServerStart bool `protobuf:"varint,7,opt,name=serverStart" json:"serverStart,omitempty"`
-	// 
+	//          
 	InnerBounds int32 `protobuf:"varint,8,opt,name=innerBounds" json:"innerBounds,omitempty"`
-	/ ttl
+	//           ttl
 	LightTxTTL int32 `protobuf:"varint,9,opt,name=lightTxTTL" json:"lightTxTTL,omitempty"`
-	// ttl, tt 
+	//     ttl, ttl             
 	MaxTTL int32 `protobuf:"varint,10,opt,name=maxTTL" json:"maxTTL,omitempty"`
-	// p2    
+	// p2p    ,      /   /    
 	Channel int32 `protobuf:"varint,11,opt,name=channel" json:"channel,omitempty"`
-	/ , KB
+	//           , KB
 	MinLtBlockSize int32 `protobuf:"varint,12,opt,name=minLtBlockSize" json:"minLtBlockSize,omitempty"`
-	/ ,true  rp 
+	//               ,true       ，  rpc         
 	EnableTls bool `protobuf:"varint,13,opt,name=enableTls" json:"enableTls,omitempty"`
 }
 
@@ -81,7 +81,6 @@ type P2p struct {
 	subCfg  *subConfig
 	mgr     *p2p.Manager
 	subChan chan interface{}
-	lock    sync.Mutex
 }
 
 // New produce a p2p object
@@ -90,11 +89,11 @@ func New(mgr *p2p.Manager, subCfg []byte) p2p.IP2P {
 	p2pCfg := cfg.GetModuleConfig().P2P
 	mcfg := &subConfig{}
 	types.MustDecode(subCfg, mcfg)
-	/ channe 0, 
+	//   channel    0,            
 	if cfg.IsTestNet() && mcfg.Channel == 0 {
 		mcfg.Channel = defaultTestNetChannel
 	}
-	//tt 2
+	//ttl    2
 	if mcfg.LightTxTTL <= 1 {
 		mcfg.LightTxTTL = DefaultLtTxBroadCastTTL
 	}
@@ -130,7 +129,7 @@ func New(mgr *p2p.Manager, subCfg []byte) p2p.IP2P {
 	p2p.mgr = mgr
 	p2p.api = mgr.SysAPI
 	p2p.taskGroup = &sync.WaitGroup{}
-	/ p2p mange pu 
+	// p2p manger  pub     
 	p2p.subChan = p2p.mgr.PubSub.Sub(P2PTypeName)
 	return p2p
 }
@@ -148,11 +147,9 @@ func (network *P2p) isRestart() bool {
 
 //CloseP2P Close network client
 func (network *P2p) CloseP2P() {
-	network.lock.Lock()
-	defer network.lock.Unlock()
 	log.Info("p2p network start shutdown")
 	atomic.StoreInt32(&network.closed, 1)
-	/ 
+	//        
 	network.waitTaskDone()
 	network.node.Close()
 	network.mgr.PubSub.Unsub(network.subChan)
@@ -167,7 +164,7 @@ func (network *P2p) StartP2P() {
 		if p2p.isRestart() {
 			p2p.node.Start()
 			atomic.StoreInt32(&p2p.restart, 0)
-			/ 
+			//        
 			network.waitRestart <- struct{}{}
 			return
 		}
@@ -176,18 +173,18 @@ func (network *P2p) StartP2P() {
 		key, pub := p2p.node.nodeInfo.addrBook.GetPrivPubKey()
 		log.Debug("key pub:", pub, "")
 		if key == "" {
-			if p2p.p2pCfg.WaitPid { //ke     
+			if p2p.p2pCfg.WaitPid { //key  ，      ，    ，           ，  
 				if p2p.genAirDropKeyFromWallet() != nil {
 					return
 				}
 			} else {
-				/ Pid node award ,airdropaddr
+				//    Pid,     node award ,airdropaddr
 				p2p.node.nodeInfo.addrBook.ResetPeerkey(key, pub)
 				go p2p.genAirDropKeyFromWallet()
 			}
 
 		} else {
-			//key  key see key, 
+			//key      ，      key,     seed key,      
 			go p2p.genAirDropKeyFromWallet()
 
 		}
@@ -209,7 +206,7 @@ ReTry:
 			return nil
 		}
 		if err == types.ErrLabelHasUsed {
-			/ lable
+			//    lable
 			parm.Label = fmt.Sprintf("node award %v", P2pComm.RandStr(3))
 			time.Sleep(time.Second)
 			goto ReTry
@@ -249,7 +246,7 @@ func (network *P2p) genAirDropKeyFromWallet() error {
 			time.Sleep(time.Second)
 			continue
 		}
-		if resp.(*types.WalletStatus).GetIsWalletLock() { / 
+		if resp.(*types.WalletStatus).GetIsWalletLock() { //  
 			if savePub == "" {
 				log.Warn("P2P Stuck ! Wallet must be unlock and save with mnemonics")
 
@@ -258,7 +255,7 @@ func (network *P2p) genAirDropKeyFromWallet() error {
 			continue
 		}
 
-		if !resp.(*types.WalletStatus).GetIsHasSeed() { / 
+		if !resp.(*types.WalletStatus).GetIsHasSeed() { //   
 			if savePub == "" {
 				log.Warn("P2P Stuck ! Wallet must be imported with mnemonics")
 
@@ -304,19 +301,19 @@ func (network *P2p) genAirDropKeyFromWallet() error {
 	}
 
 	if savePub != "" {
-		//priv,pu   
+		//priv,pub       ，     ，           
 		err = network.loadP2PPrivKeyToWallet()
 		if err != nil {
 			log.Error("genAirDropKeyFromWallet", "loadP2PPrivKeyToWallet error", err)
 			panic(err)
 		}
 		network.node.nodeInfo.addrBook.ResetPeerkey(hexPrivkey, hexPubkey)
-		/ p2 
+		//  p2p  
 		log.Info("genAirDropKeyFromWallet", "p2p will Restart....")
 		network.ReStart()
 		return nil
 	}
-	/ addrbook 
+	//  addrbook       
 	network.node.nodeInfo.addrBook.ResetPeerkey(hexPrivkey, hexPubkey)
 
 	return nil
@@ -324,16 +321,14 @@ func (network *P2p) genAirDropKeyFromWallet() error {
 
 //ReStart p2p
 func (network *P2p) ReStart() {
-	network.lock.Lock()
-	defer network.lock.Unlock()
-	/ 
+	//    
 	if !atomic.CompareAndSwapInt32(&network.restart, 0, 1) {
 		return
 	}
 	log.Info("p2p restart, wait p2p task done")
 	network.waitTaskDone()
 	network.node.Close()
-	node, err := NewNode(network.mgr, network.subCfg) / nod 
+	node, err := NewNode(network.mgr, network.subCfg) //    node  
 	if err != nil {
 		panic(err.Error())
 	}
@@ -376,9 +371,9 @@ func (network *P2p) subP2pMsg() {
 			}
 			switch msg.Ty {
 
-			case types.EventTxBroadcast: / tx
+			case types.EventTxBroadcast: //  tx
 				network.processEvent(msg, taskIndex, network.p2pCli.BroadCastTx)
-			case types.EventBlockBroadcast: / block
+			case types.EventBlockBroadcast: //  block
 				network.processEvent(msg, taskIndex, network.p2pCli.BlockBroadcast)
 			case types.EventFetchBlocks:
 				network.processEvent(msg, taskIndex, network.p2pCli.GetBlocks)
@@ -404,12 +399,8 @@ func (network *P2p) subP2pMsg() {
 }
 
 func (network *P2p) processEvent(msg *queue.Message, taskIdx int64, eventFunc p2pEventFunc) {
-	network.lock.Lock()
-	defer network.lock.Unlock()
-	if network.isClose() {
-		return
-	}
-	/   
+
+	//      ，      ，      
 	if network.isRestart() {
 		log.Info("wait for p2p restart....")
 		<-network.waitRestart

@@ -48,17 +48,17 @@ func (u *Unfreeze) execDelLocal(receiptData *types.ReceiptData, index int) (*typ
 	return dbSet, nil
 }
 
-// ExecDelLocal_Create 
+// ExecDelLocal_Create             
 func (u *Unfreeze) ExecDelLocal_Create(payload *uf.UnfreezeCreate, tx *types.Transaction, receiptData *types.ReceiptData, index int) (*types.LocalDBSet, error) {
 	return u.execDelLocal(receiptData, index)
 }
 
-// ExecDelLocal_Withdraw 
+// ExecDelLocal_Withdraw              
 func (u *Unfreeze) ExecDelLocal_Withdraw(payload *uf.UnfreezeWithdraw, tx *types.Transaction, receiptData *types.ReceiptData, index int) (*types.LocalDBSet, error) {
 	return u.execDelLocal(receiptData, index)
 }
 
-// ExecDelLocal_Terminate 
+// ExecDelLocal_Terminate              
 func (u *Unfreeze) ExecDelLocal_Terminate(payload *uf.UnfreezeTerminate, tx *types.Transaction, receiptData *types.ReceiptData, index int) (*types.LocalDBSet, error) {
 	return u.execDelLocal(receiptData, index)
 }

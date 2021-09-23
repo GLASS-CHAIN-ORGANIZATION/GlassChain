@@ -56,16 +56,20 @@ function init() {
 
     echo "multisigExecAddr=$multisigExecAddr"
 }
+#         
 function multisig_AccCreateTx() {
     echo "========== # multisig_AccCreateTx begin  =========="
     txHex=$(curl -ksd '{"method":"multisig.MultiSigAccCreateTx","params":[{"owners":[{"ownerAddr":"'$AddrA'","weight":20},{"ownerAddr":"'$AddrB'","weight":10},{"ownerAddr":"'$GenAddr'","weight":30}],"requiredWeight":15,"dailyLimit":{"symbol":"'$Symbol'","execer":"'$Asset'","dailyLimit":1000000000}}]}' ${MAIN_HTTP} | jq -r ".result")
     chain33_SignAndSendTx "$txHex" "$PrivKeyGen" ${MAIN_HTTP}
 
+    #             ok
     data=$(curl -ksd '{"method":"Chain33.Query","params":[{"execer":"multisig","funcName":"MultiSigAccCount","payload":{}}]}' ${MAIN_HTTP} | jq -r ".result.data")
     echo "$data"
 
+    #           
     multisigAccAddr=$(curl -ksd '{"method":"Chain33.Query","params":[{"execer":"multisig","funcName":"MultiSigAccounts","payload":{"start":"0","end":"0"}}]}' ${MAIN_HTTP} | jq -r ".result.address[0]")
 
+    #            
     req='{"method":"Chain33.Query","params":[{"execer":"multisig","funcName":"MultiSigAccountInfo","payload":{"multiSigAccAddr":"'"$multisigAccAddr"'"}}]}'
     resok='(.result.createAddr == "'$GenAddr'")'
     chain33_Http "$req" ${MAIN_HTTP} "$resok" "$FUNCNAME"
@@ -76,16 +80,18 @@ function multisig_AccCreateTx() {
     echo "========== # multisig_AccCreateTx ok  =========="
 }
 
+#          
 function multisig_TransferInTx() {
     echo "========== # multisig_TransferInTx begin =========="
-
+    #     multisig   
     txHex=$(curl -ksd '{"method":"Chain33.CreateRawTransaction","params":[{"to":"'"$multisigExecAddr"'","amount":5000000000,"fee":1,"note":"12312","execName":"'"$execName"'"}]}' ${MAIN_HTTP} | jq -r ".result")
     chain33_SignAndSendTx "$txHex" "$PrivKeyGen" ${MAIN_HTTP}
 
-
+    #   multisigAccAddr   
     txHex=$(curl -ksd '{"method":"multisig.MultiSigAccTransferInTx","params":[{"symbol":"'$Symbol'","amount":4000000000,"note":"test ","execname":"'$Asset'","to":"'"$multisigAccAddr"'"}]}' ${MAIN_HTTP} | jq -r ".result")
     chain33_SignAndSendTx "$txHex" "$PrivKeyGen" ${MAIN_HTTP}
 
+    #  multisigAccAddr      
     req='{"method":"Chain33.Query","params":[{"execer":"multisig","funcName":"MultiSigAccAssets","payload":{"multiSigAddr":"'"$multisigAccAddr"'","assets":{"execer":"'$Asset'","symbol":"'$Symbol'"},"isAll":false}}]}'
     resok='(.result.accAssets[0].assets.execer == "'$Asset'") and (.result.accAssets[0].assets.symbol == "'$Symbol'") and (.result.accAssets[0].account.frozen == "4000000000")'
     chain33_Http "$req" ${MAIN_HTTP} "$resok" "$FUNCNAME"
@@ -94,13 +100,16 @@ function multisig_TransferInTx() {
 
 function multisig_TransferOutTx() {
     echo "========== # multisig_TransferOutTx begin =========="
+    # GenAddr     multisigAccAddr    2000000000 AddrB
     txHex=$(curl -ksd '{"method":"multisig.MultiSigAccTransferOutTx","params":[{"symbol":"'$Symbol'","amount":2000000000,"note":"test ","execname":"coins","to":"'$AddrB'","from":"'"$multisigAccAddr"'"}]}' ${MAIN_HTTP} | jq -r ".result")
     chain33_SignAndSendTx "$txHex" "$PrivKeyGen" ${MAIN_HTTP}
 
+    #  AddrB   multisig    2000000000
     req='{"method":"Chain33.Query","params":[{"execer":"multisig","funcName":"MultiSigAccAssets","payload":{"multiSigAddr":"1LDGrokrZjo1HtSmSnw8ef3oy5Vm1nctbj","assets":{"execer":"coins","symbol":"'$Symbol'"},"isAll":false}}]}'
     resok='(.result.accAssets[0].assets.execer == "'$Asset'") and (.result.accAssets[0].assets.symbol == "'$Symbol'") and (.result.accAssets[0].account.balance == "2000000000")'
     chain33_Http "$req" ${MAIN_HTTP} "$resok" "$FUNCNAME"
 
+    #  multisigAccAddr      ，   2000000000
     req='{"method":"Chain33.Query","params":[{"execer":"multisig","funcName":"MultiSigAccAssets","payload":{"multiSigAddr":"'"$multisigAccAddr"'","assets":{"execer":"'$Asset'","symbol":"'$Symbol'"},"isAll":false}}]}'
     resok='(.result.accAssets[0].assets.execer == "'$Asset'") and (.result.accAssets[0].assets.symbol == "'$Symbol'") and (.result.accAssets[0].account.frozen == "2000000000")'
     chain33_Http "$req" ${MAIN_HTTP} "$resok" "$FUNCNAME"
@@ -109,24 +118,28 @@ function multisig_TransferOutTx() {
 
 function multisig_OwnerOperateTx() {
     echo "========== # multisig_OwnerOperateTx begin =========="
-
+    #  GenAddr    AddrE        owner
     txHex=$(curl -ksd '{"method":"multisig.MultiSigOwnerOperateTx","params":[{"multiSigAccAddr":"'"$multisigAccAddr"'","newOwner":"'$AddrE'","newWeight":8,"operateFlag":1}]}' ${MAIN_HTTP} | jq -r ".result")
     chain33_SignAndSendTx "$txHex" "$PrivKeyGen" ${MAIN_HTTP}
 
-
+    #             AddrEmultisig_TransferInTx
     req='{"method":"Chain33.Query","params":[{"execer":"multisig","funcName":"MultiSigAccountInfo","payload":{"multiSigAccAddr":"'"$multisigAccAddr"'"}}]}'
     resok='(.result.owners[3].ownerAddr == "'$AddrE'")'
     chain33_Http "$req" ${MAIN_HTTP} "$resok" "$FUNCNAME"
 
+    #            owner AddrE
     txHex=$(curl -ksd '{"method":"multisig.MultiSigOwnerOperateTx","params":[{"multiSigAccAddr":"'"$multisigAccAddr"'","oldOwner":"'$AddrE'","operateFlag":2}]}' ${MAIN_HTTP} | jq -r ".result")
     chain33_SignAndSendTx "$txHex" "$PrivKeyGen" ${MAIN_HTTP}
 
+    #         owner AddrA weight 30
     txHex=$(curl -ksd '{"method":"multisig.MultiSigOwnerOperateTx","params":[{"multiSigAccAddr":"'"$multisigAccAddr"'","oldOwner":"'$AddrA'","newWeight":30,"operateFlag":3}]}' ${MAIN_HTTP} | jq -r ".result")
     chain33_SignAndSendTx "$txHex" "$PrivKeyGen" ${MAIN_HTTP}
 
+    #        owner AddrA      AddrE
     txHex=$(curl -ksd '{"method":"multisig.MultiSigOwnerOperateTx","params":[{"multiSigAccAddr":"'"$multisigAccAddr"'","oldOwner":"'$AddrA'","newOwner":"'$AddrE'","operateFlag":4}]}' ${MAIN_HTTP} | jq -r ".result")
     chain33_SignAndSendTx "$txHex" "$PrivKeyGen" ${MAIN_HTTP}
 
+    #             AddrE  weight 30
     req='{"method":"Chain33.Query","params":[{"execer":"multisig","funcName":"MultiSigAccountInfo","payload":{"multiSigAccAddr":"'"$multisigAccAddr"'"}}]}'
     resok='(.result.owners[0].ownerAddr == "'$AddrE'") and (.result.owners[0].weight == "30")'
     chain33_Http "$req" ${MAIN_HTTP} "$resok" "$FUNCNAME"
@@ -135,19 +148,23 @@ function multisig_OwnerOperateTx() {
 
 function multisig_AccOperateTx() {
     echo "========== # multisig_AccOperateTx begin =========="
-
+    #          Symbol：Asset dailyLimit=1200000000
     txHex=$(curl -ksd '{"method":"multisig.MultiSigAccOperateTx","params":[{"multiSigAccAddr":"'"$multisigAccAddr"'","dailyLimit":{"symbol":"'$Symbol'","execer":"'$Asset'","dailyLimit":1200000000}}]}' ${MAIN_HTTP} | jq -r ".result")
     chain33_SignAndSendTx "$txHex" "$PrivKeyGen" ${MAIN_HTTP}
 
+    #        HYB：token dailyLimit=1000000000
     txHex=$(curl -ksd '{"method":"multisig.MultiSigAccOperateTx","params":[{"multiSigAccAddr":"'"$multisigAccAddr"'","dailyLimit":{"symbol":"HYB","execer":"token","dailyLimit":1000000000}}]}' ${MAIN_HTTP} | jq -r ".result")
     chain33_SignAndSendTx "$txHex" "$PrivKeyGen" ${MAIN_HTTP}
 
+    #  RequiredWeight=16
     txHex=$(curl -ksd '{"method":"multisig.MultiSigAccOperateTx","params":[{"multiSigAccAddr":"'"$multisigAccAddr"'","newRequiredWeight":16,"operateFlag":true}]}' ${MAIN_HTTP} | jq -r ".result")
     chain33_SignAndSendTx "$txHex" "$PrivKeyGen" ${MAIN_HTTP}
 
+    #              ，         
     req='{"method":"Chain33.Query","params":[{"execer":"multisig","funcName":"MultiSigAccTxCount","payload":{"multiSigAccAddr":"'"$multisigAccAddr"'"}}]}'
     chain33_Http "$req" ${MAIN_HTTP} '(.result.data != null)' "$FUNCNAME"
 
+    #           
     req='{"method":"Chain33.Query","params":[{"execer":"multisig","funcName":"MultiSigTxInfo","payload":{"multiSigAddr":"'"$multisigAccAddr"'","txId":"7"}}]}'
     resok='(.result.txid == "7") and (.result.executed == true) and (.result.multiSigAddr == "'"$multisigAccAddr"'")'
     chain33_Http "$req" ${MAIN_HTTP} "$resok" "$FUNCNAME"

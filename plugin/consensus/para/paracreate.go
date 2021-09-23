@@ -61,6 +61,7 @@ func (client *client) getLocalBlockSeq(height int64) (int64, []byte, error) {
 		return -2, nil, err
 	}
 
+	//    mainHash  seq    ，  0 seq，   hash， switchLocalHashMatchedBlock      
 	mainSeq, err := client.GetSeqByHashOnMainChain(lastBlock.MainHash)
 	if err != nil {
 		return 0, lastBlock.MainHash, nil
@@ -69,6 +70,7 @@ func (client *client) getLocalBlockSeq(height int64) (int64, []byte, error) {
 
 }
 
+//      chainblock，    localdb block
 func (client *client) alignLocalBlock2ChainBlock(chainBlock *types.Block) error {
 	localBlock := &pt.ParaLocalDbBlock{
 		Height:     chainBlock.Height,
@@ -81,7 +83,8 @@ func (client *client) alignLocalBlock2ChainBlock(chainBlock *types.Block) error 
 
 }
 
-
+//  localBlock    ，  chain block  ，  block    ，   seq    ，        hash    seq=0,
+//                     
 func (client *client) getLastLocalBlockSeq() (int64, []byte, error) {
 	height, err := client.getLastLocalHeight()
 	if err == nil {
@@ -92,11 +95,13 @@ func (client *client) getLastLocalBlockSeq() (int64, []byte, error) {
 	}
 
 	plog.Info("Parachain getLastLocalBlockSeq from block")
+	//  localDb      ， chain  
 	mainSeq, chainBlock, err := client.getLastBlockMainInfo()
 	if err != nil {
 		return -2, nil, err
 	}
 
+	//chain block     ，  last local block    chainBlock main   mainhash  
 	err = client.alignLocalBlock2ChainBlock(chainBlock)
 	if err != nil {
 		return -2, nil, err
@@ -146,6 +151,7 @@ func (client *client) getMatchedBlockOnChain(startHeight int64) (int64, *types.B
 		if err != nil {
 			return -2, nil, err
 		}
+		//  block     mainHash MainHeight   blockchain   block     ，       ，     minerTx  
 		plog.Info("switchHashMatchedBlock", "lastParaBlockHeight", height, "mainHeight",
 			block.MainHeight, "mainHash", hex.EncodeToString(block.MainHash))
 		mainSeq, err := client.GetSeqByHashOnMainChain(block.MainHash)
@@ -178,6 +184,7 @@ func (client *client) switchMatchedBlockOnChain(startHeight int64) (int64, []byt
 	if err != nil {
 		return -2, nil, err
 	}
+	//chain block     ，  last local block    chainBlock main   mainhash  
 	err = client.alignLocalBlock2ChainBlock(chainBlock)
 	if err != nil {
 		return -2, nil, err
@@ -206,6 +213,7 @@ func (client *client) switchLocalHashMatchedBlock() (int64, *pt.ParaLocalDbBlock
 		if err != nil {
 			return -2, nil, err
 		}
+		//  block     mainHash MainHeight   blockchain   block     ，       ，     minerTx  
 		plog.Info("switchLocalHashMatchedBlock", "height", height, "mainHeight", block.MainHeight, "mainHash", hex.EncodeToString(block.MainHash))
 		mainHash, err := client.GetHashByHeightOnMainChain(block.MainHeight)
 		if err != nil || !bytes.Equal(mainHash, block.MainHash) {
@@ -354,6 +362,7 @@ func (client *client) requestFilterParaTxs(currSeq int64, count int64, preMainBl
 		plog.Error("requestFilterParaTxs", "curSeq", currSeq, "count", count, "preMainBlockHash", hex.EncodeToString(preMainBlockHash))
 		return nil, err
 	}
+	//      １ 
 	if len(details.Items) == 0 {
 		plog.Error("requestFilterParaTxs ret nil", "curSeq", currSeq, "count", count, "preMainBlockHash", hex.EncodeToString(preMainBlockHash))
 		return nil, types.ErrNotFound
@@ -467,6 +476,7 @@ func (client *client) procLocalAddBlock(mainBlock *types.ParaTxDetail, lastBlock
 
 }
 
+//     AddType block，       １w      blocks，      ，   addType   ，     ，               
 func (client *client) procLocalAddBlocks(mainBlocks *types.ParaTxDetails) error {
 	var blocks []*pt.ParaLocalDbBlock
 	lastBlock, err := client.getLastLocalBlock()
@@ -541,18 +551,21 @@ out:
 				plog.Debug("para CreateBlock count not match", "count", count, "items", len(paraTxs.Items))
 				count = int64(len(paraTxs.Items))
 			}
+			//        ，    
 			if client.commitMsgClient.authAccount != "" && client.isCaughtUp() && len(paraTxs.Items) > 0 {
-
+				//      ，  seq     ，        
 				client.commitMsgClient.commitTxCheckNotify(paraTxs.Items[0])
 			}
 
 			err = client.procLocalBlocks(paraTxs)
 			if err != nil {
+				//  localblock，      
 				lastSeqMainHash = nil
 				plog.Error("para CreateBlock.procLocalBlocks", "err", err.Error())
 				continue
 			}
 
+			//    seq lastSeqMainHash
 			lastSeqMainHash = paraTxs.Items[count-1].Header.Hash
 			if paraTxs.Items[count-1].Type == types.DelBlock {
 				lastSeqMainHash = paraTxs.Items[count-1].Header.ParentHash

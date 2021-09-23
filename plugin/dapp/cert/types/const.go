@@ -5,9 +5,9 @@
 package types
 
 var (
-
+	// CertX cert    
 	CertX = "cert"
-
+	// ExecerCert cert     
 	ExecerCert = []byte(CertX)
 	actionName = map[string]int32{
 		"New":    CertActionNew,
