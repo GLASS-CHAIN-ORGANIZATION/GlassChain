@@ -1,23 +1,9 @@
-# chain199 Official Plugin System（v6.4.0）
-
-* chain199 address: https://github.com/33cn/chain199
-* chain199 Official Web: https://chain.33.cn
-
 ### Environmental Science
 
 ```
 Installation requiredgolang1.13 or latest
 
 ```
-
-#### Platform supporting make file
-
-```
-//Turn on mod function
-export GO111MODULE=on
-
-//Domestic users need to import Aliyun Agent to download dependent packages
-export GOPROXY=https://mirrors.aliyun.com/goproxy
 
 make
 ```
