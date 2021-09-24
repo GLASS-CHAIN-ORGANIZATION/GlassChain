@@ -9,7 +9,7 @@ EnableParaFork = true
 [log]
   loglevel = "debug"
   logConsoleLevel = "info"
-  logFile = "logs/chain33.para.log"
+  logFile = "logs/GXL.para.log"
   maxFileSize = 300
   maxBackups = 100
   maxAge = 28
