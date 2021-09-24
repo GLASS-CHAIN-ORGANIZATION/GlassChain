@@ -1,68 +1,58 @@
-### Environmental Science
+###  Environmental preparation
 
+Get executable program
+
+Download source code
+
+Compile the corresponding parallel chain software executable program according to your own operating system
+
+Executable packages contain
+
+# windows
 ```
-Installation requiredgolang1.13 or latest
-
+Gxl.exe -- parallel chain node program
 ```
-
-make
 ```
-You can complete the compilation installation
-
+Gxl-cli.exe -- parallel chain node command line tool
 ```
-Note: domestic users need to import a proxy before they can get dependent packages. The mod function is turned on by default in Makefile
 ```
-
-## Run
-
-```
-./chain199 -f chain199.toml
-```
-Note that the default configuration will connect to the chain199 test network
-
-## Note:
-
-Using mod to manage dependency packages is primarily a wall-flipping problem
-
-To solve the problem of package dependency wall-flipping download, we provide AliCloud Agent.
-
-
-## Contribution code:
-
-Detailed steps are available https://github.com/33cn/chain199
-
-Here are just the simple steps:
-
-#### Preparations:
-
-*First click on the fork icon in the upper right corner and put chain199 fork into your own branch like mine is vipwzw/plugin
-
-* `git clonehttps://github.com/vipwzw/plugin.git $GOPATH/src/github.com/33cn/plugin`
-```
-Note: Clone to $GOPATH/src/github.com/33cn/plugin is required here, otherwise go package path will not be found
+Gxl.para.toml -- parallel chain configuration file
 ```
 
-When clone is complete, execute
+# linux
 ```
-make addupstream
+GXL -- parallel chain node program
+```
+```
+GXL cli -- parallel chain node command line tool
+```
+```
+Gxl.para.toml -- parallel chain configuration file
 ```
 
-#### Create Branches to Develop New Functions
+## configuration file
 
+[rpc]
+
+#The jsonrpc and grpc addresses of parallel chains can be customized
 ```
-make branch b=branch_dev_name
+jrpcBindAddr=":8901"
+grpcBindAddr=":8902"
 ```
-#### Submit Code
 
+Start node
+# Window environment command
 ```
-make push b=branch_dev_name m="hello world"
+GXL.exe -f GXL.para.toml
 ```
-If m is not set, git commit commands will not be executed
+# Linux environment commands
+```
+nohup ./GXL -f GXL.para.toml >/dev/null 2>&amp;1 &amp;
+```
 
-#### Test Code
-Like plugin/dapp/relay, write your own plug-ins Makefile and build.sh in the CMD directory
-Write testcase and docker-compose configuration files in the build directory.
-The rules for testcase refer to plugin/dapp/testcase_compose_rule.md
+View process
+```
+ps -ef | grep -v grep | grep GXL
+```
 
-Users can set their own plugin's DAPP variable in travis's own project. If DAPP is set to relay, travis's run relay's testcase
-
+If the process has started, execute the command to query GXL network information
